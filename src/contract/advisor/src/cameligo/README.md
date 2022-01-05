@@ -38,6 +38,11 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.30.0 run dry-run src/
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.30.0 run dry-run src/cameligo/indice.mligo  'Increment(5)' '37' -e indiceMain
 ```
 
+### Unit test pytezos
+```
+python3 -m unittest test_indice.py -v
+```
+
 ### Originate the Indice contract (with tezos-client CLI)
 ```
 tezos-client originate contract indice transferring 1 from bootstrap1 running '/home/frank/ligo_tutorial_fundadvisor/src/cameligo/compiled/indice.tz' --init '0' --dry-run
