@@ -1,6 +1,6 @@
 # ligo_tutorial_fundadvisor
 
-This tutorial is meant to illustrate the communication between contracts (with `get_entrypoint_opt` LIGO function) and lambda pattern which allows to modify a contract already deployed. It deals with implementing, deploying and interacting with Tezos smart contracts.
+This repository is meant to illustrate the communication between contracts (with `get_entrypoint_opt` LIGO function) and lambda pattern which allows to modify a contract already deployed. It deals with implementing, deploying and interacting with Tezos smart contracts.
 
 
 ## The Fund and its advisor (i.e. "L'indice et le conseiller")
@@ -10,7 +10,7 @@ The `indice` contract represents a fund value and the `advisor` contract gives a
 
 ### Transaction workflow
 
-The `advisor` contract can be invoked to request the fund value to the `indice` contract (via a transaction). The `indice` contract receives the request (transaction) and sends back the requested value. When `advisor` contract receives the fund value it can apply the "algorithm" to check it is worth investing !
+The `advisor` contract can be invoked to request the fund value to the `indice` contract (via a transaction). The `indice` contract receives the request (transaction) and sends back the requested value. When `advisor` contract receives the fund value it can apply the "algorithm" to check it is worth investing ! This algorithm relies on a single indice value.
 
 ![](Indice_advisor.png)
 
@@ -25,6 +25,7 @@ So an entrypoint `ChangeAlgorithm` is provided to modify the algorithm that comp
 
 ## Content
 
-The `src` directory contains pascal-ligo smart contracts implementation and related Michelson code. 
-
-The `videos` directory contains live-coding streams of implementing and testing smart contracts (with `ligo` and `tezos-client` in a sandbox).
+The `src` directory contains 3 directories:
+- pascaligo: for smart contracts implementation in Pascaligo and `ligo` command lines for simulating all entrypoints
+- cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
+- jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
