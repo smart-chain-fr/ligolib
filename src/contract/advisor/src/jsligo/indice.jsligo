@@ -1,0 +1,28 @@
+#include "indice_types.jsligo"
+#include "indice_errors.jsligo"
+
+let increment = ([param, store] : [int, indiceStorage]) : indiceFullReturn => {
+    return [list([]) as list<operation>, store + param]
+};
+
+let decrement = ([param, store] : [int, indiceStorage]) : indiceFullReturn => {
+    return [list([]) as list<operation>, store - param]
+};
+
+let sendValue = ([_param, store] : [unit, indiceStorage]) : indiceFullReturn => {
+    let c_opt : option<contract<int>> = Tezos.get_entrypoint_opt("%receiveValue", Tezos.sender);
+    let destination : contract<int> = match (c_opt, {
+        Some:(c : contract<int>) => c,
+        None:() => (failwith(missing_entrypoint_receivevalue) as contract<int>)
+    });
+    let op : operation = Tezos.transaction(store, (0 as mutez), destination);
+    return [list([ op ]) as list<operation>, store]
+};
+
+let indiceMain = ([ep, store] : [indiceEntrypoints, indiceStorage]) : indiceFullReturn => {
+    return match (ep, { 
+        Increment: (p: int) => increment(p, store),
+        Decrement: (p: int) => decrement(p, store),
+        SendValue: (p: unit) => sendValue(p, store)
+    });
+};

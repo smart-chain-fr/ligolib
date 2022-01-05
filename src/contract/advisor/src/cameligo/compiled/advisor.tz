@@ -1,0 +1,49 @@
+{ parameter
+    (or (or (lambda %changeAlgorithm int bool) (int %receiveValue)) (unit %requestValue)) ;
+  storage
+    (pair (pair (lambda %algorithm int bool) (address %indiceAddress)) (bool %result)) ;
+  code { UNPAIR ;
+         IF_LEFT
+           { IF_LEFT
+               { SWAP ;
+                 DUP ;
+                 DUG 2 ;
+                 CDR ;
+                 DIG 2 ;
+                 CAR ;
+                 CDR ;
+                 DIG 2 ;
+                 PAIR ;
+                 PAIR ;
+                 NIL operation ;
+                 PAIR }
+               { SWAP ;
+                 DUP ;
+                 DUG 2 ;
+                 CAR ;
+                 CAR ;
+                 SWAP ;
+                 EXEC ;
+                 SWAP ;
+                 CAR ;
+                 PAIR ;
+                 NIL operation ;
+                 PAIR } }
+           { DROP ;
+             DUP ;
+             CAR ;
+             CDR ;
+             CONTRACT %sendValue unit ;
+             IF_NONE
+               { PUSH string "the targeted contract has not entrypoint sendValue" ;
+                 FAILWITH }
+               {} ;
+             PUSH mutez 0 ;
+             UNIT ;
+             TRANSFER_TOKENS ;
+             SWAP ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             PAIR } } }
+

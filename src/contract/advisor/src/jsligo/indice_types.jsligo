@@ -1,0 +1,5 @@
+type indiceStorage = int;
+
+type indiceEntrypoints = ["Increment", int] | ["Decrement", int] | ["SendValue"];
+
+type indiceFullReturn = [list<operation>, indiceStorage];

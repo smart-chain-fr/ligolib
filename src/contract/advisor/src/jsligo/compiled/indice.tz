@@ -1,0 +1,23 @@
+{ parameter (or (or (int %decrement) (int %increment)) (unit %sendValue)) ;
+  storage int ;
+  code { UNPAIR ;
+         IF_LEFT
+           { IF_LEFT
+               { SWAP ; SUB ; NIL operation ; PAIR }
+               { ADD ; NIL operation ; PAIR } }
+           { DROP ;
+             SENDER ;
+             CONTRACT %receiveValue int ;
+             IF_NONE
+               { PUSH string "the targeted contract has not entrypoint receiveValue" ;
+                 FAILWITH }
+               {} ;
+             PUSH mutez 0 ;
+             DUP 3 ;
+             TRANSFER_TOKENS ;
+             SWAP ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             PAIR } } }
+
