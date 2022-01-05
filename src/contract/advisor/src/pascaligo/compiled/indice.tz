@@ -1,0 +1,25 @@
+{ parameter (or (or (int %decrement) (int %increment)) (unit %sendValue)) ;
+  storage int ;
+  code { DUP ;
+         CDR ;
+         SWAP ;
+         CAR ;
+         IF_LEFT
+           { IF_LEFT
+               { SWAP ; SUB ; NIL operation ; PAIR }
+               { ADD ; NIL operation ; PAIR } }
+           { DROP ;
+             SENDER ;
+             CONTRACT %receiveValue int ;
+             IF_NONE { PUSH string "sender cannot receive indice value" ; FAILWITH } {} ;
+             PUSH mutez 0 ;
+             DIG 2 ;
+             DUP ;
+             DUG 3 ;
+             TRANSFER_TOKENS ;
+             SWAP ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             PAIR } } }
+
