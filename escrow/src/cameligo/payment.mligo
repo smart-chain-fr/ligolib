@@ -39,7 +39,22 @@ let createPay(param, store : createPayParameter * paymentStorage) : returnPaymen
     in
     (([] : operation list), { store with escrows = new_escrows })
 
-let pay(param, store : payParameter * paymentStorage) : returnPayment =
+
+
+let payXTZ(param, store : payParameter * paymentStorage) : returnPayment =
+    let tez_amount_in_nat : nat = Tezos.amount / 1mutez in
+    let _check_amount : unit = assert_with_error (tez_amount_in_nat = param.amount) insuffisant_xtz in
+    let current_escrow : escrow = match Map.find_opt param.escrowId store.escrows with
+    | None -> (failwith(escrow_unknown) : escrow) 
+    | Some (esc) -> esc
+    in
+    let _check_escrow_amount : unit = assert_with_error (tez_amount_in_nat = current_escrow.amount) insuffisant_xtz in
+    let _check_currency : unit = assert_with_error (current_escrow.currency = "XTZ") escrow_xtz_currency in
+    let new_escrows : (escrowId, escrow) big_map = Big_map.update param.escrowId (Some({ current_escrow with paid=true })) store.escrows in
+    (([] : operation list), { store with escrows=new_escrows })
+
+
+let payFA12(param, store : payParameter * paymentStorage) : returnPayment =
     let _check_amount : unit = assert_with_error (Tezos.amount = 0mutez) no_tez_amount in
     let existingEscrowOpt : escrow option = Map.find_opt param.escrowId store.escrows in
     let current_escrow : escrow = match existingEscrowOpt with
@@ -66,6 +81,8 @@ let pay(param, store : payParameter * paymentStorage) : returnPayment =
     let new_escrows : (escrowId, escrow) big_map = Big_map.update param.escrowId (Some({ current_escrow with paid=true })) store.escrows in
     ([ op; ], { store with escrows=new_escrows })
 
+
+
 let cancelPayment(param, store : escrowId * paymentStorage) : returnPayment =
     let _check_if_admin : unit = assert_with_error (Tezos.sender = store.admin) only_admin in
     let current_escrow : escrow = match Map.find_opt param store.escrows with
@@ -90,7 +107,7 @@ let cancelPayment(param, store : escrowId * paymentStorage) : returnPayment =
     // mark this escrow as canceled
     let new_escrows : (escrowId, escrow) big_map = Big_map.update param (Some({ current_escrow with canceled=true })) store.escrows in
     ([ op; ], { store with escrows=new_escrows })
- 
+
 let releasePayment(param, store : escrowId * paymentStorage) : returnPayment =
     let current_escrow : escrow = match Map.find_opt param store.escrows with
     | None -> (failwith(escrow_unknown) : escrow) 
@@ -114,6 +131,18 @@ let releasePayment(param, store : escrowId * paymentStorage) : returnPayment =
     // mark this escrow as canceled
     let new_escrows : (escrowId, escrow) big_map = Big_map.update param (Some({ current_escrow with released=true })) store.escrows in
     ([ op; ], { store with escrows=new_escrows })
+
+let pay(param, store : payParameter * paymentStorage) : returnPayment =
+    if Tezos.amount = 0mutez then
+        payFA12(param, store)
+    else
+        payXTZ(param, store)
+        
+let cancelPaymentXTZ(param, store : escrowId * paymentStorage) : returnPayment =
+    (failwith("cancelPaymentXTZ not implemented") : returnPayment)
+
+let releasePaymentXTZ(param, store : escrowId * paymentStorage) : returnPayment =
+    (failwith("releasePaymentXTZ not implemented") : returnPayment)
 
 let main(p, s : paymentEntrypoints * paymentStorage) : returnPayment =
     match p with
