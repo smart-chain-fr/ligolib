@@ -81,11 +81,7 @@ let payFA12(param, store : payParameter * paymentStorage) : returnPayment =
     let new_escrows : (escrowId, escrow) big_map = Big_map.update param.escrowId (Some({ current_escrow with paid=true })) store.escrows in
     ([ op; ], { store with escrows=new_escrows })
 
-let pay(param, store : payParameter * paymentStorage) : returnPayment =
-    if Tezos.amount = 0mutez then
-        payFA12(param, store)
-    else
-        payXTZ(param, store)
+
 
 let cancelPayment(param, store : escrowId * paymentStorage) : returnPayment =
     let _check_if_admin : unit = assert_with_error (Tezos.sender = store.admin) only_admin in
@@ -111,7 +107,7 @@ let cancelPayment(param, store : escrowId * paymentStorage) : returnPayment =
     // mark this escrow as canceled
     let new_escrows : (escrowId, escrow) big_map = Big_map.update param (Some({ current_escrow with canceled=true })) store.escrows in
     ([ op; ], { store with escrows=new_escrows })
- 
+
 let releasePayment(param, store : escrowId * paymentStorage) : returnPayment =
     let current_escrow : escrow = match Map.find_opt param store.escrows with
     | None -> (failwith(escrow_unknown) : escrow) 
@@ -135,6 +131,18 @@ let releasePayment(param, store : escrowId * paymentStorage) : returnPayment =
     // mark this escrow as canceled
     let new_escrows : (escrowId, escrow) big_map = Big_map.update param (Some({ current_escrow with released=true })) store.escrows in
     ([ op; ], { store with escrows=new_escrows })
+
+let pay(param, store : payParameter * paymentStorage) : returnPayment =
+    if Tezos.amount = 0mutez then
+        payFA12(param, store)
+    else
+        payXTZ(param, store)
+        
+let cancelPaymentXTZ(param, store : escrowId * paymentStorage) : returnPayment =
+    (failwith("cancelPaymentXTZ not implemented") : returnPayment)
+
+let releasePaymentXTZ(param, store : escrowId * paymentStorage) : returnPayment =
+    (failwith("releasePaymentXTZ not implemented") : returnPayment)
 
 let main(p, s : paymentEntrypoints * paymentStorage) : returnPayment =
     match p with
