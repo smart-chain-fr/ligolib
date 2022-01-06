@@ -1,0 +1,51 @@
+#include "types.jsligo"
+#include "error.jsligo"
+
+// -----------------
+// --  CONSTANTS  --
+// -----------------
+let max_duration_in_sec: nat  = 6048000 as nat; // 10 weeks
+let no_operation:  list<operation> = list([]);
+let empty_nat_list: list<nat> = list([]);
+
+
+// -----------------
+// --  INTERNALS  --
+// -----------------
+
+// let sendFA12 = ([token_amount, target_to, target_fa12] : [nat, address, address]): operation => {
+//     let fa12_contract_opt: option<contract<fa12_transfer>>  = Tezos.get_entrypoint_opt ("%transfer", target_fa12);
+//     let transfer_fa12: contract<fa12_transfer> = match (fa12_contract_opt, {
+//         Some: (c: contract<fa12_transfer>) => c,
+//         None: () => (failwith(unknown_contract_entrypoint) as contract<fa12_transfer>)
+//     });
+//     let transfer_param: fa12_transfer = [Tezos.self_address, [target_to, token_amount]];
+//     return Tezos.transaction(transfer_param, 0 as mutez, transfer_fa12);
+// };
+
+
+// ------------------
+// -- ENTRY POINTS --
+// ------------------
+
+let create_operation = ([params, storage_multisig]: [operation_params, storage_multisig]): return_multisig => {
+    let check_is_signer: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer);
+    let check_if_no_tez: unit = assert_with_error (Tezos.amount == (0 as tez), amount_must_be_zero_tez);
+    let new_operation: operation_request = {
+        target_to: params.target_to,
+        target_fa12: params.target_fa12,
+        token_amount: params.token_amount,
+        timestamp: Tezos.now,
+        approved_signers: Set.empty as set<address>,
+        executed: false
+    };
+    let operation_map: big_map<nat, operation_request> = Big_map.add(storage_multisig.operation_counter, new_operation, storage_multisig.operation_map);
+    return [no_operation, {...storage_multisig, operation_counter: storage_multisig.operation_counter + (1 as nat), operation_map: operation_map}]
+}; // PEDAGO: amount can be zero
+
+let sign = ([operation_request_id, storage_multisig]: [nat, storage_multisig]): return_multisig => {
+    let check_is_signer: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer);
+    let check_has_already_signed: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer); // quite useless
+
+}
+

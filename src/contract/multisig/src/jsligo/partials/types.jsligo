@@ -1,0 +1,31 @@
+type max_duration_in_sec = nat;
+
+type operation_request = {
+    target_to: address,
+    target_fa12: address,
+    token_amount: nat,
+    timestamp: timestamp,
+    approved_signers: set<address>,
+    executed: bool
+};
+
+type storage_multisig = {
+    signers: set<address>,
+    threshold: nat,
+    operation_map: big_map<nat, operation_request>,
+    operation_counter: nat
+};
+
+type operation_params = {
+    target_fa12: address,
+    target_to: address,
+    token_amount: nat
+};
+
+type no_operation = list<operation>;
+type return_multisig = [list<operation>, storage_multisig];
+type fa12_transfer = [address, [address, nat]];
+
+type entrypoint_multisig =
+| ["Create_operation", operation_params]
+; //| ["Sign", nat];
