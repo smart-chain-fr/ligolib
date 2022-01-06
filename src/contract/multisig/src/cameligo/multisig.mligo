@@ -1,5 +1,5 @@
-#include "types.mligo"
-#include "error.mligo"
+#include "multisig_types.mligo"
+#include "multisig_error.mligo"
 
 // -----------------
 // --  CONSTANTS  --
@@ -74,3 +74,12 @@ let sign (storage : storage_multisig) (operation_counter : nat) : return =
 
     let final_storage = { storage with storage_multisig.operation_map = updated_operation_map } in
     ([unwrapped_operation], final_storage)
+
+// ----------
+// -- MAIN --
+// ----------
+
+let main (action, storage : entrypoint * storage_multisig) : return =
+    match action with
+    | Create_operation()    -> create_operation    storage operation_params
+    | Sign(value)           -> sign                storage operation_counter
