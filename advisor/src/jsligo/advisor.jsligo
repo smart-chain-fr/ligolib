@@ -19,7 +19,7 @@ let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
     return [(list([]) as list<operation>), { ...s, algorithm: p}]
 };
 
-let advisorMain = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
+let main = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
     return match (ep, {
         ReceiveValue: (p: int) => execute(p, store),
         RequestValue: (p: unit) => request(p, store),
