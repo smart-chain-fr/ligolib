@@ -13,10 +13,10 @@ type operation_send = {
 }
 
 type storage_multisig = {
-    signers: address set 
-    threshold: nat
+    signers: address set;
+    threshold: nat;
     operation_map: (nat, operation) big_map;
-    operation_counter: nat
+    operation_counter: nat;
 }
 
 type operation_params = {
