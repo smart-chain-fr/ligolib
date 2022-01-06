@@ -1,7 +1,10 @@
 type max_duration_in_sec = nat
+type fa12_transfer = address * (address * nat)
+type operation_counter = nat
 
 type operation = {
-    target: address;
+    target_fa12: address;
+    target_to: address;
     token_amount: nat;
     timestamp: timestamp;
     approved_signers: address set
@@ -26,4 +29,4 @@ type return = operation list * storage_multisig
 
 type entrypoint = 
     | Create_operation of (operation_params)
-    | Sign             of (operation_number)
+    | Sign             of (operation_counter)
