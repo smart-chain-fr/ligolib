@@ -12,7 +12,7 @@ The `indice` contract represents a fund value and the `advisor` contract gives a
 
 The `advisor` contract can be invoked to request the fund value to the `indice` contract (via a transaction). The `indice` contract receives the request (transaction) and sends back the requested value. When `advisor` contract receives the fund value it can apply the "algorithm" to check it is worth investing ! This algorithm relies on a single indice value.
 
-![](Indice_advisor.png)
+![](indice&advisor.png)
 
 The resulting advice is stored in the storage (in `result` field).
 

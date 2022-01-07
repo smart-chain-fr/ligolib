@@ -140,3 +140,8 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.30.0 run dry-run src/
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.30.0 run dry-run src/cameligo/payment.mligo 'ReleasePayment("escrow1")'  '{admin=("tz1fABJ97CJMSP2DKrQx2HAFazh6GgahQ7ZK" : address); currencies=Map.literal[("TZBTC", ("KT1MdenM9nqSvRnoLinXwU6dKYkug6upkezM" : address))]; escrows=Big_map.literal[("escrow1", {currency="TZBTC"; amount=100n; buyer=("tz1hNVs94TTjZh6BZ1PM5HL83A7aiZXkQ8ur" : address); seller=("tz1c6PPijJnZYjKiSQND4pMtGMg6csGeAiiF" : address); escrowContract=(None : address option); canceled=false; released=false; paid=true})]; judges=(Map.empty : (nat, address) map); votingContract=("KT1BEqzn5Wx8uJrZNvuS9DVHmLvG9td3fDLi" : address)}' -e main --sender tz1c6PPijJnZYjKiSQND4pMtGMg6csGeAiiF
 ```
+
+### Test feployment (with ligo compiler)
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.30.0 run test src/cameligo/payment.mligo
+```
