@@ -1,8 +1,8 @@
-# ligo_tutorial_fundadvisor
+# Multi signature
 
 This exeample is meant to illustrate a transaction requiring multiple people's confirmation before the operation is executed. With this MVP example smart-contrat, we show how to use multisig-type confirmation from M of N signers in order to send an operation. In this example, we will bind a call to a token transfer from another smart-contrat, since it’s the most classic use case ( Fungible Asset 1.2 ).
 
-## The Fund and its advisor (i.e. "L'indice et le conseiller")
+## The multisig pattern
 
 Step Zero : deploy the contract with desired parameters and bind it to the entrypoint to execute. Each time a multisignature is required :
 
