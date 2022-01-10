@@ -45,13 +45,13 @@ const create_operation = ([params, storage_multisig]: [operation_params, storage
 
 const sign = ([operation_request_id, storage_multisig]: [nat, storage_multisig]): return_multisig => {
     const check_is_signer: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer);
-    const check_as_already_signed: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer); // quite useless
+    const check_as_already_signed: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), has_already_signed); // quite useless
     let target_request: operation_request = match (Big_map.find_opt(operation_request_id, storage_multisig.operation_map), {
         Some: (op: operation_request) => ({
             ...op,
             approved_signers: Set.add(Tezos.sender, op.approved_signers)
         }),
-        None: () => (failwith(unknown_operation_request))
+        None: () => (failwith(no_operation_exist))
     });
     let operations: list<operation> = no_operation;
     if (Set.size(target_request.approved_signers) >= storage_multisig.threshold) {
