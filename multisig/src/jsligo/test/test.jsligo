@@ -1,0 +1,283 @@
+#include "../main.jsligo"
+
+const assert_error = ([res, expected_error]: [test_exec_result, string]): unit => {
+    const expected_error = Test.eval(expected_error);
+    match(res, {
+        Fail: (x: test_exec_error) => (
+        match (x, {
+            Rejected: (x: [michelson_code, address]) => assert(Test.michelson_equal(x[0], expected_error)),
+            Other: (_: unit) => failwith("contract failed for an unknown reason")
+        })),
+        Success: (_: unit) => failwith("Expected to fail but passed")
+    });
+};
+
+
+const test = (): unit => {
+    let _discard: unit = unit; // declare underscore mutable var to use it trough the tests
+    // ---------------
+    // --  SIGNERS  --
+    // ---------------
+    const x = Test.reset_state ( 6 as nat, list([]) as list <tez> );
+    const alice: address = Test.nth_bootstrap_account(0);
+    const bob: address = Test.nth_bootstrap_account(1);
+    const charly: address = Test.nth_bootstrap_account(2);
+    const delta: address = Test.nth_bootstrap_account(3);
+    const echo: address = Test.nth_bootstrap_account(4);
+    const unknown = Test.nth_bootstrap_account(5);
+
+    // -----------------
+    // --  CONSTANTS  --
+    // -----------------
+    const transfer_amount: nat = 1000 as nat;
+
+    // ---------------
+    // --  STORAGE  --
+    // ---------------
+    const signers: set<address> = Set.add(
+        alice,
+        Set.add(
+            bob,
+            Set.add(
+                charly,
+                Set.add(
+                    delta, 
+                    Set.add(
+                        echo,
+                        Set.empty as set<address>
+                    )
+                )
+            )
+        )
+    );
+    const threshold: nat = 3 as nat;
+    const operation_map: big_map<nat, operation_request> = Big_map.empty;
+    const operation_counter: nat = 1 as nat;
+    const storage: storage_multisig = ({
+        signers: signers,
+        threshold: threshold,
+        operation_map: operation_map,
+        operation_counter: operation_counter
+    });
+    const transpile_storage_func = (x:storage_multisig): storage_multisig => {return x};
+    const iis = Test.run( transpile_storage_func, storage);
+
+
+    // -------------------
+    // --  ORIGINATION  --
+    // -------------------
+    _discard = Test.log("Originating multisig contract");
+    const multisig_contract_path: string = "src/jsligo/main.jsligo";
+    const [address_multisig, code_multisig, _] : [address, michelson_program, int] = Test.originate_from_file(
+        multisig_contract_path,
+        "main" as string,
+        list(["view_operation"]) as list<string>,
+        iis,
+        0 as tez
+    ) as [address, michelson_program, int];
+    const actual_storage = Test.get_storage_of_address(address_multisig as address);
+    const multisig_taddress = Test.cast_address(address_multisig as address) as typed_address<entrypoint_multisig, storage_multisig>;
+    const multisig_contract = Test.to_contract(multisig_taddress);
+
+    _discard = Test.log("Originating fa12");
+    const storage_fa12 = { 
+        tokens: Big_map.literal(
+            list([
+                [alice, 100 as nat],
+                [bob, 100 as nat],
+                [charly, 100 as nat]
+            ])
+        ),
+        allowances: Big_map.literal(
+            list([[
+                    {
+                        owner: alice,
+                        spender: bob 
+                    },
+                    100 as nat
+                ]])
+        ),
+        total_supply: 300 as nat
+    };
+    const iis2 = Test.run( transpile_storage_func, storage_fa12);
+    const [address_fa12, code_fa12, _] : [address, michelson_program, int] = Test.originate_from_file(
+        "src/ligofa12.mligo",
+        "main" as string,
+        list([]) as list<string>,
+        iis2,
+        0 as tez
+    ) as [address, michelson_program, int];
+    _discard = Test.log(address_fa12);
+    _discard = Test.log("Origination complete");
+
+
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+
+
+    // --------------
+    // --  TEST 1  --
+    // --------------
+    _discard = Test.log("Test 1");
+    _discard = Test.log("One of the signers creates an operation request");
+    const create_operation_params: operation_params = {
+        target_fa12: address_fa12 as address,
+        target_to: alice,
+        token_amount: transfer_amount
+    };
+    const expected_operation_request: operation_request = {
+        target_to: alice,
+        target_fa12: address_fa12 as address,
+        token_amount: transfer_amount,
+        timestamp: 3 as timestamp,
+        approved_signers: Set.empty as set<address>,
+        executed: false
+    };
+    _discard = Test.set_source(alice);
+    _discard = Test.transfer_to_contract_exn(multisig_contract, Create_operation(create_operation_params), 0 as tez);
+    let curr_storage: storage_multisig = Test.get_storage(multisig_taddress);
+    const end_operation_request = match(Big_map.find_opt(1 as nat, curr_storage.operation_map), {
+        Some: (op: operation_request) => op,
+        None: () => failwith(no_operation_exist)
+    });
+    _discard = assert(end_operation_request == expected_operation_request);
+    _discard = assert(curr_storage.operation_counter == (2 as nat));
+    _discard = Test.log("Passed");
+
+
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+
+
+    // --------------
+    // --  TEST 2  --
+    // --------------
+    _discard = Test.log("Test 2");
+    _discard = Test.log("A random tries creates an operation request but fails");
+    _discard = Test.set_source(unknown);
+    const fail_tx = Test.transfer_to_contract(multisig_contract, Create_operation(create_operation_params), 0 as tez);
+    _discard = assert_error(fail_tx, only_signer);
+    curr_storage = Test.get_storage(multisig_taddress);
+    _discard = assert(curr_storage.operation_counter == (2 as nat));
+    _discard = Test.log(curr_storage);
+    _discard = Test.log("Passed");
+
+
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+
+
+    // --------------
+    // --  TEST 3  --
+    // --------------
+    _discard = Test.log("Test 3");
+    _discard = Test.log("One of the signers sign the operation request");
+    _discard = Test.set_source(bob);
+    _discard = Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
+    curr_storage = Test.get_storage(multisig_taddress);
+    const end_signed_operation_request = match(Big_map.find_opt(1 as nat, curr_storage.operation_map), {
+        Some: (op: operation_request) => op,
+        None: () => failwith(no_operation_exist)
+    });
+    const expected_signer: set<address> = Set.add(bob, Set.empty as set<address>);
+    _discard = assert(end_signed_operation_request.approved_signers == expected_signer);
+    _discard = Test.log("Passed");
+
+
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+
+
+
+    // --------------
+    // --  TEST 4  --
+    // --------------
+    _discard = Test.log("Test 4");
+    _discard = Test.log("An unknown person tries to sign the operation request and fails");
+    _discard = Test.set_source(unknown);
+    const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(1 as nat), 0 as tez);
+    _discard = assert_error(fail_tx, only_signer);
+    _discard = Test.log("Passed");
+
+
+
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+
+
+
+    // --------------
+    // --  TEST 5  --
+    // --------------
+    _discard = Test.log("Test 5");
+    _discard = Test.log("An unknown person tries to sign an operation request that doesn't exist and fails");
+    _discard = Test.set_source(unknown);
+    const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(2 as nat), 0 as tez);
+    _discard = assert_error(fail_tx, only_signer);
+    _discard = Test.log("Passed");
+
+
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+
+
+    // --------------
+    // --  TEST 6  --
+    // --------------
+    _discard = Test.log("Test 6");
+    _discard = Test.log("A signer tries to sign an operation request that doesn't exist and fails");
+    _discard = Test.set_source(alice);
+    const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(2 as nat), 0 as tez);
+    _discard = assert_error(fail_sign_tx, no_operation_exist);
+    _discard = Test.log("Passed");
+
+
+
+    // --------------
+    // --  TEST 7  --
+    // --------------
+    _discard = Test.log("Test 7");
+    _discard = Test.log("The operation request is signed and executed");
+    _discard = Test.set_source(alice);
+    _discard = Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
+    _discard = Test.set_source(charly);
+    _discard = Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
+    const expected_executed_signers = Set.add(
+        alice,
+        Set.add(
+            bob,
+            Set.add(
+                charly,
+                Set.empty as set<address>
+            )
+        )
+    );
+    curr_storage = Test.get_storage(multisig_taddress);
+    const end_executed_operation_request = match(Big_map.find_opt(1 as nat, curr_storage.operation_map), {
+        Some: (op: operation_request) => op,
+        None: () => failwith(no_operation_exist)
+    });
+    const expected_signer: set<address> = Set.add(alice, Set.empty as set<address>);
+    _discard = assert(end_executed_operation_request.executed);
+    _discard = assert(end_executed_operation_request.approved_signers == expected_executed_signers);
+    _discard = Test.log("Passed");
+
+
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+    _discard = Test.log("");
+};
+const res : unit = test();
