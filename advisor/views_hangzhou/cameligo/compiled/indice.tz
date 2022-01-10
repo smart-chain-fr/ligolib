@@ -20,5 +20,5 @@
              DIG 2 ;
              CONS ;
              PAIR } } ;
-  view "indice_value" unit (option int) { CDR ; SOME } }
+  view "indice_value" unit int { CDR } }
 

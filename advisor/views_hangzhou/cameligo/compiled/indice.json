@@ -43,7 +43,6 @@
                   { "prim": "CONS" }, { "prim": "PAIR" } ] ] } ] ] },
   { "prim": "view",
     "args":
-      [ { "string": "indice_value" }, { "prim": "unit" },
-        { "prim": "option", "args": [ { "prim": "int" } ] },
-        [ { "prim": "CDR" }, { "prim": "SOME" } ] ] } ]
+      [ { "string": "indice_value" }, { "prim": "unit" }, { "prim": "int" },
+        [ { "prim": "CDR" } ] ] } ]
 
