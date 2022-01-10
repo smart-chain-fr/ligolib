@@ -28,4 +28,4 @@ type fa12_transfer = [address, [address, nat]];
 
 type entrypoint_multisig =
 | ["Create_operation", operation_params]
-; //| ["Sign", nat];
+| ["Sign", nat];

@@ -2,7 +2,7 @@
 
 let main = ([ep, store] : [entrypoint_multisig, storage_multisig]) : return_multisig => {
     return match (ep, {
-        Create_operation:   (p: operation_params) => create_operation(p, store)
-        //Sign:               (p: operation_number) => sign(p, store)
+        Create_operation:   (p: operation_params) => create_operation(p, store),
+        Sign:               (p: operation_number) => sign(p, store)
     });
 };
