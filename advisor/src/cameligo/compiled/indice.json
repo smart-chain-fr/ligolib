@@ -40,5 +40,10 @@
                   { "prim": "TRANSFER_TOKENS" }, { "prim": "SWAP" },
                   { "prim": "NIL", "args": [ { "prim": "operation" } ] },
                   { "prim": "DIG", "args": [ { "int": "2" } ] },
-                  { "prim": "CONS" }, { "prim": "PAIR" } ] ] } ] ] } ]
+                  { "prim": "CONS" }, { "prim": "PAIR" } ] ] } ] ] },
+  { "prim": "view",
+    "args":
+      [ { "string": "indice_value" }, { "prim": "unit" },
+        { "prim": "option", "args": [ { "prim": "int" } ] },
+        [ { "prim": "CDR" }, { "prim": "SOME" } ] ] } ]
 

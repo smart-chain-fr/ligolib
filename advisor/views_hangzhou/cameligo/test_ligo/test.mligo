@@ -2,28 +2,32 @@
 #include "../indice.mligo"
 
 let test =
+  
+  // deploy INDICE contract 
   let indice_initial_storage = 4 in
-  let (indice_taddr, _, _) = Test.originate indiceMain indice_initial_storage 0tez in  
-  //let (indice_taddr, _, _) = Test.originate_from_file "../compiled/indice.tz" "indiceMain" ["indice_value"] indice_initial_storage 0tez in
-  let current_storage = Test.get_storage indice_taddr in
-  let () = Test.log(current_storage) in
-  let indice_contract = Test.to_contract indice_taddr in
-  let indice_address = Tezos.address indice_contract in 
+  let iis = Test.run (fun (x:indiceStorage) -> x) indice_initial_storage in
+  let indice_contract_path = "views_hangzhou/cameligo/indice.mligo" in
+  let (address_indice, code_indice, _) = Test.originate_from_file indice_contract_path "indiceMain" (["indice_value"] : string list) iis 0tez in
+  let actual_storage = Test.get_storage_of_address address_indice in
+  let indice_taddress = (Test.cast_address address_indice : (indiceEntrypoints,indiceStorage) typed_address) in
+  let indice_contract = Test.to_contract indice_taddress in
 
+  // INDICE Increment(1)
   let () = Test.transfer_to_contract_exn indice_contract (Increment(1)) 0mutez in
-  let modified_storage = Test.get_storage indice_taddr in
-  let () = Test.log(modified_storage) in
-  let () = assert(modified_storage = current_storage + 1) in
-  let () = Test.log(indice_address) in
+  let inc_actual_storage = Test.get_storage indice_taddress in
+  let () = Test.log(inc_actual_storage) in
+  let () = assert(inc_actual_storage = indice_initial_storage + 1) in
 
-  let advisor_initial_storage : advisorStorage = {indiceAddress=indice_address; algorithm=(fun(i : int) -> if i < 10 then True else False); result=False} in
-  let (advisor_taddr, _, _) = Test.originate advisorMain advisor_initial_storage 0tez in
-  let advisor_current_storage = Test.get_storage advisor_taddr in
-  let () = Test.log(advisor_current_storage) in
-  let () = assert(advisor_current_storage.result = False) in
-  let advisor_contract = Test.to_contract advisor_taddr in
+  //deploy ADVISOR contract 
+  let advisor_initial_storage : advisorStorage = {indiceAddress=address_indice; algorithm=(fun(i : int) -> if i < 10 then True else False); result=False} in
+  let ais = Test.run (fun (x:advisorStorage) -> x) advisor_initial_storage in
+  let advisor_contract_path = "views_hangzhou/cameligo/advisor.mligo" in
+  let (address_advisor, code_advisor, _) = Test.originate_from_file advisor_contract_path "advisorMain" ([] : string list) ais 0tez in
+  let advisor_taddress = (Test.cast_address address_advisor : (advisorEntrypoints,advisorStorage) typed_address) in
+  let advisor_contract = Test.to_contract advisor_taddress in
 
+  // ADVISOR call ExecuteAlgorithm
   let () = Test.transfer_to_contract_exn advisor_contract (ExecuteAlgorithm(unit)) 0mutez in
-  let advisor_modified_storage = Test.get_storage advisor_taddr in
+  let advisor_modified_storage = Test.get_storage advisor_taddress in
+  let () = Test.log(advisor_modified_storage) in
   assert(advisor_modified_storage.result = True)
-

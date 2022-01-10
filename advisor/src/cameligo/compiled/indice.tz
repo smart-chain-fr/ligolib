@@ -19,5 +19,6 @@
              NIL operation ;
              DIG 2 ;
              CONS ;
-             PAIR } } }
+             PAIR } } ;
+  view "indice_value" unit (option int) { CDR ; SOME } }
 

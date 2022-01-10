@@ -24,4 +24,4 @@ let indiceMain(ep, store : indiceEntrypoints * indiceStorage) : indiceFullReturn
     in
     ret
 
-[@view] let indice_value(_params, store: unit * indiceStorage): int option = Some(store)
+[@view] let indice_value(_params, store: unit * indiceStorage): int = store
