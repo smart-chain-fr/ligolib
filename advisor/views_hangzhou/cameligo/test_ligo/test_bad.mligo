@@ -4,16 +4,6 @@
 let test =
   let indice_initial_storage = 4 in
   
- 
-
-  //let ttt = Test.run (fun (x:indiceStorage) -> x) indice_initial_storage in
-  //let (address_indice, code_indice, _) = Test.originate_from_file "../compiled/indice.tz" "indiceMain" ["indice_value"] ttt 0tez in
-  //let actual_storage = Test.get_storage_of_address address_indice in
-  //let () = Test.transfer_exn address_indice (Increment(1)) 0mutez in
-
-  //let inc_actual_storage = Test.get_storage_of_address address_indice in
-  //let () = assert(inc_actual_storage = actual_storage + 1) in
-
   let (indice_taddr, _, _) = Test.originate indiceMain indice_initial_storage 0tez in  
   let current_storage = Test.get_storage indice_taddr in
   let () = Test.log(current_storage) in

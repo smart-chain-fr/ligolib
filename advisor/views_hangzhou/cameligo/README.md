@@ -154,5 +154,5 @@ tezos-client transfer 0 from bootstrap3 to advisor --arg '(Right Unit)' --dry-ru
 
 ### Test deployment/interact (with ligo compiler)
 ```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test views_hangzhou/cameligo/payment.mligo --protocol hangzhou
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test views_hangzhou/cameligo/test_ligo/test.mligo --protocol hangzhou
 ```
