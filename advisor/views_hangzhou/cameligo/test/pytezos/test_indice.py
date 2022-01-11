@@ -81,9 +81,3 @@ class IndiceContractTest(TestCase):
         self.assertEqual(res.operations[0]['parameters']['entrypoint'], "receiveValue")
         self.assertEqual(int(res.operations[0]['parameters']['value']['int']), initial_storage)
         
-    def test_send_value_should_fail(self):
-        # Init
-        init_storage = deepcopy(initial_storage)
-        # Execute entrypoint
-        with self.raisesMichelsonError(missing_entrypoint_receivevalue):
-            self.indice.sendValue().interpret(storage=init_storage, sender=alice)

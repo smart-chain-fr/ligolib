@@ -1,0 +1,20 @@
+{
+    "name": "compiled",
+    "version": "1.0.0",
+    "description": "",
+    "main": "deploy.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "storage": "echo \"START Formatting storage...\" && tsc initStorage.ts --resolveJsonModule --esModuleInterop && node initStorage.js > storage.json && echo \"Storage updated in storage.json END\""
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "@taquito/signer": "^10.2.1",
+      "@taquito/taquito": "^10.2.0",
+      "dotenv": "^10.0.0"
+    },
+    "devDependencies": {
+      "typescript": "^4.4.4"
+    }
+  }

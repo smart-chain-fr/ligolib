@@ -91,6 +91,7 @@ class SandboxedContractTest(SandboxedNodeTestCase):
         # Get injected operation and convert to ContractCallResult
         opg = client.shell.blocks['head':].find_operation(opg['hash'])
         all_result = ContractCallResult.from_operation_group(opg)
+        #print(all_result[0].storage)
         self.assertEqual(len(all_result), 1)
         self.assertEqual(len(all_result[0].operations), 0)
         self.assertEqual(bool(all_result[0].storage['args'][1]['prim']), True)
