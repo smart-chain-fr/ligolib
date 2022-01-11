@@ -1,25 +1,25 @@
-type max_duration_in_sec = nat
 type fa12_transfer = address * (address * nat)
-type operation_counter = nat
+type max_duration_in_sec = nat
+type proposal_number = nat
 
-type operation_send = {
+type proposal = {
+    approved_signers: address set;
+    executed: bool;
+    number_of_signer: nat;
     target_fa12: address;
     target_to: address;
-    token_amount: nat;
     timestamp: timestamp;
-    approved_signers: address set;
-    number_of_signer: nat;
-    executed: bool;
+    token_amount: nat;
 }
 
 type storage_multisig = {
+    proposal_counter: nat;
+    proposal_map: (nat, proposal) big_map;
     signers: address set;
     threshold: nat;
-    operation_map: (nat, operation) big_map;
-    operation_counter: nat;
 }
 
-type operation_params = {
+type proposal_params = {
     target_fa12: address;
     target_to: address;
     token_amount: nat;
@@ -29,5 +29,5 @@ type no_operation = operation list
 type return = operation list * storage_multisig
 
 type entrypoint = 
-    | Create_operation of (operation_params)
-    | Sign             of (operation_counter)
+    | Create_proposal of (proposal_params)
+    | Sign            of (proposal_number)
