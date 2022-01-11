@@ -27,4 +27,4 @@ let indiceMain = ([ep, store] : [indiceEntrypoints, indiceStorage]) : indiceFull
     });
 };
 
-[@view] let indice_value = ([_params, store] : [unit, indiceStorage]) : int => store
+[@view] let indice_value = ([_params, store] : [unit, indiceStorage]) : int => { return store };

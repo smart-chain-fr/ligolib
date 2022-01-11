@@ -1,0 +1,58 @@
+#include "../../advisor.jsligo"
+#include "../../indice.jsligo"
+
+let _test = (_: unit) : unit => {
+
+  // deploy INDICE contract 
+  let indice_initial_storage : int = 4;
+  let transpile_indice_func = (x:indiceStorage) => x;
+  let iis = Test.run ( transpile_indice_func(indice_initial_storage) );
+  let indice_contract_path = "views_hangzhou/jsligo/indice.jsligo";
+  let [address_indice, code_indice, _] = Test.originate_from_file (indice_contract_path, "indiceMain", (["indice_value"] as list<string>), iis, (0 as mutez));
+  let actual_storage = Test.get_storage_of_address(address_indice);
+  let indice_taddress = (Test.cast_address(address_indice) as typed_address<[indiceEntrypoints,indiceStorage]>);
+  let indice_contract = Test.to_contract(indice_taddress);
+
+  // INDICE Increment(1)
+  let _ = Test.transfer_to_contract_exn(indice_contract, (Increment(1)), (0 as mutez));
+  let inc_actual_storage = Test.get_storage(indice_taddress);
+  let _ = Test.log(inc_actual_storage);
+  let _ = assert(inc_actual_storage = indice_initial_storage + 1);
+
+  // INDICE Decrement(2)
+  let _ = Test.transfer_to_contract_exn(indice_contract, (Decrement(2)), (0 as mutez));
+  let dec_actual_storage = Test.get_storage(indice_taddress);
+  let _ = Test.log(dec_actual_storage);
+  let _ = assert(dec_actual_storage = inc_actual_storage - 2);
+
+  // deploy ADVISOR contract 
+  let advisor_initial_storage : advisorStorage = {indiceAddress:address_indice, algorithm:((i : int) => { if (i < 10) { return true } else { return false } }), result: false};
+   let transpile_advisor_func = (x:advisorStorage) => { return x };
+  let ais = Test.run (transpile_advisor_func(advisor_initial_storage));
+  let advisor_contract_path = "views_hangzhou/cameligo/advisor.mligo";
+  let [address_advisor, code_advisor, _] = Test.originate_from_file(advisor_contract_path, "advisorMain", (list([]) as list<string>), ais, (0 as mutez));
+  let advisor_taddress = (Test.cast_address(address_advisor) as typed_address<[advisorEntrypoints,advisorStorage]>);
+  let advisor_contract = Test.to_contract(advisor_taddress);
+
+  // ADVISOR call ExecuteAlgorithm
+  let _ = Test.transfer_to_contract_exn(advisor_contract, (ExecuteAlgorithm(unit)), (0 as mutez));
+  let advisor_modified_storage = Test.get_storage(advisor_taddress);
+  let _ = Test.log(advisor_modified_storage);
+  let _ = assert(advisor_modified_storage.result = true);
+
+  // ADVISOR call ChangeAlgorithm
+  let new_algo  = (i : int) => { if (i < 3) { return true } else { return false };
+  let _ = Test.transfer_to_contract_exn(advisor_contract, (ChangeAlgorithm(new_algo)), (0 as mutez));
+  let advisor_modified_storage2 = Test.get_storage(advisor_taddress);
+  //let () = Test.log(advisor_modified_storage2.algorithm) in
+
+  // ADVISOR call ExecuteAlgorithm
+  let _ = Test.transfer_to_contract_exn(advisor_contract, (ExecuteAlgorithm(unit)), (0 as mutez));
+  let advisor_modified_storage3 = Test.get_storage(advisor_taddress);
+  let _ = Test.log(advisor_modified_storage3);
+  let _ = assert(advisor_modified_storage3.result = false);
+  
+  return unit
+};
+
+let test = _test(unit);

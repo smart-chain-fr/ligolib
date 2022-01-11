@@ -6,6 +6,6 @@ type advisorStorage = {
     result : bool
 };
 
-type advisorEntrypoints = ["ReceiveValue", int] | ["RequestValue"] | ["ChangeAlgorithm", advisorAlgo];
+type advisorEntrypoints = ["ReceiveValue", int] | ["RequestValue"] | ["ChangeAlgorithm", advisorAlgo] | ["ExecuteAlgorithm"];
 
 type advisorFullReturn =  [list<operation>, advisorStorage];

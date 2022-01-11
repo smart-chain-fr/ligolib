@@ -19,7 +19,7 @@ let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
     return [(list([]) as list<operation>), { ...s, algorithm: p}]
 };
 
-let executeAlgorithm = ([s] : [advisorStorage]) : advisorFullReturn => {
+let executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
     let indiceValOpt : option<int> = Tezos.call_view("indice_value", unit, s.indiceAddress);
     let indiceVal : int = match (indiceValOpt , {
         None: () => (failwith("unknown indice value") as int),
@@ -28,7 +28,7 @@ let executeAlgorithm = ([s] : [advisorStorage]) : advisorFullReturn => {
     return [(list([]) as list<operation>), { ...s, result: s.algorithm(indiceVal) }]
 };
 
-let main = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
+let advisorMain = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
     return match (ep, {
         ReceiveValue: (p: int) => execute(p, store),
         RequestValue: (p: unit) => request(p, store),
