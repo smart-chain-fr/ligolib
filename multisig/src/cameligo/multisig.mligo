@@ -72,12 +72,22 @@ let sign (storage : storage_multisig) (proposal_number : nat) : return =
         (no_operation, final_storage)    
 
 
+// -----------
+// -- VIEWS --
+// -----------
+// Cannot return big_map, sapling_state, operation or ticket
+//[@view] let get_proposal_number(_params, store: unit * indiceStorage): int = store
+
+// Mocked view returning always 42 
+[@view] let superview ((),_ : unit * storage_multisig) : int = 42
 
 // ----------
 // -- MAIN --
 // ----------
 
-let multisigMain (action, storage : entrypoint * storage_multisig) : return =
+let multisigMain (action, storage : entrypoint_multisig * storage_multisig) : return =
     match action with
     | Create_proposal(proposal_params) -> create_proposal     storage proposal_params
     | Sign(proposal_number)            -> sign                storage proposal_number
+
+

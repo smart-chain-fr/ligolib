@@ -264,5 +264,6 @@
                   PAIR ;
                   PAIR ;
                   SWAP ;
-                  PAIR } } } }
+                  PAIR } } } ;
+  view "superview" unit int { DROP ; PUSH int 42 } }
 

@@ -14,3 +14,8 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.33.0 compile contract
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.33.0 compile storage src/cameligo/multisig.mligo '4' -e multisigMain
 ```
+
+### Run tests 
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:0.33.0 run test src/cameligo/test_ligo/test.mligo --protocol hangzhou
+```

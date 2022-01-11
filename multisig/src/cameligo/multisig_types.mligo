@@ -28,6 +28,6 @@ type proposal_params = {
 type no_operation = operation list
 type return = operation list * storage_multisig
 
-type entrypoint = 
+type entrypoint_multisig = 
     | Create_proposal of (proposal_params)
     | Sign            of (proposal_number)
