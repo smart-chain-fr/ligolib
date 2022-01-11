@@ -79,9 +79,13 @@ class AdvisorContractTest(TestCase):
         self.assertEqual(res.storage["algorithm"], initial_storage["algorithm"])
         self.assertEqual(len(res.operations), 1)
 
-    def test_request_value_should_fail(self):
+    # on-chain views
+    def test_execute_algorithm_should_work(self):
         # Init
         init_storage = deepcopy(initial_storage)
         # Execute entrypoint
-        with self.raisesMichelsonError(missing_entrypoint_sendvalue):
-            self.advisor.requestValue().interpret(storage=init_storage, sender=alice)
+        res = self.advisor.executeAlgorithm().interpret(storage=init_storage, sender=alice)
+        self.assertEqual(res.storage["result"], False)
+        self.assertEqual(res.storage["indiceAddress"], initial_storage["indiceAddress"])
+        self.assertEqual(res.storage["algorithm"], initial_storage["algorithm"])
+        self.assertEqual(len(res.operations), 0)

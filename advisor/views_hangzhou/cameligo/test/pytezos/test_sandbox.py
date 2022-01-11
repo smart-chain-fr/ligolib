@@ -33,9 +33,7 @@ class SandboxedContractTest(SandboxedNodeTestCase):
         client = self.client.using(key='bootstrap1')
         client.reveal()
 
-        print("debug")
         # Originate contract with initial storage
-        #contract = ContractInterface.from_michelson(contract_michelson)
         indice_contract = ContractInterface.from_file(indice_compiled_contract_path)
         opg = indice_contract.using(shell=self.get_node_url(), key='bootstrap1').originate(initial_storage=initial_storage)
         opg = opg.fill().sign().inject()
@@ -46,16 +44,14 @@ class SandboxedContractTest(SandboxedNodeTestCase):
         opg = client.shell.blocks['head':].find_operation(opg['hash'])
         indice_contract_address = opg['contents'][0]['metadata']['operation_result']['originated_contracts'][0]
 
-        print("Indice contract deployed at ", indice_contract_address)
+        # print("Indice contract deployed at ", indice_contract_address)
         # Load originated contract from blockchain
         indice_originated_contract = client.contract(indice_contract_address).using(shell=self.get_node_url(), key='bootstrap1')
 
         # Perform real contract call
-        # call = originated_contract.default("bar")
+
         increment_param = 1
         call = indice_originated_contract.increment(increment_param) #.interpret(storage=init_storage, sender=admin)
-        # self.assertEqual(res.storage, initial_storage + increment_param)
-        # self.assertEqual([], res.operations)
         opg = call.inject()
 
         self.bake_block()
@@ -64,7 +60,7 @@ class SandboxedContractTest(SandboxedNodeTestCase):
         opg = client.shell.blocks['head':].find_operation(opg['hash'])
         result = ContractCallResult.from_operation_group(opg)[0]
 
-        print("Indice call Increment done resulting storage", int(result.storage['int']))
+        # print("Indice call Increment done resulting storage", int(result.storage['int']))
         self.assertEqual(int(result.storage['int']), initial_storage + increment_param)
 
         # deploy advisor contract
@@ -80,13 +76,14 @@ class SandboxedContractTest(SandboxedNodeTestCase):
         # Find originated contract address by operation hash
         opg = client.shell.blocks['head':].find_operation(opg['hash'])
         advisor_contract_address = opg['contents'][0]['metadata']['operation_result']['originated_contracts'][0]
-        print("Advisor contract deployed at ", advisor_contract_address)
+        # print("Advisor contract deployed at ", advisor_contract_address)
+        
         # Load originated contract from blockchain
         advisor_originated_contract = client.contract(advisor_contract_address).using(shell=self.get_node_url(), key='bootstrap1')
 
         # Perform real contract call
         # call = originated_contract.default("bar")
-        call = advisor_originated_contract.requestValue() #.interpret(storage=init_storage, sender=admin)
+        call = advisor_originated_contract.executeAlgorithm() #.interpret(storage=init_storage, sender=admin)
         opg = call.inject()
 
         self.bake_block()
@@ -94,25 +91,8 @@ class SandboxedContractTest(SandboxedNodeTestCase):
         # Get injected operation and convert to ContractCallResult
         opg = client.shell.blocks['head':].find_operation(opg['hash'])
         all_result = ContractCallResult.from_operation_group(opg)
+        #print(all_result[0].storage)
         self.assertEqual(len(all_result), 1)
-        self.assertEqual(len(all_result[0].operations), 1)
-        self.assertEqual(all_result[0].operations[0]['source'], advisor_contract_address)
-        self.assertEqual(all_result[0].operations[0]['destination'], indice_contract_address)
-        self.assertEqual(int(all_result[0].operations[0]['amount']), 0)
-        self.assertEqual(all_result[0].operations[0]['parameters']['entrypoint'], "sendValue")
+        self.assertEqual(len(all_result[0].operations), 0)
+        self.assertEqual(bool(all_result[0].storage['args'][1]['prim']), True)
         
-        ## print("Result advice", all_result[0].storage)
-        # self.bake_block()
-        # print(client.shell.blocks['head':].find_origination(contract_id=advisor_contract_address))
-        # http://localhost:8732/chains/main/blocks/head/context/contracts/KT1BRudFZEXLYANgmZTka1xCDN5nWTMWY7SZ/storage
-
-
-        call = indice_originated_contract.using(shell=self.get_node_url(), key=advisor_contract_address).sendValue()
-        #call = indice_originated_contract.sendValue()
-        opg = call.inject()
-
-        self.bake_block()
-
-        opg = client.shell.blocks['head':].find_operation(opg['hash'])
-        result_sendvalue = ContractCallResult.from_operation_group(opg)[0]
-        print(result_sendvalue[0].operations)
