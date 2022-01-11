@@ -40,6 +40,7 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_
 
 ### Unit test pytezos
 ```
+cd views_hangzhou/cameligo/test/pytezos
 python3 -m unittest test_indice.py -v
 ```
 
@@ -154,5 +155,13 @@ tezos-client transfer 0 from bootstrap3 to advisor --arg '(Right Unit)' --dry-ru
 
 ### Test deployment/interact (with ligo compiler)
 ```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test views_hangzhou/cameligo/test_ligo/test.mligo --protocol hangzhou
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test views_hangzhou/cameligo/test/ligo/test.mligo --protocol hangzhou
+```
+
+### Deploy (with Taquito)
+```
+tsc deploy.ts --resolveJsonModule -esModuleInterop
+```
+```
+node deploy.js
 ```

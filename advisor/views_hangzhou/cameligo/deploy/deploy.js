@@ -74,13 +74,9 @@ var indice_address = process.env.INDICE_CONTRACT_ADDRESS || undefined;
 var advisor_address = process.env.ADVISOR_CONTRACT_ADDRESS || undefined;
 var indice_initial_value = 4;
 var advisor_initial_result = false;
-var lambda_algorithm = new taquito_1.MichelsonMap();
+var lambda_algorithm = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }";
 // let fa2_reward_ledger = new MichelsonMap();
 // fa2_reward_ledger.set({0:reward_reserve_address, 1:reward_fa2_token_id}, rewards);
-// database
-var database_all_farms = new Array();
-var database_all_farms_data = new taquito_1.MichelsonMap();
-var database_inverse_farms = new taquito_1.MichelsonMap();
 function orig() {
     return __awaiter(this, void 0, void 0, function () {
         var indice_store, advisor_store, indice_originated, advisor_originated, error_1;
