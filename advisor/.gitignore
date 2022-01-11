@@ -1,2 +1,7 @@
 views_hangzhou/cameligo/deploy/node_modules
 views_hangzhou/cameligo/deploy/package-lock.json
+views_hangzhou/cameligo/test/pytezos/*.pyc
+
+views_hangzhou/jsligo/deploy/node_modules
+views_hangzhou/jsligo/deploy/package-lock.json
+views_hangzhou/jsligo/test/pytezos/*.pyc
