@@ -62,22 +62,9 @@ class AdvisorContractTest(TestCase):
         self.assertEqual(new_lambda, res.storage["algorithm"])
         self.assertEqual([], res.operations)
 
-    def test_receive_value_should_work(self):
-        # Init
-        init_storage = deepcopy(initial_storage)
-        # Execute entrypoint
-        res = self.advisor.receiveValue(9).interpret(storage=init_storage, sender=admin)
-        self.assertEqual(res.storage["result"], True)
-        self.assertEqual([], res.operations)
-
-    def test_request_value_should_work(self):
-        # Init
-        init_storage = deepcopy(initial_storage)
-        # Execute entrypoint
-        res = self.advisor.requestValue().interpret(storage=init_storage, sender=admin)
-        self.assertEqual(res.storage["result"], False)
-        self.assertEqual(res.storage["algorithm"], initial_storage["algorithm"])
-        self.assertEqual(len(res.operations), 1)
+    ##############################
+    # Tests for ExecuteAlgorithm #
+    ##############################
 
     # on-chain views
     def test_execute_algorithm_should_work(self):

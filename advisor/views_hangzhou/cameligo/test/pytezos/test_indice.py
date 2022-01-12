@@ -65,19 +65,3 @@ class IndiceContractTest(TestCase):
         self.assertEqual(res.storage, initial_storage - increment_param)
         self.assertEqual([], res.operations)
 
-    #######################
-    # Tests for sendValue #
-    #######################
-
-    def test_send_value_should_work(self):
-        # Init
-        init_storage = deepcopy(initial_storage)
-        # Execute entrypoint
-        res = self.indice.sendValue().interpret(storage=init_storage, sender=advisorAddress)
-        self.assertEqual(res.storage, initial_storage)
-        self.assertEqual(len(res.operations), 1)
-        self.assertEqual(res.operations[0]['destination'], advisorAddress)
-        self.assertEqual(int(res.operations[0]['amount']), 0)
-        self.assertEqual(res.operations[0]['parameters']['entrypoint'], "receiveValue")
-        self.assertEqual(int(res.operations[0]['parameters']['value']['int']), initial_storage)
-        

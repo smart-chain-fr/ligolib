@@ -25,7 +25,6 @@ So an entrypoint `ChangeAlgorithm` is provided to modify the algorithm that comp
 
 ## Content
 
-The `src` directory contains 3 directories:
-- pascaligo: for smart contracts implementation in Pascaligo and `ligo` command lines for simulating all entrypoints
+The `views_hangzhou` directory contains 3 directories:
 - cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
 - jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
