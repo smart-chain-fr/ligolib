@@ -7,7 +7,7 @@ import * as dotenv from 'dotenv'
 dotenv.config(({path:__dirname+'/.env'}))
 
 const rpc = process.env.RPC; //"http://127.0.0.1:8732"
-const pk: string = "edskRuatoqjfYJ2iY6cMKtYakCECcL537iM7U21Mz4ieW3J51L9AZcHaxziWPZSEq4A8hu5e5eJzvzTY1SdwKNF8Pkpg5M6Xev";
+const pk: string = process.env.ADMIN_PK || undefined;
 const Tezos = new TezosToolkit(rpc);
 const signer = new InMemorySigner(pk);
 Tezos.setProvider({ signer: signer })
@@ -18,12 +18,8 @@ let advisor_address = process.env.ADVISOR_CONTRACT_ADDRESS || undefined;
 
 const indice_initial_value = 4
 const advisor_initial_result = false
-//const lambda_algorithm = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }"
-
+//const lambda_algorithm_michelson = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }"
 const lambda_algorithm = '[{"prim": "PUSH", "args": [{"prim": "int"}, {"int": "10"}]}, {"prim": "SWAP"}, {"prim": "COMPARE"}, {"prim": "LT"}, {"prim": "IF", "args": [    [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "True"}]}],     [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "False"}]}]    ]}]'
-
-// let fa2_reward_ledger = new MichelsonMap();
-// fa2_reward_ledger.set({0:reward_reserve_address, 1:reward_fa2_token_id}, rewards);
 
 async function orig() {
 
@@ -37,15 +33,17 @@ async function orig() {
 
     try {
         // Originate an Indice contract
-        const indice_originated = await Tezos.contract.originate({
-            code: indice,
-            storage: indice_store,
-        })
-        console.log(`Waiting for INDICE ${indice_originated.contractAddress} to be confirmed...`);
-        await indice_originated.confirmation(2);
-        console.log('confirmed INDICE: ', indice_originated.contractAddress);
-        indice_address = indice_originated.contractAddress;              
-        advisor_store.indiceAddress = indice_address;
+        if (indice_address === undefined) {
+            const indice_originated = await Tezos.contract.originate({
+                code: indice,
+                storage: indice_store,
+            })
+            console.log(`Waiting for INDICE ${indice_originated.contractAddress} to be confirmed...`);
+            await indice_originated.confirmation(2);
+            console.log('confirmed INDICE: ', indice_originated.contractAddress);
+            indice_address = indice_originated.contractAddress;              
+            advisor_store.indiceAddress = indice_address;
+        }
 
         // Originate a ADVISOR
         const advisor_originated = await Tezos.contract.originate({
@@ -59,6 +57,7 @@ async function orig() {
        
         console.log("./tezos-client remember contract INDICE", indice_address)
         console.log("./tezos-client remember contract ADVISOR", advisor_address)
+        console.log("tezos-client transfer 0 from ", admin, " to ", advisor_address, " --entrypoint \"executeAlgorithm\" --arg \"Unit\"")
 
     } catch (error: any) {
         console.log(error)

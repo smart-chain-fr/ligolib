@@ -65,7 +65,7 @@ var indice_json_1 = __importDefault(require("../compiled/indice.json"));
 var dotenv = __importStar(require("dotenv"));
 dotenv.config(({ path: __dirname + '/.env' }));
 var rpc = process.env.RPC; //"http://127.0.0.1:8732"
-var pk = "edskRuatoqjfYJ2iY6cMKtYakCECcL537iM7U21Mz4ieW3J51L9AZcHaxziWPZSEq4A8hu5e5eJzvzTY1SdwKNF8Pkpg5M6Xev";
+var pk = process.env.ADMIN_PK || undefined;
 var Tezos = new taquito_1.TezosToolkit(rpc);
 var signer = new signer_1.InMemorySigner(pk);
 Tezos.setProvider({ signer: signer });
@@ -74,10 +74,8 @@ var indice_address = process.env.INDICE_CONTRACT_ADDRESS || undefined;
 var advisor_address = process.env.ADVISOR_CONTRACT_ADDRESS || undefined;
 var indice_initial_value = 4;
 var advisor_initial_result = false;
-//const lambda_algorithm = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }"
+//const lambda_algorithm_michelson = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }"
 var lambda_algorithm = '[{"prim": "PUSH", "args": [{"prim": "int"}, {"int": "10"}]}, {"prim": "SWAP"}, {"prim": "COMPARE"}, {"prim": "LT"}, {"prim": "IF", "args": [    [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "True"}]}],     [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "False"}]}]    ]}]';
-// let fa2_reward_ledger = new MichelsonMap();
-// fa2_reward_ledger.set({0:reward_reserve_address, 1:reward_fa2_token_id}, rewards);
 function orig() {
     return __awaiter(this, void 0, void 0, function () {
         var indice_store, advisor_store, indice_originated, advisor_originated, error_1;
@@ -92,7 +90,8 @@ function orig() {
                     };
                     _a.label = 1;
                 case 1:
-                    _a.trys.push([1, 6, , 7]);
+                    _a.trys.push([1, 7, , 8]);
+                    if (!(indice_address === undefined)) return [3 /*break*/, 4];
                     return [4 /*yield*/, Tezos.contract.originate({
                             code: indice_json_1["default"],
                             storage: indice_store
@@ -106,26 +105,28 @@ function orig() {
                     console.log('confirmed INDICE: ', indice_originated.contractAddress);
                     indice_address = indice_originated.contractAddress;
                     advisor_store.indiceAddress = indice_address;
-                    return [4 /*yield*/, Tezos.contract.originate({
-                            code: advisor_json_1["default"],
-                            storage: advisor_store
-                        })];
-                case 4:
+                    _a.label = 4;
+                case 4: return [4 /*yield*/, Tezos.contract.originate({
+                        code: advisor_json_1["default"],
+                        storage: advisor_store
+                    })];
+                case 5:
                     advisor_originated = _a.sent();
                     console.log("Waiting for ADVISOR " + advisor_originated.contractAddress + " to be confirmed...");
                     return [4 /*yield*/, advisor_originated.confirmation(2)];
-                case 5:
+                case 6:
                     _a.sent();
                     console.log('confirmed ADVISOR: ', advisor_originated.contractAddress);
                     advisor_address = advisor_originated.contractAddress;
                     console.log("./tezos-client remember contract INDICE", indice_address);
                     console.log("./tezos-client remember contract ADVISOR", advisor_address);
-                    return [3 /*break*/, 7];
-                case 6:
+                    console.log("tezos-client transfer 0 from ", admin, " to ", advisor_address, " --entrypoint \"executeAlgorithm\" --arg \"Unit\"");
+                    return [3 /*break*/, 8];
+                case 7:
                     error_1 = _a.sent();
                     console.log(error_1);
-                    return [3 /*break*/, 7];
-                case 7: return [2 /*return*/];
+                    return [3 /*break*/, 8];
+                case 8: return [2 /*return*/];
             }
         });
     });

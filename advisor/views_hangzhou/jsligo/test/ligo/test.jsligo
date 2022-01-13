@@ -1,16 +1,16 @@
-#include "../../advisor.jsligo"
-#include "../../indice.jsligo"
+#import "../../advisor.jsligo" "ADVISOR"
+#import "../../indice.jsligo" "INDICE"
 
 const _test = () : unit => {
 
   // deploy INDICE contract 
   const indice_initial_storage : int = 4;
-  const transpile_indice_func = (x:indiceStorage) : int => x;
+  const transpile_indice_func = (x:INDICE.indiceStorage) : int => x;
   const iis = Test.run ( transpile_indice_func, indice_initial_storage );
-  const indice_contract_path = "views_hangzhou/jsligo/indice.jsligo";
+  const indice_contract_path = "indice.jsligo"; //"views_hangzhou/jsligo/indice.jsligo";
   let [address_indice, code_indice, _] = Test.originate_from_file (indice_contract_path, "indiceMain", (list(["indice_value"]) as list<string>), iis, (0 as mutez));
   const actual_storage = Test.get_storage_of_address(address_indice);
-  const indice_taddress = (Test.cast_address(address_indice) as typed_address<indiceEntrypoints,indiceStorage>);
+  const indice_taddress = (Test.cast_address(address_indice) as typed_address<INDICE.indiceEntrypoints,INDICE.indiceStorage>);
   const indice_contract = Test.to_contract(indice_taddress);
 
   // INDICE Increment(1)
@@ -26,12 +26,12 @@ const _test = () : unit => {
   _ = assert(dec_actual_storage == inc_actual_storage - 2);
 
   // deploy ADVISOR contract 
-  const advisor_initial_storage : advisorStorage = {indiceAddress:address_indice, algorithm:((i : int) => { if (i < 10) { return true } else { return false } }), result: false};
-  const transpile_advisor_func = (x:advisorStorage) : advisorStorage => { return x };
+  const advisor_initial_storage : ADVISOR.advisorStorage = {indiceAddress:address_indice, algorithm:((i : int) => { if (i < 10) { return true } else { return false } }), result: false};
+  const transpile_advisor_func = (x:ADVISOR.advisorStorage) : ADVISOR.advisorStorage => { return x };
   const ais = Test.run (transpile_advisor_func, advisor_initial_storage);
-  const advisor_contract_path = "views_hangzhou/jsligo/advisor.jsligo";
+  const advisor_contract_path = "advisor.jsligo"; //"views_hangzhou/jsligo/advisor.jsligo";
   let [address_advisor, code_advisor, _] = Test.originate_from_file(advisor_contract_path, "advisorMain", (list([]) as list<string>), ais, (0 as mutez));
-  const advisor_taddress = (Test.cast_address(address_advisor) as typed_address<advisorEntrypoints,advisorStorage>);
+  const advisor_taddress = (Test.cast_address(address_advisor) as typed_address<ADVISOR.advisorEntrypoints,ADVISOR.advisorStorage>);
   const advisor_contract = Test.to_contract(advisor_taddress);
 
   // ADVISOR call ExecuteAlgorithm

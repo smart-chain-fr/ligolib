@@ -1,19 +1,16 @@
-#include "advisor_types.jsligo"
-#include "advisor_errors.jsligo"
+type advisorAlgo = ((a: int) => bool);
 
-let request = ([_p, s] : [unit, advisorStorage]) : advisorFullReturn => {
-    let c_opt : option<contract<unit>> = Tezos.get_entrypoint_opt("%sendValue", s.indiceAddress);
-    let destination : contract<unit> = match (c_opt , {
-        Some:(c : contract<unit>) => c,
-        None:() => (failwith(missing_entrypoint_sendvalue) as contract<unit>)
-    });
-    let op : operation = Tezos.transaction(unit, 0 as mutez, destination);
-    return [list([ op ]), s]
+export type advisorStorage = {
+    indiceAddress : address,
+    algorithm : advisorAlgo,
+    result : bool
 };
 
-let execute = ([indiceVal, s] : [int, advisorStorage]) : advisorFullReturn => {
-    return [(list([]) as list<operation>), { ...s, result: s.algorithm(indiceVal) }]
-};
+export type advisorEntrypoints = ["ChangeAlgorithm", advisorAlgo] | ["ExecuteAlgorithm"];
+
+export type advisorFullReturn =  [list<operation>, advisorStorage];
+
+let unknownView : string = "View indice_value not found";
 
 let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
     return [(list([]) as list<operation>), { ...s, algorithm: p}]
@@ -22,7 +19,7 @@ let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
 let executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
     let indiceValOpt : option<int> = Tezos.call_view("indice_value", unit, s.indiceAddress);
     let indiceVal : int = match (indiceValOpt , {
-        None: () => (failwith("unknown indice value") as int),
+        None: () => (failwith(unknownView) as int),
         Some: (v: int) => v
     });
     return [(list([]) as list<operation>), { ...s, result: s.algorithm(indiceVal) }]
@@ -30,8 +27,6 @@ let executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
 
 let advisorMain = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
     return match (ep, {
-        ReceiveValue: (p: int) => execute(p, store),
-        RequestValue: (p: unit) => request(p, store),
         ChangeAlgorithm: (p: advisorAlgo) => change(p, store),
         ExecuteAlgorithm: (_p: unit) => executeAlgorithm(store) 
     });

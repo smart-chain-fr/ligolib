@@ -1,1 +1,0 @@
-let missing_entrypoint_sendvalue : string = "the targeted contract has not entrypoint sendValue"

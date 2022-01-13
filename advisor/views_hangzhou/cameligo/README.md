@@ -17,25 +17,26 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile storage vi
 
 ### Compile parameter (with ligo compiler) into Michelson expression
 
-- For entrypoint SendValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/cameligo/indice.mligo 'SendValue(unit)' -e indiceMain --protocol hangzhou
-```
 - For entrypoint Increment
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/cameligo/indice.mligo 'Increment(5)' -e indiceMain --protocol hangzhou
 ```
+- For entrypoint Decrement
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/cameligo/indice.mligo 'Decrement(5)' -e indiceMain --protocol hangzhou
+```
+
 
 ### Simulate execution of entrypoints (with ligo compiler)
-
-- For entrypoint SendValue (will fail)
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/cameligo/indice.mligo  'SendValue(unit)' '37' -e indiceMain --protocol hangzhou
-```
 
 - For entrypoint Increment
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/cameligo/indice.mligo  'Increment(5)' '37' -e indiceMain --protocol hangzhou
+```
+
+- For entrypoint Decrement
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/cameligo/indice.mligo  'Decrement(5)' '37' -e indiceMain --protocol hangzhou
 ```
 
 ### Unit test pytezos
@@ -78,15 +79,6 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile storage vi
 
 ### Compile parameter (with ligo compiler) into Michelson expression
 
-- For entrypoint ReceiveValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/cameligo/advisor.mligo 'ReceiveValue(5)' -e advisorMain --protocol hangzhou
-```
-- For entrypoint RequestValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/cameligo/advisor.mligo 'RequestValue(unit)' -e advisorMain --protocol hangzhou
-```
-
 - For entrypoint ExecuteAlgorithm
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/cameligo/advisor.mligo 'ExecuteAlgorithm(unit)' -e advisorMain --protocol hangzhou
@@ -99,16 +91,6 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter 
 
 
 ### Simulate execution of entrypoints (with ligo compiler)
-
-- For entrypoint ReceiveValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/cameligo/advisor.mligo  'ReceiveValue(5)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain --protocol hangzhou
-```
-
-- For entrypoint RequestValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/cameligo/advisor.mligo  'RequestValue(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain --protocol hangzhou
-```
 
 - For entrypoint ExecuteAlgorithm (will fail)
 ```
@@ -153,9 +135,16 @@ tezos-client originate contract advisor transferring 1 from bootstrap1  running 
 tezos-client transfer 0 from bootstrap3 to advisor --arg '(Right Unit)' --dry-run
 ```
 
+### Unit test pytezos
+```
+cd views_hangzhou/cameligo/test/pytezos
+python3 -m unittest test_advisor.py -v
+```
+
 ### Test deployment/interact (with ligo compiler)
 ```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test views_hangzhou/cameligo/test/ligo/test.mligo --protocol hangzhou
+cd views_hangzhou/cameligo
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test test/ligo/test.mligo --protocol hangzhou
 ```
 
 ### Deploy (with Taquito)

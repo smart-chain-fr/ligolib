@@ -1,1 +1,0 @@
-let missing_entrypoint_receivevalue : string = "the targeted contract has not entrypoint receiveValue"

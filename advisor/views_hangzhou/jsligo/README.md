@@ -17,25 +17,26 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile storage vi
 
 ### Compile parameter (with ligo compiler) into Michelson expression
 
-- For entrypoint SendValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/jsligo/indice.jsligo 'SendValue(unit)' -e indiceMain --protocol hangzhou
-```
 - For entrypoint Increment
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/jsligo/indice.jsligo 'Increment(5)' -e indiceMain --protocol hangzhou
 ```
+- For entrypoint Decrement
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/jsligo/indice.jsligo 'Decrement(5)' -e indiceMain --protocol hangzhou
+```
+
 
 ### Simulate execution of entrypoints (with ligo compiler)
-
-- For entrypoint SendValue (will fail)
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/jsligo/indice.jsligo  'SendValue(unit)' '37' -e indiceMain --protocol hangzhou
-```
 
 - For entrypoint Increment
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/jsligo/indice.jsligo  'Increment(5)' '37' -e indiceMain --protocol hangzhou
+```
+
+- For entrypoint Decrement
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/jsligo/indice.jsligo  'Decrement(5)' '37' -e indiceMain --protocol hangzhou
 ```
 
 ### Originate the Indice contract (with tezos-client CLI)
@@ -46,7 +47,7 @@ tezos-client originate contract indice transferring 1 from bootstrap1 running '/
 
 ### Unit test pytezos
 ```
-cd views_hangzhou/cameligo/test/pytezos
+cd views_hangzhou/jsligo/test/pytezos
 python3 -m unittest test_indice.py -v
 ```
 
@@ -77,35 +78,26 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile storage vi
 
 ### Compile parameter (with ligo compiler) into Michelson expression
 
-- For entrypoint ReceiveValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/jsligo/advisor.jsligo 'ReceiveValue(5)' -e advisorMain --protocol hangzhou
-```
-- For entrypoint RequestValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/jsligo/advisor.jsligo 'RequestValue(unit)' -e advisorMain --protocol hangzhou
-```
 - For entrypoint ChangeAlgorithm
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/jsligo/advisor.jsligo 'ChangeAlgorithm((i : int) : bool => { return false })' -e advisorMain --protocol hangzhou
 ```
 
+- For entrypoint ExecuteAlgorithm
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile parameter views_hangzhou/jsligo/advisor.jsligo 'ExecuteAlgorithm(unit)' -e advisorMain --protocol hangzhou
+```
 
 ### Simulate execution of entrypoints (with ligo compiler)
-
-- For entrypoint ReceiveValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/jsligo/advisor.jsligo  'ReceiveValue(5)' '{indiceAddress: ("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), algorithm: (i : int) : bool => { if (i < 10) { return true } else { return false } }, result: false}' -e advisorMain --protocol hangzhou
-```
-
-- For entrypoint RequestValue
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/jsligo/advisor.jsligo  'RequestValue(unit)' '{indiceAddress: ("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), algorithm: (i : int) : bool => { if (i < 10) { return true } else { return false } }, result: false}' -e advisorMain --protocol hangzhou
-```
 
 - For entrypoint ChangeAlgorithm
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/jsligo/advisor.jsligo  'ChangeAlgorithm((i : int) : bool => { return false })' '{indiceAddress: ("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), algorithm: (i : int) : bool => { if (i < 10) { return true } else { return false } }, result: false}' -e advisorMain --protocol hangzhou
+```
+
+- For entrypoint ExecuteAlgorithm (fails due to on-chain views)
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run dry-run views_hangzhou/jsligo/advisor.jsligo 'ExecuteAlgorithm(unit)' '{indiceAddress: ("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), algorithm: (i : int) : bool => { if (i < 10) { return true } else { return false } }, result: false}' -e advisorMain --protocol hangzhou
 ```
 
 ### Originate the Advisor contract with tezos-client CLI
@@ -131,7 +123,7 @@ This command produces the following Michelson storage:
 - Deploy Advisor contract (with a sandbox)
 
 ```
-tezos-client originate contract advisor transferring 1 from bootstrap1  running '/home/frank/ligo_tutorial_fundadvisor/src/jsligo/compiled/advisor.tz' --init '(Pair (Pair { PUSH int 10 ; SWAP ;COMPARE ;LT ;IF { PUSH bool True } { PUSH bool False } } "KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn") False)' --dry-run
+tezos-client originate contract advisor transferring 1 from bootstrap1  running '/home/frank/Marigold/advisor/views_hangzhou/jsligo/compiled/advisor.tz' --init '(Pair (Pair { PUSH int 10 ; SWAP ;COMPARE ;LT ;IF { PUSH bool True } { PUSH bool False } } "KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn") False)' --dry-run
 ```
 
 - Verify the entrypoint is callable
@@ -142,4 +134,17 @@ tezos-client transfer 0 from bootstrap3 to advisor --arg '(Right Unit)' --dry-ru
 ### Test deployment/interact (with ligo compiler)
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test views_hangzhou/jsligo/test/ligo/test.jsligo --protocol hangzhou
+```
+
+
+### Unit test pytezos
+```
+cd views_hangzhou/jsligo/test/pytezos
+python3 -m unittest test_advisor.py -v
+```
+
+### Deploy (with Taquito)
+```
+tsc deploy.ts --resolveJsonModule -esModuleInterop
+node deploy.js
 ```
