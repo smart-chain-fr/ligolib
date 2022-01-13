@@ -143,7 +143,8 @@ python3 -m unittest test_advisor.py -v
 
 ### Test deployment/interact (with ligo compiler)
 ```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test views_hangzhou/cameligo/test/ligo/test.mligo --protocol hangzhou
+cd views_hangzhou/cameligo
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test test/ligo/test.mligo --protocol hangzhou
 ```
 
 ### Deploy (with Taquito)
