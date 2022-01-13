@@ -10,7 +10,7 @@ export type advisorEntrypoints = ["ChangeAlgorithm", advisorAlgo] | ["ExecuteAlg
 
 export type advisorFullReturn =  [list<operation>, advisorStorage];
 
-let missing_entrypoint_sendvalue : string = "the targeted contract has not entrypoint sendValue";
+let unknownView : string = "View indice_value not found";
 
 let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
     return [(list([]) as list<operation>), { ...s, algorithm: p}]
@@ -19,7 +19,7 @@ let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
 let executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
     let indiceValOpt : option<int> = Tezos.call_view("indice_value", unit, s.indiceAddress);
     let indiceVal : int = match (indiceValOpt , {
-        None: () => (failwith("unknown indice value") as int),
+        None: () => (failwith(unknownView) as int),
         Some: (v: int) => v
     });
     return [(list([]) as list<operation>), { ...s, result: s.algorithm(indiceVal) }]

@@ -20,7 +20,7 @@
              CDR ;
              UNIT ;
              VIEW "indice_value" int ;
-             IF_NONE { PUSH string "unknown indice value" ; FAILWITH } {} ;
+             IF_NONE { PUSH string "View indice_value not found" ; FAILWITH } {} ;
              SWAP ;
              DUP ;
              DUG 2 ;

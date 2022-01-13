@@ -2,6 +2,18 @@ ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
 PROTOCOL_OPT=--protocol hangzhou
 JSON_OPT=--michelson-format json
 
+help:
+	@echo  'Usage:'
+	@echo  '  all             - Remove generated Michelson files, recompile smart contracts and lauch all tests'
+	@echo  '  clean           - Remove generated Michelson files'
+	@echo  '  advisor         - Compiles smart contract advisor'
+	@echo  '  indice          - Compiles smart contract indice'
+	@echo  '  test_ligo       - Run integration tests (written in Ligo)'
+	@echo  '  test_pytezos    - Run unit tests (written in pytezos)'
+	@echo  '  dry-run         - Simulate execution of entrypoints (with the Ligo compiler)'
+	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
+	@echo  ''
+
 all: clean indice advisor test_ligo test_pytezos
 
 indice: indice.tz indice.json
@@ -36,12 +48,14 @@ test_pytezos_advisor:
 test_pytezos_sandbox: 
 	cd $(CURDIR)/test/pytezos/ && python3 -m unittest test_sandbox.py -v
 
-deploy: deploy.js
+deploy: node_modules deploy.js
 	node deploy/deploy.js
 
 deploy.js: 
 	cd deploy && tsc deploy.ts --resolveJsonModule -esModuleInterop
 
+node_modules:
+	cd deploy && npm install
 
 dry-run: dry-run_indice dry-run_advisor
 

@@ -41,7 +41,7 @@
                       [ [ { "prim": "PUSH",
                             "args":
                               [ { "prim": "string" },
-                                { "string": "unknown indice value" } ] },
+                                { "string": "View indice_value not found" } ] },
                           { "prim": "FAILWITH" } ], [] ] },
                   { "prim": "SWAP" }, { "prim": "DUP" },
                   { "prim": "DUG", "args": [ { "int": "2" } ] },

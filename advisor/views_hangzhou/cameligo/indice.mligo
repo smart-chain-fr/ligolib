@@ -4,8 +4,6 @@ type indiceEntrypoints = Increment of int | Decrement of int
 
 type indiceFullReturn = operation list * indiceStorage
 
-let missing_entrypoint_receivevalue : string = "the targeted contract has not entrypoint receiveValue"
-
 let increment(param, store : int * indiceStorage) : indiceFullReturn = 
     (([]: operation list), store + param)
 
