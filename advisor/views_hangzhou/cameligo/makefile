@@ -42,13 +42,18 @@ deploy: deploy.js
 deploy.js: 
 	cd deploy && tsc deploy.ts --resolveJsonModule -esModuleInterop
 
-simulateline := $(ligo_compiler) run dry-run advisor.mligo  'ExecuteAlgorithm(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT) 
-simulateline_clean := $(':'\''=$(simulateline))
 
-dry-run: advisor.mligo
-	@echo $(simulateline)
-#	@echo $(ligo_compiler) compile parameter advisor.mligo "'ExecuteAlgorithm(unit)'" -e advisorMain $(PROTOCOL_OPT) 
-# $(ligo_compiler) compile parameter advisor.mligo 'ExecuteAlgorithm(unit)' -e advisorMain $(PROTOCOL_OPT)
-	@echo $(ligo_compiler) run dry-run advisor.mligo  'ExecuteAlgorithm(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT) 
-# $(ligo_compiler) run dry-run advisor.mligo "'ExecuteAlgorithm(unit)'" "'{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}'" -e advisorMain --protocol hangzhou
+dry-run: dry-run_indice dry-run_advisor
 
+dry-run_advisor: advisor.mligo
+#	@echo $(simulateline)
+	$(ligo_compiler) compile parameter advisor.mligo 'ExecuteAlgorithm(unit)' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) compile parameter advisor.mligo 'ChangeAlgorithm(fun(i : int) -> False)' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) run dry-run advisor.mligo  'ExecuteAlgorithm(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT) 
+	$(ligo_compiler) run dry-run advisor.mligo  'ChangeAlgorithm(fun(i : int) -> False)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT)
+
+dry-run_indice: indice.mligo
+	$(ligo_compiler) compile parameter indice.mligo 'Increment(5)' -e indiceMain $(PROTOCOL_OPT)
+	$(ligo_compiler) compile parameter indice.mligo 'Decrement(5)' -e indiceMain $(PROTOCOL_OPT)
+	$(ligo_compiler) run dry-run indice.mligo  'Increment(5)' '37' -e indiceMain $(PROTOCOL_OPT)
+	$(ligo_compiler) run dry-run indice.mligo  'Decrement(5)' '37' -e indiceMain $(PROTOCOL_OPT)
