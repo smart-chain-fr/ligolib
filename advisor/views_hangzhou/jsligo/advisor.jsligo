@@ -1,14 +1,14 @@
 type advisorAlgo = ((a: int) => bool);
 
-type advisorStorage = {
+export type advisorStorage = {
     indiceAddress : address,
     algorithm : advisorAlgo,
     result : bool
 };
 
-type advisorEntrypoints = ["ChangeAlgorithm", advisorAlgo] | ["ExecuteAlgorithm"];
+export type advisorEntrypoints = ["ChangeAlgorithm", advisorAlgo] | ["ExecuteAlgorithm"];
 
-type advisorFullReturn =  [list<operation>, advisorStorage];
+export type advisorFullReturn =  [list<operation>, advisorStorage];
 
 let missing_entrypoint_sendvalue : string = "the targeted contract has not entrypoint sendValue";
 

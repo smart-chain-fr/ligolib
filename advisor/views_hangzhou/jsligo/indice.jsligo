@@ -1,16 +1,14 @@
-type indiceStorage = int;
+export type indiceStorage = int;
 
-type indiceEntrypoints = ["Increment", int] | ["Decrement", int];
+export type indiceEntrypoints = ["Increment", int] | ["Decrement", int];
 
-type indiceFullReturn = [list<operation>, indiceStorage];
+export type indiceFullReturn = [list<operation>, indiceStorage];
 
-let missing_entrypoint_receivevalue : string = "the targeted contract has not entrypoint receiveValue";
-
-let increment = ([param, store] : [int, indiceStorage]) : indiceFullReturn => {
+export let increment = ([param, store] : [int, indiceStorage]) : indiceFullReturn => {
     return [list([]) as list<operation>, store + param]
 };
 
-let decrement = ([param, store] : [int, indiceStorage]) : indiceFullReturn => {
+export let decrement = ([param, store] : [int, indiceStorage]) : indiceFullReturn => {
     return [list([]) as list<operation>, store - param]
 };
 
