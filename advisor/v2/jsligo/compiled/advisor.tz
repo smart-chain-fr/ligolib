@@ -1,0 +1,36 @@
+{ parameter (or (lambda %changeAlgorithm int bool) (unit %executeAlgorithm)) ;
+  storage
+    (pair (pair (lambda %algorithm int bool) (address %indiceAddress)) (bool %result)) ;
+  code { UNPAIR ;
+         IF_LEFT
+           { PAIR ;
+             DUP ;
+             CDR ;
+             UNPAIR ;
+             CDR ;
+             DIG 2 ;
+             CAR ;
+             PAIR ;
+             PAIR ;
+             NIL operation ;
+             PAIR }
+           { DROP ;
+             DUP ;
+             CAR ;
+             CDR ;
+             UNIT ;
+             VIEW "indice_value" int ;
+             IF_NONE { PUSH string "View indice_value not found" ; FAILWITH } {} ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CAR ;
+             SWAP ;
+             EXEC ;
+             SWAP ;
+             CAR ;
+             PAIR ;
+             NIL operation ;
+             PAIR } } }
+
