@@ -83,10 +83,13 @@ class SandboxedContractTest(SandboxedNodeTestCase):
 
         # deploy advisor contract
         advisor_contract = ContractInterface.from_file(advisor_compiled_contract_path)
-
+        
         advisor_initial_storage['indices'] = [ {"contractAddress":indice_contract_address, "viewName": "indice_value"}, {"contractAddress":indiceB_contract_address, "viewName": "indice_value"} ]
-        # advisor_initial_storage['algorithm'] = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }"
+        # check if first element of the list is LT 10
         advisor_initial_storage['algorithm'] = '{ IF_CONS { SWAP ; DROP ; SOME } { NONE int } ; IF_NONE { PUSH string "missing value" ; FAILWITH } { PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }'
+        # check if mean of the list is LT 5
+        # advisor_initial_storage['algorithm'] = '{ DUP ; IF_CONS { SWAP ; DROP ; SOME } { NONE int } ; IF_NONE { PUSH string "empty list" ; FAILWITH } { DROP } ; PUSH nat 0 ; PUSH int 0 ; PAIR ; SWAP ; ITER { SWAP ; UNPAIR ; PUSH nat 1 ; DIG 2 ; ADD ; DUG 2 ; ADD ; PAIR } ; UNPAIR ; EDIV ; IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ; CAR ; PUSH int 5 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }'                
+        
         advisor_initial_storage['result'] = False
         opg = advisor_contract.using(shell=self.get_node_url(), key='bootstrap1').originate(initial_storage=advisor_initial_storage)
         opg = opg.fill().sign().inject()
