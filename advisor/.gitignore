@@ -6,3 +6,12 @@ views_hangzhou/jsligo/deploy/.env
 views_hangzhou/jsligo/deploy/node_modules
 views_hangzhou/jsligo/deploy/package-lock.json
 views_hangzhou/jsligo/test/pytezos/*.pyc
+
+v2/cameligo/deploy/.env
+v2/cameligo/deploy/node_modules
+v2/cameligo/deploy/package-lock.json
+v2/cameligo/test/pytezos/*.pyc
+v2/jsligo/deploy/.env
+v2/jsligo/deploy/node_modules
+v2/jsligo/deploy/package-lock.json
+v2/jsligo/test/pytezos/*.pyc
