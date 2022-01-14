@@ -14,7 +14,7 @@ help:
 	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
 	@echo  ''
 
-all: clean indice advisor test_ligo test_pytezos
+all: clean indice advisor test_ligo
 
 indice: indice.tz indice.json
 

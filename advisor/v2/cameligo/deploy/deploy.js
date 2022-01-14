@@ -70,27 +70,32 @@ var Tezos = new taquito_1.TezosToolkit(rpc);
 var signer = new signer_1.InMemorySigner(pk);
 Tezos.setProvider({ signer: signer });
 var admin = process.env.ADMIN_ADDRESS;
-var indice_address = process.env.INDICE_CONTRACT_ADDRESS || undefined;
+var indice_address = process.env.INDICE_A_CONTRACT_ADDRESS || undefined;
+var indiceB_address = process.env.INDICE_B_CONTRACT_ADDRESS || undefined;
 var advisor_address = process.env.ADVISOR_CONTRACT_ADDRESS || undefined;
 var indice_initial_value = 4;
+var indiceB_initial_value = 4;
 var advisor_initial_result = false;
 //const lambda_algorithm_michelson = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }"
-var lambda_algorithm = '[{"prim": "PUSH", "args": [{"prim": "int"}, {"int": "10"}]}, {"prim": "SWAP"}, {"prim": "COMPARE"}, {"prim": "LT"}, {"prim": "IF", "args": [    [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "True"}]}],     [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "False"}]}]    ]}]';
+//const lambda_algorithm = '[{"prim": "PUSH", "args": [{"prim": "int"}, {"int": "10"}]}, {"prim": "SWAP"}, {"prim": "COMPARE"}, {"prim": "LT"}, {"prim": "IF", "args": [    [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "True"}]}],     [{"prim": "PUSH", "args": [{"prim": "bool"}, {"prim": "False"}]}]    ]}]'
+// TODO
+var lambda_algorithm = '[ { "prim": "IF_CONS", "args": [ [ { "prim": "SWAP" }, { "prim": "DROP" }, { "prim": "SOME" } ], [ { "prim": "NONE", "args": [ { "prim": "int" } ] } ] ] }, { "prim": "IF_NONE", "args": [ [ { "prim": "PUSH", "args": [ { "prim": "string" }, { "string": "missing value" } ] }, { "prim": "FAILWITH" } ], [ { "prim": "PUSH", "args": [ { "prim": "int" }, { "int": "10" } ] }, { "prim": "SWAP" }, { "prim": "COMPARE" }, { "prim": "LT" }, { "prim": "IF", "args": [ [ { "prim": "PUSH", "args": [ { "prim": "bool" }, { "prim": "True" } ] } ], [ { "prim": "PUSH", "args": [ { "prim": "bool" }, { "prim": "False" } ] } ] ] } ] ] } ]';
 function orig() {
     return __awaiter(this, void 0, void 0, function () {
-        var indice_store, advisor_store, indice_originated, advisor_originated, error_1;
+        var indice_store, indiceB_store, advisor_store, indice_originated, indiceB_originated, advisor_originated, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     indice_store = indice_initial_value;
+                    indiceB_store = indiceB_initial_value;
                     advisor_store = {
-                        'indiceAddress': indice_address,
+                        'indices': [{ "contractAddress": indice_address, "viewName": "indice_value" }, { "contractAddress": indiceB_address, "viewName": "indice_value" }],
                         'algorithm': JSON.parse(lambda_algorithm),
                         'result': advisor_initial_result
                     };
                     _a.label = 1;
                 case 1:
-                    _a.trys.push([1, 7, , 8]);
+                    _a.trys.push([1, 10, , 11]);
                     if (!(indice_address === undefined)) return [3 /*break*/, 4];
                     return [4 /*yield*/, Tezos.contract.originate({
                             code: indice_json_1["default"],
@@ -104,29 +109,46 @@ function orig() {
                     _a.sent();
                     console.log('confirmed INDICE: ', indice_originated.contractAddress);
                     indice_address = indice_originated.contractAddress;
-                    advisor_store.indiceAddress = indice_address;
+                    advisor_store.indices = [{ "contractAddress": indice_address, "viewName": "indice_value" }, { "contractAddress": indiceB_address, "viewName": "indice_value" }];
                     _a.label = 4;
-                case 4: return [4 /*yield*/, Tezos.contract.originate({
+                case 4:
+                    if (!(indiceB_address === undefined)) return [3 /*break*/, 7];
+                    return [4 /*yield*/, Tezos.contract.originate({
+                            code: indice_json_1["default"],
+                            storage: indiceB_store
+                        })];
+                case 5:
+                    indiceB_originated = _a.sent();
+                    console.log("Waiting for INDICE " + indiceB_originated.contractAddress + " to be confirmed...");
+                    return [4 /*yield*/, indiceB_originated.confirmation(2)];
+                case 6:
+                    _a.sent();
+                    console.log('confirmed INDICE: ', indiceB_originated.contractAddress);
+                    indiceB_address = indiceB_originated.contractAddress;
+                    advisor_store.indices = [{ "contractAddress": indice_address, "viewName": "indice_value" }, { "contractAddress": indiceB_address, "viewName": "indice_value" }];
+                    _a.label = 7;
+                case 7: return [4 /*yield*/, Tezos.contract.originate({
                         code: advisor_json_1["default"],
                         storage: advisor_store
                     })];
-                case 5:
+                case 8:
                     advisor_originated = _a.sent();
                     console.log("Waiting for ADVISOR " + advisor_originated.contractAddress + " to be confirmed...");
                     return [4 /*yield*/, advisor_originated.confirmation(2)];
-                case 6:
+                case 9:
                     _a.sent();
                     console.log('confirmed ADVISOR: ', advisor_originated.contractAddress);
                     advisor_address = advisor_originated.contractAddress;
-                    console.log("./tezos-client remember contract INDICE", indice_address);
+                    console.log("./tezos-client remember contract INDICE A", indice_address);
+                    console.log("./tezos-client remember contract INDICE B", indiceB_address);
                     console.log("./tezos-client remember contract ADVISOR", advisor_address);
                     console.log("tezos-client transfer 0 from ", admin, " to ", advisor_address, " --entrypoint \"executeAlgorithm\" --arg \"Unit\"");
-                    return [3 /*break*/, 8];
-                case 7:
+                    return [3 /*break*/, 11];
+                case 10:
                     error_1 = _a.sent();
                     console.log(error_1);
-                    return [3 /*break*/, 8];
-                case 8: return [2 /*return*/];
+                    return [3 /*break*/, 11];
+                case 11: return [2 /*return*/];
             }
         });
     });

@@ -54,8 +54,8 @@ class AdvisorContractTest(TestCase):
         # Init
         init_storage = deepcopy(initial_storage)
         # Execute entrypoint
-        new_lambda = "{ DROP ; PUSH bool False }"
-        # new_lambda = '{ IF_CONS { SWAP ; DROP ; SOME } { NONE int } ; IF_NONE { PUSH string "missing value" ; FAILWITH } { PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }'
+        #new_lambda = "{ PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }" # "{ DROP ; PUSH bool False }"
+        new_lambda = "{ IF_CONS { SWAP ; DROP ; SOME } { NONE int } ; IF_NONE { FAIL } {}; PUSH int 10 ; SWAP ; COMPARE ; LT ; IF { PUSH bool True } { PUSH bool False } }"
 
 
         res = self.advisor.changeAlgorithm(new_lambda).interpret(storage=init_storage, sender=admin)
@@ -77,9 +77,9 @@ class AdvisorContractTest(TestCase):
     #     self.assertEqual(res.storage["algorithm"], initial_storage["algorithm"])
     #     self.assertEqual(len(res.operations), 0)
 
-    def test_execute_algorithm_should_fail(self):
-        # Init
-        init_storage = deepcopy(initial_storage)
-        # Execute entrypoint
-        with self.raisesMichelsonError(unknownView):
-            self.advisor.executeAlgorithm().interpret(storage=init_storage, sender=alice)
+    # def test_execute_algorithm_should_fail(self):
+    #     # Init
+    #     init_storage = deepcopy(initial_storage)
+    #     # Execute entrypoint
+    #     with self.raisesMichelsonError(unknownView):
+    #         self.advisor.executeAlgorithm().interpret(storage=init_storage, sender=alice)

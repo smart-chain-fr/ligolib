@@ -39,6 +39,7 @@ let test =
   // deploy ADVISOR contract 
   let advisor_initial_storage : ADVISOR.advisorStorage = {indices=[{contractAddress=address_indice; viewName="indice_value"}; {contractAddress=address_indiceB; viewName="indice_value"}]; algorithm=(fun(l : int list) -> let i : int = match List.head_opt l with | None -> (failwith("missing value") : int) | Some(v) -> v in if i < 10 then True else False); result=False} in
   let ais = Test.run (fun (x:ADVISOR.advisorStorage) -> x) advisor_initial_storage in
+  let () = Test.log(ais) in
   let advisor_contract_path = "advisor.mligo" in //"views_hangzhou/cameligo/advisor.mligo" in
   let (address_advisor, code_advisor, _) = Test.originate_from_file advisor_contract_path "advisorMain" ([] : string list) ais 0tez in
   let advisor_taddress = (Test.cast_address address_advisor : (ADVISOR.advisorEntrypoints,ADVISOR.advisorStorage) typed_address) in
