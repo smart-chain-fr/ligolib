@@ -1,0 +1,18 @@
+type storage = bool
+
+type parameter = ["Exec", list<int>] | ["Nothing"]
+
+let func = (l : list<int>) : [list<operation>, storage] => {
+    let ret : bool = match (List.head_opt(l), {
+    None: () => (failwith("missing value") as bool),
+    Some: (v: int) => (v < 10)
+    });
+    return [(list([]) as list<operation>), ret]
+};
+
+let main = ([p, s] : [parameter, storage]) : [list<operation>, storage] => {
+    return match (p, {
+        Exec: (l: list<int>) => func(l),
+        Nothing: (_p: unit) => [(list([]) as list<operation>), s] 
+    });
+}

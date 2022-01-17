@@ -1,0 +1,46 @@
+//////////////////
+//      TYPES
+//////////////////
+type indiceEntry = {
+    contractAddress : address,
+    viewName: string
+}
+
+type advisorAlgo = ((l: list<int>) => bool);
+
+export type advisorStorage = {
+    indices : list<indiceEntry>,
+    algorithm : advisorAlgo,
+    result : bool
+};
+
+export type advisorEntrypoints = ["ChangeAlgorithm", advisorAlgo] | ["ExecuteAlgorithm"];
+
+export type advisorFullReturn =  [list<operation>, advisorStorage];
+
+let unknownView : string = "View indice_value not found";
+
+let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
+    return [(list([]) as list<operation>), { ...s, algorithm: p}]
+};
+
+let executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
+    let getValue = (elt: indiceEntry) : int => { 
+        let vn : string = "indice_value"; 
+        let indiceValOpt : option<int> = Tezos.call_view(vn, unit, elt.contractAddress);
+        let indiceVal : int = match (indiceValOpt, {
+        None: () => (failwith(unknownView) as int),
+        Some: (v : int) => v
+        });
+        return indiceVal
+    };
+    let values : list<int> = List.map(getValue, s.indices);
+    return [(list([]) as list<operation>), { ...s, result: s.algorithm(values) }]
+};
+
+let advisorMain = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
+    return match (ep, {
+        ChangeAlgorithm: (p: advisorAlgo) => change(p, store),
+        ExecuteAlgorithm: (_p: unit) => executeAlgorithm(store) 
+    });
+};

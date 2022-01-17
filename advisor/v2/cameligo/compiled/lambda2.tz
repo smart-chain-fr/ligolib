@@ -1,0 +1,27 @@
+{ parameter (or (list %exec int) (unit %nothing)) ;
+  storage bool ;
+  code { UNPAIR ;
+         IF_LEFT
+           { SWAP ;
+             DROP ;
+             DUP ;
+             IF_CONS { SWAP ; DROP ; SOME } { NONE int } ;
+             IF_NONE { PUSH string "empty list" ; FAILWITH } { DROP } ;
+             PUSH nat 0 ;
+             PUSH int 0 ;
+             PAIR ;
+             SWAP ;
+             ITER { SWAP ; UNPAIR ; PUSH nat 1 ; DIG 2 ; ADD ; DUG 2 ; ADD ; PAIR } ;
+             UNPAIR ;
+             EDIV ;
+             IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
+             CAR ;
+             PUSH int 5 ;
+             SWAP ;
+             COMPARE ;
+             LT ;
+             IF { PUSH bool True } { PUSH bool False } ;
+             NIL operation ;
+             PAIR }
+           { DROP ; NIL operation ; PAIR } } }
+
