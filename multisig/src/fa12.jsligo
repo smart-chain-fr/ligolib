@@ -67,12 +67,8 @@ const transfer = ([param, storage]: [transfer, storage]): result => {
       Some: (value: nat) => value,
       None: () => (0 as nat)
     });
-    if ((authorized_value - param.value) >= 0) {
-      authorized_value = abs(authorized_value - param.value);
-    }
-    else {
-      failwith("NotEnoughAllowance");
-    };
+    const final_authorized_value: int = authorized_value - param.value;
+    assert_with_error(final_authorized_value >= 0, "NotEnoughAllowance")
     allowances = Big_map.update(allowance_key, maybe(0 as nat), allowances);
   }
   else {unit;};
