@@ -1,37 +1,37 @@
-#include "types.jsligo"
-#include "error.jsligo"
+#import "types.jsligo" "T"
+#import "error.jsligo" "E"
 
 // -----------------
 // --  CONSTANTS  --
 // -----------------
-let max_duration_in_sec: nat  = 6048000 as nat; // 10 weeks
-let no_operation:  list<operation> = list([]);
-let empty_nat_list: list<nat> = list([]);
+const max_duration_in_sec: nat  = 6048000 as nat; // 10 weeks
+const no_operation:  list<operation> = list([]);
+const empty_nat_list: list<nat> = list([]);
 
 
 // -----------------
 // --  INTERNALS  --
 // -----------------
 
-// let sendFA12 = ([token_amount, target_to, target_fa12] : [nat, address, address]): operation => {
-//     let fa12_contract_opt: option<contract<fa12_transfer>>  = Tezos.get_entrypoint_opt ("%transfer", target_fa12);
-//     let transfer_fa12: contract<fa12_transfer> = match (fa12_contract_opt, {
-//         Some: (c: contract<fa12_transfer>) => c,
-//         None: () => (failwith(unknown_contract_entrypoint) as contract<fa12_transfer>)
-//     });
-//     let transfer_param: fa12_transfer = [Tezos.self_address, [target_to, token_amount]];
-//     return Tezos.transaction(transfer_param, 0 as mutez, transfer_fa12);
-// };
+const sendFA12 = ([token_amount, target_to, target_fa12] : [nat, address, address]): operation => {
+    const fa12_contract_opt: option<contract<T.fa12_transfer>>  = Tezos.get_entrypoint_opt ("%transfer", target_fa12);
+    const transfer_fa12: contract<T.fa12_transfer> = match (fa12_contract_opt, {
+        Some: (c: contract<T.fa12_transfer>) => c,
+        None: () => (failwith(E.unknown_contract_entrypoint) as contract<T.fa12_transfer>)
+    });
+    const transfer_param: T.fa12_transfer = [Tezos.self_address, [target_to, token_amount]];
+    return Tezos.transaction(transfer_param, 0 as mutez, transfer_fa12);
+};
 
 
 // ------------------
 // -- ENTRY POINTS --
 // ------------------
 
-let create_operation = ([params, storage_multisig]: [operation_params, storage_multisig]): return_multisig => {
-    let check_is_signer: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer);
-    let check_if_no_tez: unit = assert_with_error (Tezos.amount == (0 as tez), amount_must_be_zero_tez);
-    let new_operation: operation_request = {
+const create_operation = ([params, storage_multisig]: [T.operation_params, T.storage_multisig]): T.return_multisig => {
+    const _check_is_signer: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.only_signer);
+    const _check_if_no_tez: unit = assert_with_error (Tezos.amount == (0 as tez), E.amount_must_be_zero_tez);
+    const new_operation: T.operation_request = {
         target_to: params.target_to,
         target_fa12: params.target_fa12,
         token_amount: params.token_amount,
@@ -39,13 +39,39 @@ let create_operation = ([params, storage_multisig]: [operation_params, storage_m
         approved_signers: Set.empty as set<address>,
         executed: false
     };
-    let operation_map: big_map<nat, operation_request> = Big_map.add(storage_multisig.operation_counter, new_operation, storage_multisig.operation_map);
+    const operation_map: big_map<nat, T.operation_request> = Big_map.add(storage_multisig.operation_counter, new_operation, storage_multisig.operation_map);
     return [no_operation, {...storage_multisig, operation_counter: storage_multisig.operation_counter + (1 as nat), operation_map: operation_map}]
 }; // PEDAGO: amount can be zero
 
-let sign = ([operation_request_id, storage_multisig]: [nat, storage_multisig]): return_multisig => {
-    let check_is_signer: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer);
-    let check_has_already_signed: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), only_signer); // quite useless
-
-}
-
+const sign = ([operation_request_id, storage_multisig]: [nat, T.storage_multisig]): T.return_multisig => {
+    const _check_is_signer: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.only_signer);
+    let target_request: T.operation_request = match (Big_map.find_opt(operation_request_id, storage_multisig.operation_map), {
+        Some: (op: T.operation_request) => op,
+        None: () => (failwith(E.no_operation_exist))
+    });
+    const _check_as_already_signed: unit = assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.has_already_signed); // quite useless
+    target_request = ({
+            ...target_request,
+            approved_signers: Set.add(Tezos.sender, target_request.approved_signers)
+        });
+    let operations: list<operation> = no_operation;
+    if (Set.size(target_request.approved_signers) >= storage_multisig.threshold) {
+        target_request = ({
+            ...target_request,
+            executed: true
+        });
+        operations = list([
+            sendFA12(
+                target_request.token_amount,
+                target_request.target_to,
+                target_request.target_fa12
+            )
+        ]);
+    }
+    const final_operation_map: big_map<nat, T.operation_request> = Big_map.update(
+        operation_request_id,
+        Some(target_request),
+        storage_multisig.operation_map
+    )
+    return [operations, {...storage_multisig, operation_map: final_operation_map}];
+};
