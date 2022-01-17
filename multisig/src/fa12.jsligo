@@ -68,16 +68,16 @@ const transfer = ([param, storage]: [transfer, storage]): result => {
       None: () => (0 as nat)
     });
     const final_authorized_value: int = authorized_value - param.value;
-    assert_with_error(final_authorized_value >= 0, "NotEnoughAllowance")
+    assert_with_error(final_authorized_value >= 0, "NotEnoughAllowance");
     allowances = Big_map.update(allowance_key, maybe(0 as nat), allowances);
   }
   else {unit;};
   const to_balance = match(Big_map.find_opt(param.address_to, tokens), {
-    Some: (_val: nat) => _val + param.value,
+    Some: (val: nat) => val + param.value,
     None: () => 0 as nat
   });
   const from_balance: nat = match(Big_map.find_opt(param.address_from, tokens), {
-    Some: (_val: nat) => _val,
+    Some: (val: nat) => val,
     None: () => 0 as nat
   });
   const final_from_balance: int = from_balance - param.value;
@@ -97,7 +97,7 @@ const approve  = ([param,storage]:[approve, storage]) : result => {
     Some: (value: nat) => value,
     None: () => 0 as nat
   });
-  const _check_if_positive = assert_with_error((previous_value > (0 as nat) && param.value > (0 as nat)), "UnsafeAllowanceChange");
+  assert_with_error((previous_value > (0 as nat) && param.value > (0 as nat)), "UnsafeAllowanceChange");
   allowances = Big_map.update(allowance_key, maybe(param.value), allowances);
   return [list([]) as list<operation>, {...storage, allowances: allowances}];
 };
@@ -105,11 +105,11 @@ const approve  = ([param,storage]:[approve, storage]) : result => {
 const mintOrBurn = ([param, storage]: [mintOrBurn, storage]): result => {
   const _check_is_admin: unit = assert_with_error(Tezos.sender == storage.admin, "OnlyAdmin");
   let tokens = storage.tokens;
-  let old_balance = match(Big_map.find_opt(param.target, tokens), {
+  const old_balance = match(Big_map.find_opt(param.target, tokens), {
     None: () => 0 as nat,
     Some: (_bal: nat) => _bal
   });
-  let new_balance = match(is_nat(old_balance + param.quantity), {
+  const new_balance = match(is_nat(old_balance + param.quantity), {
     None: () => failwith("Cannot burn more than the target's balance."),
     Some: (_bal: nat) => _bal
   });
