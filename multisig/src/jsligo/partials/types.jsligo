@@ -1,6 +1,7 @@
-type max_duration_in_sec = nat;
 
-type operation_request = {
+export type max_duration_in_sec = nat;
+
+export type operation_request = {
     target_to: address,
     target_fa12: address,
     token_amount: nat,
@@ -9,23 +10,23 @@ type operation_request = {
     executed: bool
 };
 
-type storage_multisig = {
+export type storage_multisig = {
     signers: set<address>,
     threshold: nat,
     operation_map: big_map<nat, operation_request>,
     operation_counter: nat
 };
 
-type operation_params = {
+export type operation_params = {
     target_fa12: address,
     target_to: address,
     token_amount: nat
 };
 
-type no_operation = list<operation>;
-type return_multisig = [list<operation>, storage_multisig];
-type fa12_transfer = [address, [address, nat]];
+export type no_operation = list<operation>;
+export type return_multisig = [list<operation>, storage_multisig];
+export type fa12_transfer = [address, [address, nat]];
 
-type entrypoint_multisig =
+export type entrypoint_multisig =
 | ["Create_operation", operation_params]
 | ["Sign", nat];
