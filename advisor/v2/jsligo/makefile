@@ -14,7 +14,7 @@ help:
 	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
 	@echo  ''
 
-all: clean indice advisor test_ligo test_pytezos
+all: clean indice advisor test_ligo dry-run
 
 indice: indice.tz indice.json
 
@@ -62,9 +62,12 @@ dry-run: dry-run_indice dry-run_advisor
 dry-run_advisor: advisor.jsligo
 #	@echo $(simulateline)
 	$(ligo_compiler) compile parameter $^ 'ExecuteAlgorithm(unit)' -e advisorMain $(PROTOCOL_OPT)
-	$(ligo_compiler) compile parameter $^ 'ChangeAlgorithm((i : int) : bool => { return false })' -e advisorMain $(PROTOCOL_OPT)
-	$(ligo_compiler) run dry-run $^  'ExecuteAlgorithm(unit)' '{indiceAddress: ("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), algorithm: (i : int) : bool => { if (i < 10) { return true } else { return false } }, result: false}' -e advisorMain $(PROTOCOL_OPT) 
-	$(ligo_compiler) run dry-run $^  'ChangeAlgorithm((i : int) : bool => { return false })' '{indiceAddress: ("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), algorithm: (i : int) : bool => { if (i < 10) { return true } else { return false } }, result: false}' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) compile parameter $^ 'ChangeAlgorithm((l : list<int>) : bool => { return false })' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) compile storage $^ '{indices:(list([{contractAddress:("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), viewName:"indice_value"}, {contractAddress:("KT18zSbiHxK2Jzd9D71uPJBJ4iXoLyNseCeV" as address), viewName:"indice_value"}]) as list<indiceEntry>), algorithm:((l : list<int>) : bool => { return false }), result: false}' -e advisorMain $(PROTOCOL_OPT)	
+	$(ligo_compiler) run dry-run $^  'ExecuteAlgorithm(unit)' '{indices:(list([{contractAddress:("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), viewName:"indice_value"}, {contractAddress:("KT18zSbiHxK2Jzd9D71uPJBJ4iXoLyNseCeV" as address), viewName:"indice_value"}]) as list<indiceEntry>), algorithm:((l : list<int>) : bool => { return false }), result: false}' -e advisorMain $(PROTOCOL_OPT) 
+	$(ligo_compiler) run dry-run $^  'ChangeAlgorithm( (l : list<int>) : bool => { return false })' '{indices:(list([{contractAddress:("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), viewName:"indice_value"}, {contractAddress:("KT18zSbiHxK2Jzd9D71uPJBJ4iXoLyNseCeV" as address), viewName:"indice_value"}]) as list<indiceEntry>), algorithm:((l : list<int>) : bool => { return false }), result: false}' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) run dry-run $^  'ChangeAlgorithm( (l : list<int>) : bool => { let mean = (l : list<int>) : int => { let compute = ( [accnb, elt] : [[int, nat], int] ) : [int, nat] => [(accnb[0] + elt as int), (accnb[1] + (1 as nat))]; let [sum, size] : [int, nat] = List.fold(compute, l, [(0 as int), (0 as nat)]); if (size == (0 as nat)) { return 0 } else { return (sum / size) }; }; return (mean(l) < 5)} )' '{indices:(list([{contractAddress:("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" as address), viewName:"indice_value"}, {contractAddress:("KT18zSbiHxK2Jzd9D71uPJBJ4iXoLyNseCeV" as address), viewName:"indice_value"}]) as list<indiceEntry>), algorithm:((l : list<int>) : bool => { return false }), result: false}' -e advisorMain $(PROTOCOL_OPT)
+
 
 dry-run_indice: indice.jsligo
 	$(ligo_compiler) compile parameter $^ 'Increment(5)' -e indiceMain $(PROTOCOL_OPT)
