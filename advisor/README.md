@@ -24,7 +24,7 @@ The `views_hangzhou` directory illustrates the on-chain views pattern.
 
 The `v2` directory illustrates the on-chain views pattern where the advisor contract requests many "indice_value" of multiple indice contracts.
 
-![](indices&advisor.png)
+![](Indices&advisor.png)
 
 ### Lambda pattern
 
