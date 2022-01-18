@@ -1,8 +1,16 @@
-#include "partials/methods.jsligo"
+#import "partials/methods.jsligo" "M"
 
-let main = ([ep, store] : [entrypoint_multisig, storage_multisig]) : return_multisig => {
+const main = ([ep, store] : [M.T.entrypoint_multisig, M.T.storage_multisig]) : M.T.return_multisig => {
     return match (ep, {
-        Create_operation:   (p: operation_params) => create_operation(p, store)
-        //Sign:               (p: operation_number) => sign(p, store)
+        Create_operation:   (p: M.T.operation_params) => M.create_operation(p, store),
+        Sign:               (p: nat) => M.sign(p, store)
     });
+};
+
+[@view] const view_operation = ([operation_request_id, storage_multisig] : [nat, M.T.storage_multisig]): M.T.operation_request => {
+    const target_request: M.T.operation_request = match (Big_map.find_opt(operation_request_id, storage_multisig.operation_map), {
+        Some: (op: M.T.operation_request) => op,
+        None: () => (failwith(M.E.no_operation_exist))
+    });
+    return target_request;
 };

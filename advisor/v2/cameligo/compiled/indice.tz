@@ -1,0 +1,8 @@
+{ parameter (or (int %decrement) (int %increment)) ;
+  storage int ;
+  code { UNPAIR ;
+         IF_LEFT
+           { SWAP ; SUB ; NIL operation ; PAIR }
+           { ADD ; NIL operation ; PAIR } } ;
+  view "indice_value" unit int { CDR } }
+

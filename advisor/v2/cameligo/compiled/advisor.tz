@@ -1,0 +1,40 @@
+{ parameter (or (lambda %changeAlgorithm (list int) bool) (unit %executeAlgorithm)) ;
+  storage
+    (pair (pair (lambda %algorithm (list int) bool)
+                (list %indices (pair (address %contractAddress) (string %viewName))))
+          (bool %result)) ;
+  code { UNPAIR ;
+         IF_LEFT
+           { SWAP ;
+             DUP ;
+             DUG 2 ;
+             CDR ;
+             DIG 2 ;
+             CAR ;
+             CDR ;
+             DIG 2 ;
+             PAIR ;
+             PAIR ;
+             NIL operation ;
+             PAIR }
+           { DROP ;
+             DUP ;
+             CAR ;
+             CDR ;
+             MAP { CAR ;
+                   UNIT ;
+                   VIEW "indice_value" int ;
+                   IF_NONE { PUSH string "View indice_value not found" ; FAILWITH } {} } ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CAR ;
+             SWAP ;
+             EXEC ;
+             SWAP ;
+             CAR ;
+             PAIR ;
+             NIL operation ;
+             PAIR } } }
+

@@ -1,0 +1,86 @@
+#import "../../advisor.jsligo" "ADVISOR"
+#import "../../indice.jsligo" "INDICE"
+
+const _test = () : unit => {
+
+  // deploy INDICE A contract 
+  const indice_initial_storage : int = 10;
+  const transpile_indice_func = (x:INDICE.indiceStorage) : int => x;
+  const iis = Test.run ( transpile_indice_func, indice_initial_storage );
+  const indice_contract_path = "indice.jsligo"; //"views_hangzhou/jsligo/indice.jsligo";
+  let [address_indice, code_indice, _] = Test.originate_from_file (indice_contract_path, "indiceMain", (list(["indice_value"]) as list<string>), iis, (0 as mutez));
+  const actual_storage = Test.get_storage_of_address(address_indice);
+  const indice_taddress = (Test.cast_address(address_indice) as typed_address<INDICE.indiceEntrypoints,INDICE.indiceStorage>);
+  const indice_contract = Test.to_contract(indice_taddress);
+
+  // INDICE Increment(1)
+  let _ = Test.transfer_to_contract_exn(indice_contract, (Increment(1)), (0 as mutez));
+  const inc_actual_storage = Test.get_storage(indice_taddress);
+  _ = Test.log(inc_actual_storage);
+  _ = assert(inc_actual_storage == indice_initial_storage + 1);
+
+  // INDICE Decrement(1)
+  _ = Test.transfer_to_contract_exn(indice_contract, (Decrement(1)), (0 as mutez));
+  const dec_actual_storage = Test.get_storage(indice_taddress);
+  _ = Test.log(dec_actual_storage);
+  _ = assert(dec_actual_storage == inc_actual_storage - 1);
+
+  // deploy INDICE B contract 
+  const indiceB_initial_storage : int = 6;
+  const transpile_indice_func = (x:INDICE.indiceStorage) : int => x;
+  const iis = Test.run ( transpile_indice_func, indiceB_initial_storage );
+  const indiceB_contract_path = "indice.jsligo"; //"views_hangzhou/jsligo/indice.jsligo";
+  let [address_indiceB, code_indiceB, _] = Test.originate_from_file (indiceB_contract_path, "indiceMain", (list(["indice_value"]) as list<string>), iis, (0 as mutez));
+  const actual_storageB = Test.get_storage_of_address(address_indiceB);
+  const indiceB_taddress = (Test.cast_address(address_indiceB) as typed_address<INDICE.indiceEntrypoints,INDICE.indiceStorage>);
+  const indiceB_contract = Test.to_contract(indiceB_taddress);
+
+  // deploy ADVISOR contract 
+
+  const advisor_initial_storage : ADVISOR.advisorStorage = {indices:list([{contractAddress:address_indice, viewName:"indice_value"}, {contractAddress:address_indiceB, viewName:"indice_value"}]), algorithm:((l : list<int>) : bool => { let i : int = match (List.head_opt(l), { None: () => (failwith("missing value") as int), Some: (v: int) => v}); return (i < 10) }), result: false};
+  const transpile_advisor_func = (x:ADVISOR.advisorStorage) : ADVISOR.advisorStorage => { return x };
+  const ais = Test.run (transpile_advisor_func, advisor_initial_storage);
+  const advisor_contract_path = "advisor.jsligo"; //"views_hangzhou/jsligo/advisor.jsligo";
+  let [address_advisor, code_advisor, _] = Test.originate_from_file(advisor_contract_path, "advisorMain", (list([]) as list<string>), ais, (0 as mutez));
+  const advisor_taddress = (Test.cast_address(address_advisor) as typed_address<ADVISOR.advisorEntrypoints,ADVISOR.advisorStorage>);
+  const advisor_contract = Test.to_contract(advisor_taddress);
+
+  Test.log("check if head of list < 10");
+
+  // ADVISOR call ExecuteAlgorithm
+  _ = Test.transfer_to_contract_exn(advisor_contract, (ExecuteAlgorithm(unit)), (0 as mutez));
+  const advisor_modified_storage = Test.get_storage(advisor_taddress);
+  _ = Test.log(advisor_modified_storage);
+  _ = assert(advisor_modified_storage.result == false);
+
+  // ADVISOR call ChangeAlgorithm
+  // check if head of list < 20
+  const new_algo  = (l : list<int>) : bool => { let i : int = match (List.head_opt(l), { None: () => (failwith("missing value") as int), Some: (v: int) => v}); return (i < 20) };
+  Test.log("check if head of list < 20");
+  _ = Test.transfer_to_contract_exn(advisor_contract, (ChangeAlgorithm(new_algo)), (0 as mutez));
+  const advisor_modified_storage2 = Test.get_storage(advisor_taddress);
+
+  // ADVISOR call ExecuteAlgorithm
+  _ = Test.transfer_to_contract_exn(advisor_contract, (ExecuteAlgorithm(unit)), (0 as mutez));
+  const advisor_modified_storage3 = Test.get_storage(advisor_taddress);
+  _ = Test.log(advisor_modified_storage3);
+  _ = assert(advisor_modified_storage3.result == true);
+
+  // ADVISOR call ChangeAlgorithm
+  // check if mean of the list < 7
+  const algo_mean  = (l : list<int>) : bool => { let mean = (l : list<int>) : int => { let compute = ( [accnb, elt] : [[int, nat], int] ) : [int, nat] => [(accnb[0] + elt as int), (accnb[1] + (1 as nat))]; let [sum, size] : [int, nat] = List.fold(compute, l, [(0 as int), (0 as nat)]); if (size == (0 as nat)) { return 0 } else { return (sum / size) }; }; return (mean(l) < 5) };
+  Test.log("check if mean of the list < 7");
+  _ = Test.transfer_to_contract_exn(advisor_contract, (ChangeAlgorithm(algo_mean)), (0 as mutez));
+  const advisor_modified_storage3 = Test.get_storage(advisor_taddress);
+
+  // ADVISOR call ExecuteAlgorithm
+  _ = Test.transfer_to_contract_exn(advisor_contract, (ExecuteAlgorithm(unit)), (0 as mutez));
+  const advisor_modified_storage4 = Test.get_storage(advisor_taddress);
+  _ = Test.log(advisor_modified_storage4);
+  _ = assert(advisor_modified_storage4.result == false);
+
+
+  return unit
+};
+
+const test : unit = _test();

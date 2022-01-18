@@ -1,0 +1,145 @@
+type transfer =
+  [@layout:comb]
+  { [@annot:from] address_from : address,
+    [@annot:to] address_to : address,
+    value : nat };
+
+type approve =
+  [@layout:comb]
+  { spender : address,
+    value : nat };
+
+type mintOrBurn =
+  [@layout:comb]
+  { quantity : int ,
+    target : address };
+
+export type allowance_key =
+  [@layout:comb]
+  { owner : address,
+    spender : address };
+
+type getTotalSupply =
+  [@layout:comb]
+  { request : unit ,
+    callback : contract<nat> };
+
+export type tokens = big_map<address, nat>;
+export type allowances = big_map<allowance_key, nat>;
+
+export type token_metadata_entry = {
+  token_id: nat,
+  token_info: map<string, bytes>
+};
+
+export type storage =
+  [@layout:comb]
+  { tokens : tokens,
+    allowances : allowances,
+    admin : address,
+    total_supply : nat,
+    metadata: big_map<string, bytes>,
+    token_metadata : big_map<nat, token_metadata_entry> 
+  };
+
+export type parameter =
+  | ["Transfer" , transfer]
+  | ["Approve" , approve]
+  | ["MintOrBurn" , mintOrBurn]
+;
+
+type result = [list<operation>, storage];
+
+// @inline
+const maybe = (n: nat): option<nat> => {
+    if (n == (0 as nat)) {return None();} else {return Some(n);}
+};
+
+const transfer = ([param, storage]: [transfer, storage]): result => {
+  let allowances: allowances = storage.allowances;
+  let tokens: tokens = storage.tokens;
+  if (Tezos.sender != param.address_from) {
+    const allowance_key: allowance_key = {
+      owner: param.address_from,
+      spender: Tezos.sender
+    };
+    let authorized_value = match(Big_map.find_opt(allowance_key, allowances),{
+      Some: (value: nat) => value,
+      None: () => (0 as nat)
+    });
+    const final_authorized_value: int = authorized_value - param.value;
+    assert_with_error(final_authorized_value >= 0, "NotEnoughAllowance");
+    allowances = Big_map.update(allowance_key, maybe(0 as nat), allowances);
+  }
+  else {unit;};
+  const to_balance = match(Big_map.find_opt(param.address_to, tokens), {
+    Some: (val: nat) => val + param.value,
+    None: () => 0 as nat
+  });
+  const from_balance: nat = match(Big_map.find_opt(param.address_from, tokens), {
+    Some: (val: nat) => val,
+    None: () => 0 as nat
+  });
+  const final_from_balance: int = from_balance - param.value;
+  assert_with_error(final_from_balance > 0, "NotEnoughBalance");
+  tokens = Big_map.update(param.address_to, maybe(to_balance), tokens);
+  tokens = Big_map.update(param.address_from, maybe(abs(final_from_balance)), tokens);
+  return [list([]) as list<operation>, {...storage, tokens: tokens, allowances: allowances}];
+};
+
+const approve  = ([param,storage]:[approve, storage]) : result => {
+  let allowances = storage.allowances;
+  const allowance_key = { 
+    owner: Tezos.sender,
+    spender: param.spender
+    };
+  const previous_value: nat = match (Big_map.find_opt(allowance_key, allowances), {
+    Some: (value: nat) => value,
+    None: () => 0 as nat
+  });
+  assert_with_error((previous_value > (0 as nat) && param.value > (0 as nat)), "UnsafeAllowanceChange");
+  allowances = Big_map.update(allowance_key, maybe(param.value), allowances);
+  return [list([]) as list<operation>, {...storage, allowances: allowances}];
+};
+
+const mintOrBurn = ([param, storage]: [mintOrBurn, storage]): result => {
+  const _check_is_admin: unit = assert_with_error(Tezos.sender == storage.admin, "OnlyAdmin");
+  let tokens = storage.tokens;
+  const old_balance = match(Big_map.find_opt(param.target, tokens), {
+    None: () => 0 as nat,
+    Some: (_bal: nat) => _bal
+  });
+  const new_balance = match(is_nat(old_balance + param.quantity), {
+    None: () => failwith("Cannot burn more than the target's balance."),
+    Some: (_bal: nat) => _bal
+  });
+  tokens = Big_map.update(param.target, maybe(new_balance), storage.tokens);
+  const total_supply = abs (storage.total_supply + param.quantity);
+  return [list([]) as list<operation>, {...storage, tokens: tokens, total_supply: total_supply}];
+};
+
+[@view] const getAllowance = ([allowance_key, storage] : [allowance_key, storage]): nat => {
+    return match(Big_map.find_opt(allowance_key, storage.allowances), {
+      Some: (_val: nat) => _val,
+      None: () => 0 as nat
+    });
+};
+
+[@view] const getBalance = ([owner, storage]: [address, storage]): nat => {
+  return match(Big_map.find_opt(owner, storage.tokens), {
+    Some: (_bal: nat) => _bal,
+    None: () => 0 as nat
+  });
+};
+
+[@view] const getTotalSupply = ([_param, storage]: [unit, storage]): nat => {
+  return storage.total_supply;
+};
+
+const fa12main = ([entrypoint, storage] : [parameter, storage]) : result => {
+    return match (entrypoint, {
+        Transfer:   (param: transfer)   => transfer(param, storage),
+        Approve:    (param: approve)    => approve(param, storage),
+        MintOrBurn: (param: mintOrBurn) => mintOrBurn(param, storage)
+    });
+};

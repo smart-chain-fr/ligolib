@@ -1,0 +1,18 @@
+{ parameter (or (list %exec int) (unit %nothing)) ;
+  storage bool ;
+  code { UNPAIR ;
+         IF_LEFT
+           { SWAP ;
+             DROP ;
+             IF_CONS { SWAP ; DROP ; SOME } { NONE int } ;
+             IF_NONE
+               { PUSH string "missing value" ; FAILWITH }
+               { PUSH int 10 ;
+                 SWAP ;
+                 COMPARE ;
+                 LT ;
+                 IF { PUSH bool True } { PUSH bool False } } ;
+             NIL operation ;
+             PAIR }
+           { DROP ; NIL operation ; PAIR } } }
+

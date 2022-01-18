@@ -8,13 +8,23 @@ This repository is meant to illustrate the communication between contracts (with
 The `indice` contract represents a fund value and the `advisor` contract gives an advice on investing on this fund. 
 
 
-### Transaction workflow
+### Transaction workflow (callbacks)
 
 The `advisor` contract can be invoked to request the fund value to the `indice` contract (via a transaction). The `indice` contract receives the request (transaction) and sends back the requested value. When `advisor` contract receives the fund value it can apply the "algorithm" to check it is worth investing ! This algorithm relies on a single indice value.
 
 ![](indice&advisor.png)
 
 The resulting advice is stored in the storage (in `result` field).
+
+### Transaction workflow (on-chain views introduced by Hangzhou)
+
+Since Hangzhou protocol, on-chain views have been introduced which replaces the callbacks pattern to retrieve a storage of another contract.
+
+The `views_hangzhou` directory illustrates the on-chain views pattern.
+
+The `v2` directory illustrates the on-chain views pattern where the advisor contract requests many "indice_value" of multiple indice contracts.
+
+![](Indices&advisor.png)
 
 ### Lambda pattern
 
@@ -25,7 +35,16 @@ So an entrypoint `ChangeAlgorithm` is provided to modify the algorithm that comp
 
 ## Content
 
-The `views_hangzhou` directory contains 3 directories:
+The `src` directory contains 2 directories:
+- cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
+- jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
+- pascaligo: for smart contracts implementation in pascaligo and `ligo` command lines for simulating all entrypoints
+
+The `views_hangzhou` directory contains 2 directories:
+- cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
+- jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
+
+The `v2` directory contains 2 directories:
 - cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
 - jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
 
