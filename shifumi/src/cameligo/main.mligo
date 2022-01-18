@@ -29,6 +29,7 @@ let has_played_(pactions, player : player_actions * player) : bool =
     let check_contains(acc, elt : bool * player_action) : bool = if acc then acc else (elt.player = player) in
     List.fold check_contains pactions false 
 
+// TODO
 let resolve_board(sess: session) : (round, player) map = 
     sess.board
 
@@ -84,7 +85,7 @@ let play(param, store : play_param * shifumiStorage) : shifumiFullReturn =
     | None -> ([] : player_actions)
     | Some (pacts) -> pacts
     in
-    let all_player_have_played((acc, pactions), elt : (bool * player_actions) * player) : (bool * player_actions) = if (acc = false) then (acc, pactions) else (has_played_(pactions, elt), pactions) in
+    let all_player_have_played((acc, pactions), elt : (bool * player_actions) * player) : (bool * player_actions) = (acc && has_played_(pactions, elt), pactions) in
     let (check_all_players_have_played, all_actions) : (bool * player_actions) = Set.fold all_player_have_played new_current_session.players (true, performed_actions) in
     // all players have given their actions, now the board can be resolved and goes to next round
     let modified_new_current_session : session = if (check_all_players_have_played = true) then 
@@ -95,6 +96,7 @@ let play(param, store : play_param * shifumiStorage) : shifumiFullReturn =
     let new_storage : shifumiStorage = { store with sessions=Map.update param.sessionId (Some(modified_new_current_session)) store.sessions } in 
     (([]: operation list), new_storage)
 
+// TODO
 let retrieve_board(sess : session) : sessionBoard =
     { points=(Map.empty : (player, nat) map) }
 
