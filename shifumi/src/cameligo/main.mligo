@@ -10,12 +10,14 @@ type player_action = {
 
 type player_actions = player_action list
 
+type board = (round, player option) map
+
 type session = {
     total_rounds : nat;
     players : player set;
     current_round : nat;
     rounds : (round, player_actions) map;
-    board : (round, player) map;
+    board : board;
 }
 
 let has_played(sess, roundId, player : session * nat * player) : bool =
@@ -29,9 +31,46 @@ let has_played_(pactions, player : player_actions * player) : bool =
     let check_contains(acc, elt : bool * player_action) : bool = if acc then acc else (elt.player = player) in
     List.fold check_contains pactions false 
 
-// TODO
-let resolve_board(sess: session) : (round, player) map = 
-    sess.board
+let resolve(first, second : player_action * player_action) : player option = 
+    let first_action : action = first.action in
+    let second_action : action = second.action in 
+    let result : player option = match first.action, second.action with
+    | Stone, Stone -> None
+    | Stone, Paper -> Some(second.player)
+    | Stone, Cisor -> Some(first.player)
+    | Paper, Stone -> Some(first.player)
+    | Paper, Paper -> None
+    | Paper, Cisor -> Some(second.player)
+    | Cisor, Stone -> Some(second.player)
+    | Cisor, Paper -> Some(first.player)
+    | Cisor, Cisor -> None
+    in
+    result
+
+// TODO , this implementation can handle only 2 players :(
+let resolve_board(sess: session) : board = 
+    // process actions for current_round
+    let pactions : player_actions = match Map.find_opt sess.current_round sess.rounds with
+    | None -> (failwith("Missing actions for current_round") : player_actions)
+    | Some (pacts) -> pacts
+    in
+    let first : player_action = match List.head_opt(pactions) with
+    | None -> (failwith("Missing actions for first player") : player_action)
+    | Some (act) -> act
+    in
+    let next_players_opt : player_action list option = List.tail_opt pactions in
+    let next_players : player_action list = match next_players_opt with
+    | None -> (failwith("Missing actions for second player") : player_action list)
+    | Some (tl) -> tl
+    in
+    let second : player_action = match List.head_opt(next_players) with
+    | None -> (failwith("Missing actions for second player") : player_action)
+    | Some (act) -> act
+    in
+    let result : player option = resolve(first, second) in 
+    match result with 
+    | None -> Map.update sess.current_round (None : player option option) sess.board
+    | Some (r) -> Map.update sess.current_round (Some(Some(r))) sess.board
 
 
 type sessionBoard = {
@@ -59,7 +98,7 @@ type shifumiEntrypoints = CreateSession of createsession_param | Play of play_pa
 type shifumiFullReturn = operation list * shifumiStorage
 
 let createSession(param, store : createsession_param * shifumiStorage) : shifumiFullReturn = 
-    let new_session : session = { total_rounds=param.total_rounds; players=param.players; current_round=1n; rounds=(Map.empty : (round, player_actions) map); board=(Map.empty : (round, player) map) } in
+    let new_session : session = { total_rounds=param.total_rounds; players=param.players; current_round=1n; rounds=(Map.empty : (round, player_actions) map); board=(Map.empty : board) } in
     let new_storage : shifumiStorage = { next_session=store.next_session + 1n; sessions=Map.add store.next_session new_session store.sessions} in
     (([]: operation list), new_storage)
 
@@ -96,7 +135,7 @@ let play(param, store : play_param * shifumiStorage) : shifumiFullReturn =
     let new_storage : shifumiStorage = { store with sessions=Map.update param.sessionId (Some(modified_new_current_session)) store.sessions } in 
     (([]: operation list), new_storage)
 
-// TODO
+// TODO computes points
 let retrieve_board(sess : session) : sessionBoard =
     { points=(Map.empty : (player, nat) map) }
 
