@@ -44,10 +44,14 @@ clean:
 	@echo "Removing Michelson files"
 	@rm compiled/*.tz compiled/*.json
 
-test: test_ligo test_pytezos
+test: test_ligo test_ligo_2 test_pytezos
 
-test_ligo: test/ligo/test.mligo
+test_ligo: test/ligo/test.mligo 
 	@echo "Running integration tests"
+	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
+
+test_ligo_2: test/ligo/test2.mligo 
+	@echo "Running integration tests (fail)"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
 test_pytezos: test_pytezos_sandbox test_pytezos_indice test_pytezos_advisor 

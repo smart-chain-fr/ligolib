@@ -1,0 +1,64 @@
+#import "../../advisor.jsligo" "ADVISOR"
+#import "indice_no_view.jsligo" "DUMMY"
+
+let assert_string_failure = ([res,expected] : [test_exec_result, string]) : unit => {
+  let expected = Test.eval (expected) ;
+  match (res, {
+    Fail: (x: test_exec_error) => (
+      match (x, {
+        Rejected: (x:[michelson_code,address]) => assert (Test.michelson_equal (x[0], expected)),
+        Other: (_:unit) => failwith ("contract failed for an unknown reason")
+      })),
+    Success: (_:unit) => failwith ("bad price check")
+  } );
+} ;
+
+const _test = () : unit => {
+
+  // deploy INDICE contract 
+  const indice_initial_storage : int = 4;
+  _ = Test.log("deploy DUMMY smart contract");
+  const transpile_indice_func = (x:DUMMY.indiceStorage) : int => x;
+  const iis = Test.run ( transpile_indice_func, indice_initial_storage );
+  const indice_contract_path = "test/ligo/indice_no_view.jsligo";
+  let [address_indice, code_indice, _] = Test.originate_from_file (indice_contract_path, "indiceMain", (list([]) as list<string>), iis, (0 as mutez));
+  const actual_storage = Test.get_storage_of_address(address_indice);
+  const indice_taddress = (Test.cast_address(address_indice) as typed_address<DUMMY.indiceEntrypoints,DUMMY.indiceStorage>);
+  const indice_contract = Test.to_contract(indice_taddress);
+
+  // INDICE Increment(1)
+  _ = Test.log("call Increment entrypoint of DUMMY smart contract");
+  let _ = Test.transfer_to_contract_exn(indice_contract, (Increment(1)), (0 as mutez));
+  const inc_actual_storage = Test.get_storage(indice_taddress);
+  _ = Test.log(inc_actual_storage);
+  _ = assert(inc_actual_storage == indice_initial_storage + 1);
+
+  // INDICE Decrement(2)
+  _ = Test.log("call Decrement entrypoint of DUMMY smart contract");
+  _ = Test.transfer_to_contract_exn(indice_contract, (Decrement(2)), (0 as mutez));
+  const dec_actual_storage = Test.get_storage(indice_taddress);
+  _ = Test.log(dec_actual_storage);
+  _ = assert(dec_actual_storage == inc_actual_storage - 2);
+
+  // deploy ADVISOR contract 
+  _ = Test.log("deploy ADVISOR smart contract");
+  const advisor_initial_storage : ADVISOR.advisorStorage = {indiceAddress:address_indice, algorithm:((i : int) => { if (i < 10) { return true } else { return false } }), result: false};
+  const transpile_advisor_func = (x:ADVISOR.advisorStorage) : ADVISOR.advisorStorage => { return x };
+  const ais = Test.run (transpile_advisor_func, advisor_initial_storage);
+  const advisor_contract_path = "advisor.jsligo"; //"views_hangzhou/jsligo/advisor.jsligo";
+  let [address_advisor, code_advisor, _] = Test.originate_from_file(advisor_contract_path, "advisorMain", (list([]) as list<string>), ais, (0 as mutez));
+  const advisor_taddress = (Test.cast_address(address_advisor) as typed_address<ADVISOR.advisorEntrypoints,ADVISOR.advisorStorage>);
+  const advisor_contract = Test.to_contract(advisor_taddress);
+
+  // ADVISOR call ExecuteAlgorithm
+  _ = Test.log("call ExecuteAlgorithm entrypoint of ADVISOR smart contract (should fail because DUMMY has no view)");
+  const result : test_exec_result = Test.transfer_to_contract(advisor_contract, (ExecuteAlgorithm(unit)), (0 as mutez));
+  _ = assert_string_failure(result, "View indice_value not found");
+  const advisor_modified_storage = Test.get_storage(advisor_taddress);
+  _ = Test.log(advisor_modified_storage);
+  assert(advisor_modified_storage.result == advisor_initial_storage.result);
+
+  return unit
+};
+
+const test : unit = _test();
