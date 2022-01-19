@@ -5,7 +5,7 @@ type action = Stone | Paper | Cisor
 
 type player_action = {
     player : player;
-    action : action
+    action : action     // should be a chest (in order to offuscate the action performed by other players)
 }
 
 type player_actions = player_action list
