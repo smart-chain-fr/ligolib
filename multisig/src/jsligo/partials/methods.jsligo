@@ -29,12 +29,16 @@ const sendFA12 = ([token_amount, target_from, target_to, target_fa12] : [nat, ad
 const create_proposal = ([params, storage_multisig]: [T.proposal_params, T.storage_multisig]): T.return_multisig => {
     assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.only_signer);
     assert_with_error (Tezos.amount == (0 as tez), E.amount_must_be_zero_tez);
+    const target_from: address = match(params.target_from, {
+        Some: (_add: address) => _add,
+        None: () => Tezos.self_address
+    });
     const new_proposal: T.proposal = {
         approved_signers: Set.empty as set<address>,
         executed: false,
         number_of_signers: 0 as nat,
         target_fa12: params.target_fa12,
-        target_from: params.target_from,
+        target_from: target_from,
         target_to: params.target_to,
         timestamp: Tezos.now,
         token_amount: params.token_amount

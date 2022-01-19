@@ -18,7 +18,7 @@ export type storage_multisig = {
 
 export type proposal_params = {
     target_fa12: address,
-    target_from: address,
+    target_from: option<address>,
     target_to: address,
     token_amount: nat
 };
