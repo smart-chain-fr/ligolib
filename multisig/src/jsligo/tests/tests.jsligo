@@ -55,17 +55,16 @@ const test = (): unit => {
         )
     );
     const threshold: nat = 3 as nat;
-    const operation_map: big_map<nat, Main.M.T.operation_request> = Big_map.empty;
-    const operation_counter: nat = 1 as nat;
+    const proposal_map: big_map<nat, Main.M.T.proposal> = Big_map.empty;
+    const proposal_counter: nat = 1 as nat;
     const storage: Main.M.T.storage_multisig = ({
         signers: signers,
         threshold: threshold,
-        operation_map: operation_map,
-        operation_counter: operation_counter
+        proposal_map: proposal_map,
+        proposal_counter: proposal_counter
     });
     const transpile_storage_func = (x: Main.M.T.storage_multisig): Main.M.T.storage_multisig => {return x};
     const iis = Test.run( transpile_storage_func, storage);
-
 
     Test.log("Originating multisig contract");
 
@@ -73,7 +72,7 @@ const test = (): unit => {
     const [address_multisig, code_multisig, _] : [address, michelson_program, int] = Test.originate_from_file(
         multisig_contract_path,
         "main" as string,
-        list(["view_operation"]) as list<string>,
+        list(["view_proposal"]) as list<string>,
         iis,
         0 as tez
     ) as [address, michelson_program, int];
@@ -129,31 +128,34 @@ const test = (): unit => {
     // --  TEST 1  --
     // --------------
     Test.log("Test 1");
-    Test.log("One of the signers creates an operation request");
+    Test.log("One of the signers creates an proposal");
 
-    const create_operation_params: Main.M.T.operation_params = {
+    const create_proposal_params: Main.M.T.proposal_params = {
         target_fa12: address_fa12 as address,
+        target_from: address_multisig,
         target_to: alice,
         token_amount: transfer_amount
     };
-    const expected_operation_request: Main.M.T.operation_request = {
-        target_to: alice,
-        target_fa12: address_fa12 as address,
-        token_amount: transfer_amount,
-        timestamp: 5 as timestamp,
+    const expected_proposal: Main.M.T.proposal = {
         approved_signers: Set.empty as set<address>,
-        executed: false
+        executed: false,
+        number_of_signers: 0 as nat,
+        target_fa12: address_fa12 as address,
+        target_from: address_multisig,
+        target_to: alice,
+        timestamp: 5 as timestamp,
+        token_amount: transfer_amount
     };
 
     Test.set_source(alice);
-    Test.transfer_to_contract_exn(multisig_contract, Create_operation(create_operation_params), 0 as tez);
+    Test.transfer_to_contract_exn(multisig_contract, Create_proposal(create_proposal_params), 0 as tez);
     let curr_storage: Main.M.T.storage_multisig = Test.get_storage(multisig_taddress);
-    const end_operation_request = match(Big_map.find_opt(1 as nat, curr_storage.operation_map), {
-        Some: (op: Main.M.T.operation_request) => op,
+    const end_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
+        Some: (op: Main.M.T.proposal) => op,
         None: () => failwith(Main.M.E.no_operation_exist)
     });
-    assert(end_operation_request == expected_operation_request);
-    assert(curr_storage.operation_counter == (2 as nat));
+    assert(end_proposal == expected_proposal);
+    assert(curr_storage.proposal_counter == (2 as nat));
     Test.log("Passed");
 
 
@@ -167,12 +169,12 @@ const test = (): unit => {
     // --  TEST 2  --
     // --------------
     Test.log("Test 2");
-    Test.log("A random tries creates an operation request but fails");
+    Test.log("A random tries creates a proposal but fails");
     Test.set_source(unknown);
-    const fail_tx = Test.transfer_to_contract(multisig_contract, Create_operation(create_operation_params), 0 as tez);
+    const fail_tx = Test.transfer_to_contract(multisig_contract, Create_proposal(create_proposal_params), 0 as tez);
     assert_error(fail_tx, Main.M.E.only_signer);
     curr_storage = Test.get_storage(multisig_taddress);
-    assert(curr_storage.operation_counter == (2 as nat));
+    assert(curr_storage.proposal_counter == (2 as nat));
     Test.log("Passed");
 
 
@@ -186,16 +188,16 @@ const test = (): unit => {
     // --  TEST 3  --
     // --------------
     Test.log("Test 3");
-    Test.log("One of the signers sign the operation request");
+    Test.log("One of the signers sign the proposal");
     Test.set_source(bob);
     Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
     curr_storage = Test.get_storage(multisig_taddress);
-    const end_signed_operation_request = match(Big_map.find_opt(1 as nat, curr_storage.operation_map), {
-        Some: (op: operation_request) => op,
+    const end_signed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
+        Some: (op: proposal) => op,
         None: () => failwith(Main.M.E.no_operation_exist)
     });
     const expected_signer: set<address> = Set.add(bob, Set.empty as set<address>);
-    assert(end_signed_operation_request.approved_signers == expected_signer);
+    assert(end_signed_proposal.approved_signers == expected_signer);
     Test.log("Passed");
 
 
@@ -210,7 +212,7 @@ const test = (): unit => {
     // --  TEST 4  --
     // --------------
     Test.log("Test 4");
-    Test.log("An unknown person tries to sign the operation request and fails");
+    Test.log("An unknown person tries to sign the proposal and fails");
     Test.set_source(unknown);
     const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(1 as nat), 0 as tez);
     assert_error(fail_tx, Main.M.E.only_signer);
@@ -228,7 +230,7 @@ const test = (): unit => {
     // --  TEST 5  --
     // --------------
     Test.log("Test 5");
-    Test.log("An unknown person tries to sign an operation request that doesn't exist and fails");
+    Test.log("An unknown person tries to sign an proposal that doesn't exist and fails");
     Test.set_source(unknown);
     const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(2 as nat), 0 as tez);
     assert_error(fail_tx, Main.M.E.only_signer);
@@ -245,7 +247,7 @@ const test = (): unit => {
     // --  TEST 6  --
     // --------------
     Test.log("Test 6");
-    Test.log("A signer tries to sign an operation request that doesn't exist and fails");
+    Test.log("A signer tries to sign an proposal that doesn't exist and fails");
     Test.set_source(alice);
     const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(2 as nat), 0 as tez);
     assert_error(fail_sign_tx, Main.M.E.no_operation_exist);
@@ -262,7 +264,7 @@ const test = (): unit => {
     // --  TEST 7  --
     // --------------
     Test.log("Test 7");
-    Test.log("The operation request is signed and executed");
+    Test.log("The proposal is signed and executed");
 
     Test.set_source(alice);
     Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
@@ -281,14 +283,14 @@ const test = (): unit => {
     );
 
     curr_storage = Test.get_storage(multisig_taddress);
-    const end_executed_operation_request = match(Big_map.find_opt(1 as nat, curr_storage.operation_map), {
-        Some: (op: operation_request) => op,
+    const end_executed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
+        Some: (op: proposal) => op,
         None: () => failwith(Main.M.E.no_operation_exist)
     });
 
     const expected_signer: set<address> = Set.add(alice, Set.empty as set<address>);
-    assert(end_executed_operation_request.executed);
-    assert(end_executed_operation_request.approved_signers == expected_executed_signers);
+    assert(end_executed_proposal.executed);
+    assert(end_executed_proposal.approved_signers == expected_executed_signers);
     const curr_fa12_storage: FA12.storage = Test.get_storage(fa12_taddress);
     const alice_balance: nat = match(Big_map.find_opt(alice as address, curr_fa12_storage.tokens), {
         Some: (val: nat) => val,
