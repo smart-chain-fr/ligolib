@@ -10,13 +10,13 @@ export type advisorEntrypoints = ["ChangeAlgorithm", advisorAlgo] | ["ExecuteAlg
 
 export type advisorFullReturn =  [list<operation>, advisorStorage];
 
-let unknownView : string = "View indice_value not found";
+const unknownView : string = "View indice_value not found";
 
-let change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
+const change = ([p, s] : [advisorAlgo, advisorStorage]) : advisorFullReturn => {
     return [(list([]) as list<operation>), { ...s, algorithm: p}]
 };
 
-let executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
+const executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
     let indiceValOpt : option<int> = Tezos.call_view("indice_value", unit, s.indiceAddress);
     let indiceVal : int = match (indiceValOpt , {
         None: () => (failwith(unknownView) as int),
@@ -25,7 +25,7 @@ let executeAlgorithm = (s : advisorStorage) : advisorFullReturn => {
     return [(list([]) as list<operation>), { ...s, result: s.algorithm(indiceVal) }]
 };
 
-let advisorMain = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
+const advisorMain = ([ep, store] : [advisorEntrypoints, advisorStorage]) : advisorFullReturn => {
     return match (ep, {
         ChangeAlgorithm: (p: advisorAlgo) => change(p, store),
         ExecuteAlgorithm: (_p: unit) => executeAlgorithm(store) 
