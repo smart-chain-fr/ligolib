@@ -160,10 +160,79 @@ let test_create_multisig_proposal_with_a_signer_should_work =
     let () = Test.set_source alice in
     let tx : test_exec_result = Test.transfer_to_contract contract_multisig (Create_proposal(new_proposal)) 0mutez in
     let new_storage : MS.storage_multisig = Test.get_storage typed_address_multi in
-    let new_proposal : MS.proposal = match Map.find_opt 1n new_storage.proposal_map with
+    let proposal : MS.proposal = match Map.find_opt 1n new_storage.proposal_map with
         Some value -> value
       | None -> failwith "f"
     in
-    let () = assert ( new_proposal.number_of_signer = 1n) in
-
+    let () = assert ( proposal.approved_signers = (Set.add alice (Set.empty : address set)) ) in
+    let () = assert ( proposal.executed = false) in
+    let () = assert ( proposal.number_of_signer = 1n) in
+    let () = assert ( proposal.target_fa12 = new_proposal.target_fa12) in
+    let () = assert ( proposal.target_to = echo) in
+    //let () = assert ( proposal.timestamp = (Tezos.now : timestamp)) in
+    let () = assert ( proposal.token_amount = 100n) in
     "✓"
+
+let test_sign_a_multisig_proposal_should_work =
+    // Prepare data for initial storage
+    let empty_bigmap : (nat, MS.proposal) big_map = Big_map.empty in 
+    let address_1 : address = alice in
+    let address_2 : address = bob in
+    let address_3 : address = charly in
+    // Create the initial multisig storage with specific values
+    let initial_storage_multisig : T.storage_multisig = {
+        proposal_counter = 0n;
+        proposal_map = empty_bigmap;
+        signers = (Set.add address_1 (Set.add address_2 (Set.add address_3 (Set.empty : address set))));
+        threshold = 2n;
+    } in
+    // Originate contract multisig and cast a typed address to get the contract artefact
+    let (storage_multi, address_multi, typed_address_multi, program_multi) :
+        ( T.storage_multisig * address * (MS.entrypoint_multisig, T.storage_multisig) typed_address * michelson_program) = 
+        originate_multisig initial_storage_multisig in
+    let contract_multisig = Test.to_contract typed_address_multi in
+    // Create the initial fa12 storage
+    let empty_bigmap : (FA.allowance_key, nat) big_map = Big_map.empty in 
+    let initial_storage_fa12 : FA.storage = {
+        tokens = Big_map.add alice 1000n Big_map.empty;
+        allowances = empty_bigmap;
+        total_supply = 1000n;
+    } in
+    // Originate contract fa12 and cast a typed address to get the contract artefact
+    let (storage_fa, address_fa, typed_address_fa, program_fa) :
+        FA.storage * address * (FA.parameter, FA.storage) typed_address * michelson_program = 
+        originate_fa12 initial_storage_fa12 in
+    let contract_fa12 = Test.to_contract typed_address_fa in
+    // Create a new proposal
+    let new_proposal : T.proposal_params = {
+        target_fa12 = address_fa;
+        target_to = echo;
+        token_amount = 100n;
+    } in
+    // Send a new proposal with a signer should work
+    let () = Test.set_source alice in
+    let tx : test_exec_result = Test.transfer_to_contract contract_multisig (Create_proposal(new_proposal)) 0mutez in
+    let () = Test.set_source bob in
+    let tx2 : test_exec_result = Test.transfer_to_contract contract_multisig (Sign(1n)) 0mutez in
+ 
+    let new_storage : MS.storage_multisig = Test.get_storage typed_address_multi in
+    let proposal : MS.proposal = match Map.find_opt 1n new_storage.proposal_map with
+        Some value -> value
+      | None -> failwith "f"
+    in
+
+    let () = Test.log(proposal.approved_signers) in
+
+
+    //let () = assert ( proposal.approved_signers = (Set.add bob (Set.add alice (Set.empty : address set)))) in
+    //let () = assert ( proposal.executed = true) in
+    //let () = assert ( proposal.number_of_signer = 2n) in
+    let () = assert ( proposal.target_fa12 = new_proposal.target_fa12) in
+    let () = assert ( proposal.target_to = echo) in
+    //let () = assert ( proposal.timestamp = (Tezos.now : timestamp)) in
+    let () = assert ( proposal.token_amount = 100n) in
+    "✓"
+
+
+
+    

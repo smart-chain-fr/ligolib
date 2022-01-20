@@ -8,6 +8,7 @@ type proposal = {
     number_of_signer: nat;
     target_fa12: address;
     target_to: address;
+//    target_from:
     timestamp: timestamp;
     token_amount: nat;
 }
