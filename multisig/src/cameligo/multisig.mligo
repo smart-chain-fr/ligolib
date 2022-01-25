@@ -76,7 +76,7 @@ type entrypoint_multisig = Create_proposal of T.proposal_params | Sign of nat
 
 let main(action, store : entrypoint_multisig * T.storage_multisig) : T.return =
     let ret: T.return = match action with
-    | Create_proposal(p)   -> create_proposal     (p, store)
-    | Sign(p)              -> sign                (p, store)
+    Create_proposal(p)   -> create_proposal     p store
+    | Sign(p)            -> sign                p store
     in 
     ret

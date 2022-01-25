@@ -87,14 +87,6 @@ module TokenMetadata = struct
    *)
    type data = {token_id:nat;token_info:(string,bytes)map}
    type t = (nat, data) big_map 
-<<<<<<< HEAD
-
-   let get_token_metadata (token_id : nat) (tm : t) =
-      match Big_map.find_opt token_id tm with
-        Some data -> data
-      | None -> failwith Errors.undefined_token
-=======
->>>>>>> feat(multisig): mutation test
 end
 
 module Storage = struct
@@ -103,10 +95,6 @@ module Storage = struct
       ledger : Ledger.t;
       token_metadata : TokenMetadata.t;
       operators : Operators.t;
-<<<<<<< HEAD
-      token_ids : token_id list;
-=======
->>>>>>> feat(multisig): mutation test
    }
 
    let is_owner_of (s:t) (owner : address) (token_id : token_id) : bool = 
