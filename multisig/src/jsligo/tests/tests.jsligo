@@ -1,3 +1,4 @@
+//#import "../../cameligo/main.mligo" "Main"
 #import "../main.jsligo" "Main"
 #import "./fa2.mligo" "FA2"
 
@@ -80,10 +81,10 @@ const test1 = (mainf: func_main): unit => {
         timestamp: 0 as timestamp
     };
     Test.transfer_to_contract_exn(contr, Create_proposal(create_proposal_params), 0 as mutez);
-    const end_storage = Test.get_storage(taddr)
+    const end_storage = Test.get_storage(taddr);
     const end_proposal: Main.M.T.proposal = match(Big_map.find_opt(1 as nat, end_storage.proposal_map), {
         Some: (op: Main.M.T.proposal) => op,
-        None: () => failwith(Main.M.E.no_operation_exist)
+        None: () => failwith(Main.M.E.no_proposal_exist)
     });
     const final_proposal: Main.M.T.proposal = {
         ...end_proposal,
@@ -123,7 +124,7 @@ const test3 = (mainf: func_main): unit => {
     const curr_storage = Test.get_storage(taddr);
     const end_signed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
         Some: (op: proposal) => op,
-        None: () => failwith(Main.M.E.no_operation_exist)
+        None: () => failwith(Main.M.E.no_proposal_exist)
     });
     const expected_signer: set<address> = Set.add(
         bob,
@@ -163,7 +164,7 @@ const test6 = (mainf: func_main): unit => {
     const contr = Test.to_contract(taddr);
     Test.set_source(alice);
     const fail_sign_tx = Test.transfer_to_contract(contr, Sign(2 as nat), 0 as tez);
-    assert_error(fail_sign_tx, Main.M.E.no_operation_exist);
+    assert_error(fail_sign_tx, Main.M.E.no_proposal_exist);
 };
 
 
@@ -230,7 +231,7 @@ const test7 = ([mainf, mainfa2]: [
     const curr_storage = Test.get_storage(taddr);
     const end_executed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
         Some: (op: proposal) => op,
-        None: () => failwith(Main.M.E.no_operation_exist)
+        None: () => failwith(Main.M.E.no_proposal_exist)
     });
 
     const expected_signer: set<address> = Set.add(alice, Set.empty as set<address>);
@@ -266,5 +267,11 @@ const mutation_tests = (): unit => {
     List.iter(test_mutation_func, tests);
 };  
 
-const _ = mutation_tests();
+//const _ = mutation_tests();
+const _1 = test1(Main.main);
+const _2 = test2(Main.main);
+const _3 = test3(Main.main);
+const _4 = test4(Main.main);
+const _5 = test5(Main.main);
+const _6 = test6(Main.main);
 

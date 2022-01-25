@@ -3,7 +3,7 @@
 type proposal = {
     approved_signers: address set;
     executed: bool;
-    number_of_signer: nat;
+    number_of_signers: nat;
     target_fa2: address;
     transfers: FA2.transfer;
     timestamp: timestamp;
@@ -22,4 +22,4 @@ type proposal_params = {
 }
 
 type no_operation = operation list
-type return = operation list * storage_multisig
+type return_multisig = operation list * storage_multisig

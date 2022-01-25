@@ -1,5 +1,5 @@
-const only_signer: string = "Only one of the contract signer can create an operation";
-const amount_must_be_zero_tez: string = "You must not send Tezos to the smart contract";
-const unknown_contract_entrypoint: string = "Cannot connect to the target transfer token entrypoint";
-const no_operation_exist: string = "No operation exists for this counter";
-const has_already_signed: string = "You have already signed this operation";
+const only_signer : string = "Only one of the contract signer can create an proposal";
+const amount_must_be_zero_tez : string = "You must not send Tezos to the smart contract";
+const no_proposal_exist : string = "No proposal exists for this counter";
+const has_already_signed : string = "You have already signed this proposal";
+const unknown_contract_entrypoint : string = "Cannot connect to the target transfer token entrypoint";

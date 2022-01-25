@@ -1,8 +1,8 @@
 #import "partials/methods.jsligo" "M"
 
 
-type entrypoint_multisig =
-| ["Create_proposal", proposal_params]
+export type entrypoint_multisig =
+| ["Create_proposal", M.T.proposal_params]
 | ["Sign", nat];
 
 const main = ([ep, store] : [entrypoint_multisig, M.T.storage_multisig]) : M.T.return_multisig => {
@@ -15,7 +15,7 @@ const main = ([ep, store] : [entrypoint_multisig, M.T.storage_multisig]) : M.T.r
 [@view] const view_proposal = ([proposal_id, storage_multisig] : [nat, M.T.storage_multisig]): M.T.proposal => {
     const target_request: M.T.proposal = match (Big_map.find_opt(proposal_id, storage_multisig.proposal_map), {
         Some: (op: M.T.proposal) => op,
-        None: () => (failwith(M.E.no_operation_exist))
+        None: () => (failwith(M.E.no_proposal_exist))
     });
     return target_request;
 };
