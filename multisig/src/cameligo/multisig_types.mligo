@@ -1,16 +1,12 @@
-type fa12_transfer = address * (address * nat)
-type max_duration_in_sec = nat
-type proposal_number = nat
+#import "fa2.mligo" "FA2"
 
 type proposal = {
     approved_signers: address set;
     executed: bool;
     number_of_signer: nat;
-    target_fa12: address;
-    target_to: address;
-//    target_from:
+    target_fa2: address;
+    transfers: FA2.transfer;
     timestamp: timestamp;
-    token_amount: nat;
 }
 
 type storage_multisig = {
@@ -21,14 +17,9 @@ type storage_multisig = {
 }
 
 type proposal_params = {
-    target_fa12: address;
-    target_to: address;
-    token_amount: nat;
+    target_fa2: address;
+    transfers: FA2.transfer;
 }
 
 type no_operation = operation list
 type return = operation list * storage_multisig
-
-type entrypoint_multisig = 
-    | Create_proposal of (proposal_params)
-    | Sign            of (proposal_number)
