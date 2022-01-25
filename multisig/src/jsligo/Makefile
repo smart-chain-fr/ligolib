@@ -23,7 +23,7 @@ clean:
 	@echo "Removing Michelson files"
 	@rm -rf *.tz
 	@echo "Removing Michelson 'json format' files"
-	@rm -rf *.json
+	@rm Multisig.json
 
 test: tests/tests.jsligo
 	@echo "Running tests"

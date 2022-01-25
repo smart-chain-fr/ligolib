@@ -1,6 +1,11 @@
 #import "partials/methods.jsligo" "M"
 
-const main = ([ep, store] : [M.T.entrypoint_multisig, M.T.storage_multisig]) : M.T.return_multisig => {
+
+type entrypoint_multisig =
+| ["Create_proposal", proposal_params]
+| ["Sign", nat];
+
+const main = ([ep, store] : [entrypoint_multisig, M.T.storage_multisig]) : M.T.return_multisig => {
     return match (ep, {
         Create_proposal:   (p: M.T.proposal_params) => M.create_proposal(p, store),
         Sign:               (p: nat) => M.sign(p, store)

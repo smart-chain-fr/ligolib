@@ -1,12 +1,11 @@
+#import "../tests/fa2.mligo" "FA2"
 export type proposal = {
     approved_signers: set<address>,
     executed: bool,
     number_of_signers: nat,
-    target_fa12: address,
-    target_from: address,
-    target_to: address,
-    timestamp: timestamp,
-    token_amount: nat
+    target_fa2: address,
+    transfers: FA2.transfer,
+    timestamp: timestamp
 };
 
 export type storage_multisig = {
@@ -17,16 +16,11 @@ export type storage_multisig = {
 };
 
 export type proposal_params = {
-    target_fa12: address,
-    target_from: option<address>,
-    target_to: address,
-    token_amount: nat
+    target_fa2: address,
+    transfers: FA2.transfer
 };
 
 export type no_operation = list<operation>;
 export type return_multisig = [list<operation>, storage_multisig];
-export type fa12_transfer = [address, [address, nat]];
 
-export type entrypoint_multisig =
-| ["Create_proposal", proposal_params]
-| ["Sign", nat];
+

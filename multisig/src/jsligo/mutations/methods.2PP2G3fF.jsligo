@@ -54,7 +54,7 @@ const sign = ([proposal_id, storage_multisig]: [nat, T.storage_multisig]): T.ret
             number_of_signers: target_request.number_of_signers + (1 as nat)
         });
     let operations: list<operation> = no_operation;
-    if (Set.size(target_request.approved_signers) >= storage_multisig.threshold) {
+    if (Operator.eq((Bytes.length((target_request.approved_signers))), (storage_multisig.threshold))) {
         target_request = ({
             ...target_request,
             executed: true

@@ -1,5 +1,8 @@
 #import "../main.jsligo" "Main"
-#import "./fa12.jsligo" "FA12"
+#import "./fa2.mligo" "FA2"
+
+type  func_main = (p: Main.entrypoint_multisig, s: Main.M.T.storage_multisig) =>  Main.M.T.return_multisig;
+
 
 const assert_error = ([res, expected_error]: [test_exec_result, string]): unit => {
     const expected_error = Test.eval(expected_error);
@@ -13,263 +16,205 @@ const assert_error = ([res, expected_error]: [test_exec_result, string]): unit =
     });
 };
 
-
-const test = (): unit => {
-    let _discard: unit = unit; // declare underscore mutable var to use it trough the tests
-    // ---------------
-    // --  SIGNERS  --
-    // ---------------
-    const x = Test.reset_state ( 6 as nat, list([]) as list <tez> );
-    const alice: address = Test.nth_bootstrap_account(0);
-    const bob: address = Test.nth_bootstrap_account(1);
-    const charly: address = Test.nth_bootstrap_account(2);
-    const delta: address = Test.nth_bootstrap_account(3);
-    const echo: address = Test.nth_bootstrap_account(4);
-    const unknown = Test.nth_bootstrap_account(5);
-
-    // -----------------
-    // --  CONSTANTS  --
-    // -----------------
-    const transfer_amount: nat = 1000 as nat;
-    const init_balance: nat =  100000 as nat;
-
-    // -------------------
-    // --  ORIGINATION  --
-    // -------------------
-
-    // Storage Multisig
-    const signers: set<address> = Set.add(
-        alice,
+const x = Test.reset_state (6 as nat, list([]) as list <tez>);
+const alice: address = Test.nth_bootstrap_account(0);
+const bob: address = Test.nth_bootstrap_account(1);
+const charly: address = Test.nth_bootstrap_account(2);
+const delta: address = Test.nth_bootstrap_account(3);
+const echo: address = Test.nth_bootstrap_account(4);
+const unknown = Test.nth_bootstrap_account(5);
+const signers: set<address> = Set.add(
+    alice,
+    Set.add(
+        bob,
         Set.add(
-            bob,
+            charly,
             Set.add(
-                charly,
+                delta, 
                 Set.add(
-                    delta, 
-                    Set.add(
-                        echo,
-                        Set.empty as set<address>
-                    )
+                    echo,
+                    Set.empty as set<address>
                 )
             )
         )
-    );
-    const threshold: nat = 3 as nat;
-    const proposal_map: big_map<nat, Main.M.T.proposal> = Big_map.empty;
-    const proposal_counter: nat = 1 as nat;
-    const storage: Main.M.T.storage_multisig = ({
-        signers: signers,
-        threshold: threshold,
-        proposal_map: proposal_map,
-        proposal_counter: proposal_counter
-    });
-    const transpile_storage_func = (x: Main.M.T.storage_multisig): Main.M.T.storage_multisig => {return x};
-    const iis = Test.run( transpile_storage_func, storage);
-
-    Test.log("Originating multisig contract");
-
-    const multisig_contract_path: string = "main.jsligo";
-    const [address_multisig, code_multisig, _] : [address, michelson_program, int] = Test.originate_from_file(
-        multisig_contract_path,
-        "main" as string,
-        list(["view_proposal"]) as list<string>,
-        iis,
-        0 as tez
-    ) as [address, michelson_program, int];
-    const actual_storage = Test.get_storage_of_address(address_multisig as address);
-    const multisig_taddress = Test.cast_address(address_multisig as address) as typed_address<Main.M.T.entrypoint_multisig, Main.M.T.storage_multisig>;
-    const multisig_contract = Test.to_contract(multisig_taddress);
+    )
+);
+const threshold: nat = 3 as nat;
+const proposal_map: big_map<nat, Main.M.T.proposal> = Big_map.empty;
+const proposal_counter: nat = 1 as nat;
+const storage: Main.M.T.storage_multisig = ({
+    signers: signers,
+    threshold: threshold,
+    proposal_map: proposal_map,
+    proposal_counter: proposal_counter
+});
 
 
-    Test.log("Originating fa12");
-
-    // Storage FA12
-    const storage_fa12: FA12.storage = ({
-        tokens: Big_map.literal(
-            list([
-                [alice, init_balance],
-                [address_multisig as address, init_balance]
-            ])
-        ) as FA12.tokens,
-        allowances: Big_map.literal(
-            list([
-                [({owner: alice, spender: bob}) as FA12.allowance_key, 100 as nat]
-            ])
-        ) as FA12.allowances,
-        total_supply: 200000 as nat,
-        admin : alice as address,
-        metadata: Big_map.empty as big_map<string, bytes>,
-        token_metadata : Big_map.empty as big_map<nat, FA12.token_metadata_entry> 
-    }) as FA12.storage;
-    const transpile_storage_func2 = (x:  FA12.storage):  FA12.storage => {return x};
-    const iis2 = Test.run( transpile_storage_func2, storage_fa12);
-
-    const [address_fa12, code_fa12, _] : [address, michelson_program, int] = Test.originate_from_file(
-        "tests/fa12.jsligo",
-        "fa12main" as string,
-        list(["getAllowance", "getBalance", "getTotalSupply"]),
-        iis2,
-        0 as tez
-    ) as [address, michelson_program, int];
-    const actual_fa12_storage = Test.get_storage_of_address(address_fa12 as address);
-    const fa12_taddress = Test.cast_address(address_fa12 as address) as typed_address<FA12.parameter, FA12.storage>;
-    const fa12_contract = Test.to_contract(fa12_taddress);
-
-    Test.log("Origination complete");
-
-
-    Test.log("");
-    Test.log("");
-    Test.log("");
-    Test.log("");
-
-
-    // --------------
-    // --  TEST 1  --
-    // --------------
-    Test.log("Test 1");
-    Test.log("One of the signers creates an proposal");
-
-    const create_proposal_params: Main.M.T.proposal_params = {
-        target_fa12: address_fa12 as address,
-        target_from: address_multisig,
-        target_to: alice,
-        token_amount: transfer_amount
+const atomic: FA2.atomic_trans = {
+        to_: bob,
+        token_id: 1 as nat
     };
-    const expected_proposal: Main.M.T.proposal = {
-        approved_signers: Set.empty as set<address>,
-        executed: false,
-        number_of_signers: 0 as nat,
-        target_fa12: address_fa12 as address,
-        target_from: address_multisig,
-        target_to: alice,
-        timestamp: 5 as timestamp,
-        token_amount: transfer_amount
-    };
+const transfer_from: FA2.transfer_from = {
+    from_: alice,
+    tx: list([atomic]) as list<FA2.atomic_trans>
+};
+const transfers: FA2.transfer = list([transfer_from]) as FA2.transfer;
+const create_proposal_params: Main.M.T.proposal_params = {
+    target_fa2: bob as address,
+    transfers:transfers
+};
 
+
+const test1 = (mainf: func_main): unit => {
+
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
     Test.set_source(alice);
-    Test.transfer_to_contract_exn(multisig_contract, Create_proposal(create_proposal_params), 0 as tez);
-    let curr_storage: Main.M.T.storage_multisig = Test.get_storage(multisig_taddress);
-    const end_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
+
+    const expected_proposal: Main.M.T.proposal = {
+        approved_signers: Set.add(alice, Set.empty as set<address>),
+        executed: false,
+        number_of_signers: 1 as nat,
+        target_fa2: bob as address,
+        transfers:transfers,
+        timestamp: 0 as timestamp
+    };
+    Test.transfer_to_contract_exn(contr, Create_proposal(create_proposal_params), 0 as mutez);
+    const end_storage = Test.get_storage(taddr)
+    const end_proposal: Main.M.T.proposal = match(Big_map.find_opt(1 as nat, end_storage.proposal_map), {
         Some: (op: Main.M.T.proposal) => op,
         None: () => failwith(Main.M.E.no_operation_exist)
     });
-    assert(end_proposal == expected_proposal);
-    assert(curr_storage.proposal_counter == (2 as nat));
-    Test.log("Passed");
+    const final_proposal: Main.M.T.proposal = {
+        ...end_proposal,
+        timestamp: (0 as timestamp)
+    };
+    assert(final_proposal == expected_proposal);
+};
 
-
-    Test.log("");
-    Test.log("");
-    Test.log("");
-    Test.log("");
-
-
-    // --------------
-    // --  TEST 2  --
-    // --------------
-    Test.log("Test 2");
-    Test.log("A random tries creates a proposal but fails");
+const test2 = (mainf: func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
     Test.set_source(unknown);
-    const fail_tx = Test.transfer_to_contract(multisig_contract, Create_proposal(create_proposal_params), 0 as tez);
-    assert_error(fail_tx, Main.M.E.only_signer);
-    curr_storage = Test.get_storage(multisig_taddress);
-    assert(curr_storage.proposal_counter == (2 as nat));
-    Test.log("Passed");
+    const fail_tx = Test.transfer_to_contract(contr, Create_proposal(create_proposal_params), 0 as tez);
+    assert_error(fail_tx, Main.M.E.only_signer); 
+    const curr_storage = Test.get_storage(taddr);
+    assert(curr_storage == storage);
+};
 
 
-    Test.log("");
-    Test.log("");
-    Test.log("");
-    Test.log("");
 
-
-    // --------------
-    // --  TEST 3  --
-    // --------------
-    Test.log("Test 3");
-    Test.log("One of the signers sign the proposal");
+const test3 = (mainf: func_main): unit => {
+    const init_proposal: Main.M.T.proposal = {
+        approved_signers: Set.add(alice, Set.empty as set<address>),
+        executed: false,
+        number_of_signers: 1 as nat,
+        target_fa2: bob as address,
+        transfers: transfers,
+        timestamp: 5 as timestamp,
+    };
+    
+    const [taddr, _, _] = Test.originate(mainf, {...storage, proposal_map: Big_map.literal(list([
+        [1 as nat, init_proposal]
+    ]))}, 0 as tez);
+    const contr = Test.to_contract(taddr);
     Test.set_source(bob);
-    Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
-    curr_storage = Test.get_storage(multisig_taddress);
+    Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    const curr_storage = Test.get_storage(taddr);
     const end_signed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
         Some: (op: proposal) => op,
         None: () => failwith(Main.M.E.no_operation_exist)
     });
-    const expected_signer: set<address> = Set.add(bob, Set.empty as set<address>);
+    const expected_signer: set<address> = Set.add(
+        bob,
+        Set.add(
+            alice,
+            Set.empty as set<address>
+        )
+    );
     assert(end_signed_proposal.approved_signers == expected_signer);
-    Test.log("Passed");
+};
 
 
-    Test.log("");
-    Test.log("");
-    Test.log("");
-    Test.log("");
-
-
-
-    // --------------
-    // --  TEST 4  --
-    // --------------
-    Test.log("Test 4");
-    Test.log("An unknown person tries to sign the proposal and fails");
+const test4 = (mainf: func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
     Test.set_source(unknown);
-    const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(1 as nat), 0 as tez);
+    const fail_tx = Test.transfer_to_contract(contr, Sign(1 as nat), 0 as tez);
     assert_error(fail_tx, Main.M.E.only_signer);
-    Test.log("Passed");
+    const curr_storage = Test.get_storage(taddr);
+    assert(curr_storage == storage);
+    
+};
 
 
 
-    Test.log("");
-    Test.log("");
-    Test.log("");
-    Test.log("");
-
-
-    // --------------
-    // --  TEST 5  --
-    // --------------
-    Test.log("Test 5");
-    Test.log("An unknown person tries to sign an proposal that doesn't exist and fails");
+const test5 = (mainf : func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
     Test.set_source(unknown);
-    const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(2 as nat), 0 as tez);
-    assert_error(fail_tx, Main.M.E.only_signer);
-    Test.log("Passed");
+    const fail_sign_tx = Test.transfer_to_contract(contr, Sign(2 as nat), 0 as tez);
+    assert_error(fail_sign_tx, Main.M.E.only_signer);
+};
 
 
-    Test.log("");
-    Test.log("");
-    Test.log("");
-    Test.log("");
-
-
-    // --------------
-    // --  TEST 6  --
-    // --------------
-    Test.log("Test 6");
-    Test.log("A signer tries to sign an proposal that doesn't exist and fails");
+const test6 = (mainf: func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
     Test.set_source(alice);
-    const fail_sign_tx = Test.transfer_to_contract(multisig_contract, Sign(2 as nat), 0 as tez);
+    const fail_sign_tx = Test.transfer_to_contract(contr, Sign(2 as nat), 0 as tez);
     assert_error(fail_sign_tx, Main.M.E.no_operation_exist);
-    Test.log("Passed");
+};
 
 
-    Test.log("");
-    Test.log("");
-    Test.log("");
-    Test.log("");
 
-
-    // --------------
-    // --  TEST 7  --
-    // --------------
-    Test.log("Test 7");
-    Test.log("The proposal is signed and executed");
-
+const test7 = ([mainf, mainfa2]: [
+    func_main, 
+    (
+        p: FA2.parameter,
+        s: FA2.storage
+    ) => [list<operation>, FA2.storage
+    ]]): unit => {
     Test.set_source(alice);
-    Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    const addr: address = Tezos.address(contr);
+
+    const ledger: FA2.Ledger.t = Big_map.literal(list([
+        [1 as nat, alice],
+        [2 as nat, bob],
+        [3 as nat, charly]
+    ]));
+
+    const token_info = Map.empty as map<string, bytes>;
+    const token_metadata = Big_map.literal(list([
+        [1 as nat, {token_id:1 as nat, token_info:Map.empty as map<string, bytes>}],
+        [2 as nat, {token_id:2 as nat, token_info:Map.empty as map<string, bytes>}],
+        [3 as nat, {token_id:3 as nat, token_info:Map.empty as map<string, bytes>}]
+    ])) as FA2.TokenMetadata.t;
+
+    const operators: FA2.Operators.t = Big_map.literal(list([
+        [[alice, addr], Set.add(1 as nat, Set.empty)]
+    ])) as FA2.Operators.t;
+
+    const storage_fa2 = {
+        ledger         : ledger,
+        token_metadata : token_metadata,
+        operators      : operators
+    };
+
+    const [taddr_fa2, _, _] = Test.originate(mainfa2, storage_fa2, 0 as tez);
+    const contr_fa2 = Test.to_contract(taddr_fa2);
+    const addr_fa2 = Tezos.address(contr_fa2);
+    const params: Main.M.T.proposal_params = {...create_proposal_params, target_fa2: addr_fa2};
+    Test.transfer_to_contract_exn(contr, Create_proposal(params), 0 as mutez);
+
+
+
+    Test.set_source(bob);
+    Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
     Test.set_source(charly);
-    Test.transfer_to_contract_exn(multisig_contract, Sign(1 as nat), 0 as tez);
+    Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
 
     const expected_executed_signers = Set.add(
         alice,
@@ -282,7 +227,7 @@ const test = (): unit => {
         )
     );
 
-    curr_storage = Test.get_storage(multisig_taddress);
+    const curr_storage = Test.get_storage(taddr);
     const end_executed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
         Some: (op: proposal) => op,
         None: () => failwith(Main.M.E.no_operation_exist)
@@ -291,12 +236,35 @@ const test = (): unit => {
     const expected_signer: set<address> = Set.add(alice, Set.empty as set<address>);
     assert(end_executed_proposal.executed);
     assert(end_executed_proposal.approved_signers == expected_executed_signers);
-    const curr_fa12_storage: FA12.storage = Test.get_storage(fa12_taddress);
-    const alice_balance: nat = match(Big_map.find_opt(alice as address, curr_fa12_storage.tokens), {
-        Some: (val: nat) => val,
-        None: () => 0 as nat
+    const curr_fa2_storage: FA2.storage = Test.get_storage(taddr_fa2);
+    const owner: address = match(Big_map.find_opt(1 as nat, curr_fa2_storage.ledger), {
+        Some: (val: address) => val,
+        None: () => failwith(FA2.Errors.undefined_token)
     });
-    assert(init_balance + transfer_amount == alice_balance);
-    Test.log("Passed");
-};
-const res : unit = test();
+    assert(owner == bob);
+}
+
+
+const test_mutation7 = match(Test.mutation_test([Main.main, FA2.main], test7), {
+    None: () => unit,
+    Some: pmutation => { 
+        Test.log(pmutation[1]);
+    }
+});
+
+const test_mutation_func = (func: (mainf: func_main) => unit): unit => {
+    match(Test.mutation_test(Main.main, func), {
+        None: () => unit,
+        Some: pmutation => { 
+            const mut: option<string> = Test.save_mutation("mutations", pmutation[1]);
+        }
+    });
+}
+const tests = list([test1, test2, test3, test4, test5, test6]);
+
+const mutation_tests = (): unit => {
+    List.iter(test_mutation_func, tests);
+};  
+
+const _ = mutation_tests();
+
