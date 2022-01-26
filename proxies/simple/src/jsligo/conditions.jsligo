@@ -1,0 +1,10 @@
+#import "constants.jsligo" "Constants"
+#import "errors.jsligo" "Errors" 
+
+//@inline @no_mutation
+const only_sender = (sender_:address) : unit => 
+  assert_with_error(Tezos.sender == sender_, Errors.sender_not_allowed);
+
+//@inline @no_mutation
+const amount_must_be_zero_tez = (): unit =>
+    assert_with_error(Tezos.amount == Constants.zero_amount, Errors.not_zero_amount);

@@ -1,0 +1,90 @@
+/** 
+  This file implements a basic proxy example
+*/
+
+#import "constants.jsligo" "Constants"
+#import "errors.jsligo" "Errors" 
+#import "parameter.jsligo" "Parameter"
+#import "storage.jsligo" "Storage" 
+
+export type storage = Storage.Types.t;
+export type parameter = Parameter.Types.t;
+export type result = [list<operation>, storage];
+
+const get_current_addr = (s: storage) : address =>  
+    match(Map.find_opt(s.version, s.versions), {
+        Some: (addr: address) => addr,
+        None: () => (failwith(Errors.undefined_version))
+    });
+
+// @no_mutation
+const get_increment_entrypoint = (addr: address) : contract<int> => {
+    const maybe_contract : option<contract<int>> = Tezos.get_entrypoint_opt("%increment", addr);
+
+    return match (maybe_contract, {
+        Some: c => c,
+        None: () =>  (failwith(Errors.undefined_receiver))
+    });
+};
+
+// @no_mutation
+const get_decrement_entrypoint = (addr: address) : contract<int> => {
+    const maybe_contract : option<contract<int>> = Tezos.get_entrypoint_opt("%decrement", addr);
+
+    return match (maybe_contract, {
+        Some: c => c,
+        None: () =>  (failwith(Errors.undefined_receiver))
+    });
+};
+
+const get_reset_entrypoint = (addr: address) : contract<unit> => {
+    const maybe_contract : option<contract<unit>> = Tezos.get_entrypoint_opt("%reset", addr);
+
+    return match (maybe_contract, {
+        Some: c => c,
+        None: () =>  (failwith(Errors.undefined_receiver))
+    });
+};
+
+const increment = ([s, n]: [storage, int]) : result => {
+    const addr = get_current_addr(s); 
+    const dest = get_increment_entrypoint(addr);
+    /* @no_mutation */ const op = Tezos.transaction(n, 0 as mutez, dest)
+
+    return [list([op]), s]
+};
+
+const decrement = ([s, n]: [storage, int]) : result => {
+    const addr = get_current_addr(s); 
+    const dest = get_decrement_entrypoint(addr);
+    /* @no_mutation */ const op = Tezos.transaction(n, 0 as mutez, dest)
+
+    return [list([op]), s]
+};
+
+const reset = (s: storage) : result => {
+    const addr = get_current_addr(s); 
+    const dest = get_reset_entrypoint(addr);
+    /* @no_mutation */ const op = Tezos.transaction(unit, 0 as mutez, dest)
+
+    return [list([op]), s]
+};
+
+const main = ([action, store]: [parameter, storage]) : result => 
+    match(action, {
+        TransferOwnership: (addr: address) => [
+            Constants.no_operation, 
+            Storage.Utils.transfer_ownership(store, addr)
+        ],
+        AddVersion: (v: Parameter.Types.new_version) => [
+            Constants.no_operation, 
+            Storage.Utils.add_version(store, v) 
+        ],
+        SetVersion: (v: string) => [
+            Constants.no_operation,
+            Storage.Utils.set_version(store, v)
+        ],
+        Increment: (n: int) => increment(store, n),
+        Decrement: (n: int) => decrement(store, n),
+        Reset: _unit => reset(store)
+    }); 

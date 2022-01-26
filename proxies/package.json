@@ -1,0 +1,26 @@
+{
+  "name": "proxy",
+  "version": "1.0.0",
+  "description": "A contract that let you provide a contract interface with multiples implementations.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@taquito/signer": "^11.1.0",
+    "@taquito/taquito": "^11.1.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.5"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.10.1",
+    "@typescript-eslint/parser": "^5.10.1",
+    "eslint": "^8.7.0"
+  }
+}

@@ -1,0 +1,4 @@
+const sender_not_allowed = "PROXY_SENDER_NOT_ALLOWED" 
+const undefined_version = "PROXY_UNDEFINED_VERSION"
+const undefined_receiver  = "PROXY_UNDEFINED_RECEIVER"
+const not_zero_amount = "PROXY_NOT_ZERO_AMOUNT"

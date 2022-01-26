@@ -1,0 +1,35 @@
+#import "parameter.jsligo" "Parameter"
+#import "conditions.jsligo" "Conditions"
+
+export namespace Types {
+    type versions = map<string, address>;
+
+    export type t = {
+      owner: address,
+      version: string,
+      versions: versions
+    };
+};
+
+export namespace Utils {
+    export const transfer_ownership = ([s, new_owner]: [Types.t, address]) : Types.t => {
+        Conditions.amount_must_be_zero_tez();
+        Conditions.only_sender(s.owner);
+        return { ...s, owner: new_owner }
+    };
+
+    export const add_version = ([s, v]: [Types.t, Parameter.Types.new_version]) : Types.t => {
+        Conditions.amount_must_be_zero_tez();
+        Conditions.only_sender(s.owner);
+        return { 
+            ...s, 
+            versions: Map.add(v.label, v.dest, s.versions) 
+        }
+    };
+
+    export const set_version = ([s, v]: [Types.t, string]) : Types.t  => {
+        Conditions.amount_must_be_zero_tez();
+        Conditions.only_sender(s.owner);
+        return { ...s, version: v }
+    };
+};

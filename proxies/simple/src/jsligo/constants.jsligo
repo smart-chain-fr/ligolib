@@ -1,0 +1,2 @@
+export const no_operation : list<operation> = list([]);
+export const zero_amount = 0 as mutez

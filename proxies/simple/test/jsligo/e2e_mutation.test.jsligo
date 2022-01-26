@@ -1,0 +1,28 @@
+#import "../../src/jsligo/proxy.jsligo" "Proxy"
+#import "./proxy.test.jsligo" "Test_Proxy"
+
+const originate_and_test_e2e = (main : Test_Proxy.main_fn) : unit => {
+      Test_Proxy._test_not_owner(main);
+      Test_Proxy._test_not_zero_amount(main);
+      Test_Proxy._test_transfer_ownership_success(main);
+      Test_Proxy._test_add_version_success(main);
+      Test_Proxy._test_set_version_success(main);
+      Test_Proxy._test_add_and_set_version_success(main);
+      Test_Proxy._test_increment_success_featurev1(main);
+      Test_Proxy._test_decrement_success_featurev1(main);
+      Test_Proxy._test_reset_success_featurev1(main);
+      return unit;
+}
+
+const test_mutation = 
+    match(Test.mutation_test_all(Proxy.main, originate_and_test_e2e), list([
+        ([]: list<[unit, mutation]>) => unit,
+        ([hd,...tl]: list<[unit, mutation]>) => {
+            const ms = list([hd, ...tl]);
+            for (const m of ms) {
+                const [_, mutation] = m;
+                Test.log(mutation);
+            };
+            failwith ("Some mutation also passes the tests! ^^")
+          }
+    ]));

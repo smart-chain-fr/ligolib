@@ -1,0 +1,232 @@
+#import "../../src/jsligo/proxy.jsligo" "Proxy"
+#import "../helpers/assert.jsligo" "Assert"
+#import "../../src/jsligo/errors.jsligo" "Errors"
+
+export type main_fn = (p: Proxy.parameter, s: Proxy.storage) => Proxy.result;
+
+// Helpers
+const proxy_storage = (
+  owner: address, 
+  version: string, 
+  versions: map<string, address>
+) : Proxy.storage => ({ owner, version, versions }) ;
+
+const base_proxy_storage = (owner: address) : Proxy.storage => {
+  const empty: map<string, address> = Map.empty;
+
+  return proxy_storage(owner, "", empty)
+};
+
+const new_proxy = (init_storage: Proxy.storage, main: main_fn) : [
+  typed_address<Proxy.parameter, Proxy.storage>, 
+  contract<Proxy.parameter>
+  ] => {
+    const [taddr, _, _] = Test.originate(main, init_storage, 0 as mutez);
+    const contr = Test.to_contract(taddr);
+
+    return [taddr, contr]
+}
+
+const new_featurev1_address = (init_storage: int) : address => {
+    const f = "./src/common/featurev1.mligo";
+    const v_mich = Test.run(((x:int): int => x), init_storage);
+    const [addr, _, _] = Test.originate_from_file(f, "main", v_mich, 0 as mutez);
+
+    return addr
+}
+
+const new_featurev2_address = (init_storage: big_map<address,int>) : address => {
+    const f = "./src/common/featurev2.mligo";
+    const v_mich = Test.run(((x:big_map<address, int>): big_map<address, int> => x), init_storage);
+    const [addr, _, _] = Test.originate_from_file(f, "main", v_mich, 0 as mutez);
+
+    return addr
+};
+ 
+/* Owner */
+
+/* Test protected entry points */
+const _test_not_owner = (main: main_fn) : unit => {
+    const featurev1_addr = new_featurev1_address(0);
+    const owner = Test.nth_bootstrap_account(0);
+    const [_, c] = new_proxy(base_proxy_storage(owner), main);
+
+    const sender_ = Test.nth_bootstrap_account(1);
+    Test.set_source(sender_)
+    const transfer_ownership_result = Test.transfer_to_contract(c, TransferOwnership(sender_), 0 as mutez);
+    const new_version = { label: "someversion", dest: featurev1_addr };
+    const add_version_result = Test.transfer_to_contract(c, AddVersion(new_version), 0 as mutez);
+    const set_version_result = Test.transfer_to_contract(c, SetVersion("someversion"), 0 as mutez);
+    Assert.string_failure(transfer_ownership_result, Errors.sender_not_allowed);
+    Assert.string_failure(add_version_result, Errors.sender_not_allowed);
+    Assert.string_failure(set_version_result, Errors.sender_not_allowed);
+};
+
+const test_not_owner = _test_not_owner(Proxy.main);
+
+const _test_transfer_ownership_success = (main: main_fn) : unit => {
+    const owner = Test.nth_bootstrap_account(0);
+    const storage = base_proxy_storage(owner);
+    const [taddr, c] = new_proxy(storage, main);
+
+    const new_owner = Test.nth_bootstrap_account(1);
+    Test.set_source(owner);
+    const _ = Test.transfer_to_contract_exn(c, TransferOwnership(new_owner), 0 as mutez);
+
+    assert(Test.get_storage(taddr) == ({ ...storage, owner: new_owner }));
+};
+
+const test_transfer_ownership_success = _test_transfer_ownership_success(Proxy.main);
+
+const _test_not_zero_amount = (main: main_fn) : unit => { 
+    const owner = Test.nth_bootstrap_account(0);
+    const storage = base_proxy_storage(owner);
+    const [_, c] = new_proxy(storage, main);
+
+    const other = Test.nth_bootstrap_account(1);
+    Test.set_source(owner);
+    const result = Test.transfer_to_contract(c, TransferOwnership(other), 3 as mutez);
+    Assert.string_failure(result, Errors.not_zero_amount);
+}
+
+let test_not_zero_amount = _test_not_zero_amount(Proxy.main);
+
+const _test_add_version_success  = (main: main_fn) : unit => {
+    const featurev1_addr = new_featurev1_address(0);
+    const owner = Test.nth_bootstrap_account(0);
+    const storage = base_proxy_storage(owner);
+    const [taddr, c] = new_proxy(storage, main);
+
+    Test.set_source(owner);
+    const _ = Test.transfer_to_contract_exn(c, AddVersion({
+        label: "featurev1",
+        dest: featurev1_addr
+    }), 0 as mutez);
+
+    assert(Test.get_storage(taddr) == ({ 
+        ...storage, 
+        versions: Map.literal(
+            list([["featurev1", featurev1_addr]])
+        )
+    }));
+}
+
+const test_add_version_success = _test_add_version_success(Proxy.main);
+
+const _test_set_version_success = (main: main_fn) : unit => {
+    const featurev1_addr = new_featurev1_address(0);
+    const owner = Test.nth_bootstrap_account(0);
+    const base_storage = base_proxy_storage(owner);
+    const storage = { 
+        ...base_storage, 
+        versions: Map.literal(
+            list([["featurev1", featurev1_addr]])
+        )
+    };
+    const [taddr, c] = new_proxy(storage, main);
+
+    Test.set_source(owner);
+    const _ = Test.transfer_to_contract_exn(c, SetVersion("featurev1"), 0 as mutez);
+
+    assert(Test.get_storage(taddr) == ({ ...storage,
+        version: "featurev1",
+        versions: Map.literal(
+            list([["featurev1", featurev1_addr]])
+        )
+    }));
+}
+
+const test_set_version_success = _test_set_version_success(Proxy.main)
+
+const _test_add_and_set_version_success = (main: main_fn) : unit => {
+    const sender_ = Test.nth_bootstrap_account(0);
+    const featurev1_addr = new_featurev1_address(0);
+    const featurev2_addr = new_featurev2_address(Big_map.literal(list([[sender_, 21]])));
+    const owner = Test.nth_bootstrap_account(1);
+    const base_storage = base_proxy_storage(owner);
+    const storage = { 
+        ...base_storage, 
+        versions: Map.literal(
+            list([["featurev1", featurev1_addr]])
+        )
+    };
+    const [taddr, c] = new_proxy(storage, main);
+
+    Test.set_source(owner);
+    let _ = Test.transfer_to_contract_exn(c, AddVersion({
+        label: "featurev2",
+        dest: featurev2_addr
+    }), 0 as mutez);
+    _ = Test.transfer_to_contract_exn(c, SetVersion("featurev2"), 0 as mutez);
+
+    assert(Test.get_storage(taddr) == ({ ...storage,
+        version: "featurev2",
+        versions: Map.literal(list([
+            ["featurev1", featurev1_addr],
+            ["featurev2", featurev2_addr]
+        ]))
+    }));
+};
+
+const test_add_and_set_version_success = _test_add_and_set_version_success(Proxy.main);
+
+const _test_increment_success_featurev1 = (main: main_fn) : unit => {
+    const sender_ = Test.nth_bootstrap_account(0)
+    const featurev1_addr = new_featurev1_address(0);
+    const owner = Test.nth_bootstrap_account(1);
+    const base_storage = base_proxy_storage(owner);
+    const storage = { 
+        ...base_storage, 
+        versions: Map.literal(
+            list([["featurev1", featurev1_addr]])
+        )
+    };
+    const [taddr, c] = new_proxy(storage, main);
+    Test.set_source(owner);
+    let _ = Test.transfer_to_contract_exn(c, SetVersion("featurev1"), 0 as mutez);
+    _ = Test.transfer_to_contract_exn(c, Increment(1), 0 as mutez);
+    const actual_storage = Test.get_storage_of_address(featurev1_addr);
+    assert(actual_storage == Test.run(((x:int) : int => x), 1))
+}
+
+const test_increment_success_featurev1 = _test_increment_success_featurev1(Proxy.main)
+
+const _test_decrement_success_featurev1 = (main: main_fn) : unit => {
+    const sender_ = Test.nth_bootstrap_account(0)
+    const featurev1_addr = new_featurev1_address(0);
+    const owner = Test.nth_bootstrap_account(1);
+    const base_storage = base_proxy_storage(owner);
+    const storage = { 
+        ...base_storage, 
+        versions: Map.literal(
+            list([["featurev1", featurev1_addr]])
+        )
+    };
+    const [taddr, c] = new_proxy(storage, main);
+    Test.set_source(owner);
+    let _ = Test.transfer_to_contract_exn(c, SetVersion("featurev1"), 0 as mutez);
+    _ = Test.transfer_to_contract_exn(c, Decrement(1), 0 as mutez);
+    const actual_storage = Test.get_storage_of_address(featurev1_addr);
+    assert(actual_storage == Test.run(((x:int) : int => x), -1))
+}
+
+const _test_reset_success_featurev1 = (main: main_fn) : unit => {
+    const sender_ = Test.nth_bootstrap_account(0)
+    const featurev1_addr = new_featurev1_address(23);
+    const owner = Test.nth_bootstrap_account(1);
+    const base_storage = base_proxy_storage(owner);
+    const storage = { 
+        ...base_storage, 
+        versions: Map.literal(
+            list([["featurev1", featurev1_addr]])
+        )
+    };
+    const [taddr, c] = new_proxy(storage, main);
+    Test.set_source(owner);
+    let _ = Test.transfer_to_contract_exn(c, SetVersion("featurev1"), 0 as mutez);
+    _ = Test.transfer_to_contract_exn(c, Reset(), 0 as mutez);
+    const actual_storage = Test.get_storage_of_address(featurev1_addr);
+    assert(actual_storage == Test.run(((x:int) : int => x), 0))
+}
+
+const test_reset_success_featurev1 = _test_reset_success_featurev1(Proxy.main)

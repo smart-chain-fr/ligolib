@@ -1,0 +1,15 @@
+export namespace Types {
+    export type new_version = {
+        label: string,
+        dest: address
+    };
+
+    export type t = 
+        | ["TransferOwnership", address]
+        | ["AddVersion", new_version]
+        | ["SetVersion", string]
+        | ["Increment", int]
+        | ["Decrement", int]
+        | ["Reset", unit]
+    ;
+}
