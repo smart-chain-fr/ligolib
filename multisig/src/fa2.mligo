@@ -180,6 +180,7 @@ type operator = [@layout:comb] {
    operator : address;
    token_id : nat; 
 }
+
 type unit_update      = Add_operator of operator | Remove_operator of operator
 type update_operators = unit_update list
 

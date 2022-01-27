@@ -45,16 +45,16 @@ const sign = ([proposal_id, storage_multisig]: [nat, T.storage_multisig]): T.ret
     assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.only_signer);
     let target_request: T.proposal = match (Big_map.find_opt(proposal_id, storage_multisig.proposal_map), {
         Some: (op: T.proposal) => op,
-        None: () => (failwith(E.no_proposal_exist))
+        None: () => (failwith(E.no_operation_exist))
     });
-    assert_with_error(!Set.mem(Tezos.sender, target_request.approved_signers), E.has_already_signed); // quite useless
+    assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.has_already_signed); // quite useless
     target_request = ({
             ...target_request,
             approved_signers: Set.add(Tezos.sender, target_request.approved_signers),
             number_of_signers: target_request.number_of_signers + (1 as nat)
         });
     let operations: list<operation> = no_operation;
-    if (Set.size(target_request.approved_signers) >= storage_multisig.threshold) {
+    if (Operator.eq((Bytes.length((target_request.approved_signers))), (storage_multisig.threshold))) {
         target_request = ({
             ...target_request,
             executed: true

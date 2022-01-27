@@ -1,32 +1,26 @@
-
-export type max_duration_in_sec = nat;
-
-export type operation_request = {
-    target_to: address,
-    target_fa12: address,
-    token_amount: nat,
-    timestamp: timestamp,
+#import "../tests/fa2.mligo" "FA2"
+export type proposal = {
     approved_signers: set<address>,
-    executed: bool
+    executed: bool,
+    number_of_signers: nat,
+    target_fa2: address,
+    transfers: FA2.transfer,
+    timestamp: timestamp
 };
 
 export type storage_multisig = {
     signers: set<address>,
     threshold: nat,
-    operation_map: big_map<nat, operation_request>,
-    operation_counter: nat
+    proposal_map: big_map<nat, proposal>,
+    proposal_counter: nat
 };
 
-export type operation_params = {
-    target_fa12: address,
-    target_to: address,
-    token_amount: nat
+export type proposal_params = {
+    target_fa2: address,
+    transfers: FA2.transfer
 };
 
 export type no_operation = list<operation>;
 export type return_multisig = [list<operation>, storage_multisig];
-export type fa12_transfer = [address, [address, nat]];
 
-export type entrypoint_multisig =
-| ["Create_operation", operation_params]
-| ["Sign", nat];
+
