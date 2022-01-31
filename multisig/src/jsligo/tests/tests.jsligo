@@ -1,5 +1,5 @@
-#import "../../cameligo/main.mligo" "Main"
-//#import "../main.jsligo" "Main"
+//#import "../../cameligo/main.mligo" "Main"
+#import "../main.jsligo" "Main"
 #import "./fa2.mligo" "FA2"
 
 type  func_main = (p: Main.entrypoint_multisig, s: Main.M.T.storage_multisig) =>  Main.M.T.return_multisig;
@@ -67,7 +67,6 @@ const create_proposal_params: Main.M.T.proposal_params = {
 
 
 const test1 = (mainf: func_main): unit => {
-
     const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
     const contr = Test.to_contract(taddr);
     Test.set_source(alice);
@@ -80,7 +79,7 @@ const test1 = (mainf: func_main): unit => {
         transfers:transfers,
         timestamp: 0 as timestamp
     };
-    Test.transfer_to_contract_exn(contr, Create_proposal(create_proposal_params), 0 as mutez);
+    const gas_used: nat = Test.transfer_to_contract_exn(contr, Create_proposal(create_proposal_params), 0 as mutez);
     const end_storage = Test.get_storage(taddr);
     const end_proposal: Main.M.T.proposal = match(Big_map.find_opt(1 as nat, end_storage.proposal_map), {
         Some: (op: Main.M.T.proposal) => op,
@@ -115,12 +114,14 @@ const test3 = (mainf: func_main): unit => {
         timestamp: 5 as timestamp,
     };
     
-    const [taddr, _, _] = Test.originate(mainf, {...storage, proposal_map: Big_map.literal(list([
+    const [taddr, _, _] = Test.originate(mainf, {
+        ...storage, proposal_map: Big_map.literal(list([
         [1 as nat, init_proposal]
-    ]))}, 0 as tez);
+    ]))}
+    , 0 as tez);
     const contr = Test.to_contract(taddr);
     Test.set_source(bob);
-    Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    const gas_used: nat = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
     const curr_storage = Test.get_storage(taddr);
     const end_signed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
         Some: (op: proposal) => op,
@@ -177,7 +178,19 @@ const test7 = ([mainf, mainfa2]: [
     ) => [list<operation>, FA2.storage
     ]]): unit => {
     Test.set_source(alice);
-    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const init_proposal: Main.M.T.proposal = {
+        approved_signers: Set.add(alice, Set.add(bob,Set.empty as set<address>)),
+        executed: false,
+        number_of_signers: 2 as nat,
+        target_fa2: bob as address,
+        transfers: transfers,
+        timestamp: 0 as timestamp,
+    };
+    const storage_init = {
+        ...storage, proposal_map: Big_map.literal(list([
+        [1 as nat, init_proposal]
+    ]))};
+    const [taddr, _, _] = Test.originate(mainf, storage_init, 0 as tez);
     const contr = Test.to_contract(taddr);
     const addr: address = Tezos.address(contr);
 
@@ -208,14 +221,10 @@ const test7 = ([mainf, mainfa2]: [
     const contr_fa2 = Test.to_contract(taddr_fa2);
     const addr_fa2 = Tezos.address(contr_fa2);
     const params: Main.M.T.proposal_params = {...create_proposal_params, target_fa2: addr_fa2};
-    Test.transfer_to_contract_exn(contr, Create_proposal(params), 0 as mutez);
+    const gas_used: nat = Test.transfer_to_contract_exn(contr, Create_proposal(params), 0 as mutez);
 
-
-
-    Test.set_source(bob);
-    Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
     Test.set_source(charly);
-    Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    const gas_used: nat = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
 
     const expected_executed_signers = Set.add(
         alice,
@@ -233,7 +242,6 @@ const test7 = ([mainf, mainfa2]: [
         Some: (op: proposal) => op,
         None: () => failwith(Main.M.E.no_proposal_exist)
     });
-
     const expected_signer: set<address> = Set.add(alice, Set.empty as set<address>);
     assert(end_executed_proposal.executed);
     assert(end_executed_proposal.approved_signers == expected_executed_signers);
@@ -242,31 +250,32 @@ const test7 = ([mainf, mainfa2]: [
         Some: (val: address) => val,
         None: () => failwith(FA2.Errors.undefined_token)
     });
+    failwith("test");
     assert(owner == bob);
-}
+};
 
 
-const test_mutation7 = match(Test.mutation_test([Main.main, FA2.main], test7), {
-    None: () => unit,
-    Some: pmutation => { 
-        Test.log(pmutation[1]);
-    }
-});
-
-const test_mutation_func = (func: (mainf: func_main) => unit): unit => {
-    match(Test.mutation_test(Main.main, func), {
-        None: () => unit,
-        Some: pmutation => { 
-            const mut: option<string> = Test.save_mutation("mutations", pmutation[1]);
-        }
-    });
-}
-const tests = list([test1, test2, test3, test4, test5, test6]);
-
-const mutation_tests = (): unit => {
-    List.iter(test_mutation_func, tests);
-};  
-
+//const test_mutation7 = match(Test.mutation_test([Main.main, FA2.main], test7), {
+//    None: () => unit,
+//    Some: pmutation => { 
+//        Test.log(pmutation[1]);
+//    }
+//});
+//
+//const test_mutation_func = (func: (mainf: func_main) => unit): unit => {
+//    match(Test.mutation_test(Main.main, func), {
+//        None: () => unit,
+//        Some: pmutation => { 
+//            const mut: option<string> = Test.save_mutation("mutations", pmutation[1]);
+//        }
+//    });
+//}
+//const tests = list([test1, test2, test3, test4, test5, test6]);
+//
+//const mutation_tests = (): unit => {
+//    List.iter(test_mutation_func, tests);
+//};  
+//
 //const _ = mutation_tests();
 const _1 = test1(Main.main);
 const _2 = test2(Main.main);
