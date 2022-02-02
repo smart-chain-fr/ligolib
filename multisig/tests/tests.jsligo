@@ -250,7 +250,7 @@ const test7 = ([mainf, mainfa2]: [
         Some: (val: address) => val,
         None: () => failwith(FA2.Errors.undefined_token)
     });
-    failwith("test");
+
     assert(owner == bob);
 };
 
@@ -283,4 +283,4 @@ const _3 = test3(Main.main);
 const _4 = test4(Main.main);
 const _5 = test5(Main.main);
 const _6 = test6(Main.main);
-
+const _7 = test7(Main.main, FA2.main);
