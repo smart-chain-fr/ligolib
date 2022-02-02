@@ -1,4 +1,4 @@
-#import "../tests/fa2.mligo" "FA2"
+#import "../../tests/fa2.mligo" "FA2"
 export type proposal = {
     approved_signers: set<address>,
     executed: bool,

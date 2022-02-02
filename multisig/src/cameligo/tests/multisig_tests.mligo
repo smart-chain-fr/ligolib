@@ -112,6 +112,7 @@ let test_create_multisig_proposal_with_a_signer_should_work =
     // Send a new proposal with a signer should work
     let () = Test.set_source alice in
     let tx : test_exec_result = Test.transfer_to_contract contract_multisig (Create_proposal(new_proposal)) 0mutez in
+    let () = Test.log(tx) in
     let new_storage : Storage.Types.t = Test.get_storage typed_address_multi in
     let proposal : Storage.Types.proposal = match Map.find_opt 1n new_storage.proposal_map with
         Some value -> value
