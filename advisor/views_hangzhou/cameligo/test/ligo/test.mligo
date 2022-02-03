@@ -1,5 +1,5 @@
-#import "../../advisor.mligo" "ADVISOR"
-#import "../../indice.mligo" "INDICE"
+#import "../../contracts/advisor/main.mligo" "ADVISOR"
+#import "../../contracts/indice/main.mligo" "INDICE"
 
 // ========== DEPLOY CONTRACT HELPER ============
 let originate_from_file (type s p) (file_path: string) (mainName : string) (views: string list) (storage: michelson_program) : address * (p,s) typed_address * p contract =
@@ -11,15 +11,15 @@ let _test =
   // deploy INDICE smart contract 
   let indice_initial_storage = 4 in
   let () = Test.log("deploy INDICE smart contract") in
-  let iis = Test.run (fun (x:INDICE.indiceStorage) -> x) indice_initial_storage in
+  let iis = Test.run (fun (x:INDICE.storage) -> x) indice_initial_storage in
   // path relative to where the command run test in runned
   //let indice_contract_path = "indice.mligo" in //"views_hangzhou/cameligo/indice.mligo" in
   //let (address_indice, code_indice, _) = Test.originate_from_file indice_contract_path "indiceMain" (["indice_value"] : string list) iis 0tez in
   //let actual_storage = Test.get_storage_of_address address_indice in
   //let indice_taddress = (Test.cast_address address_indice : (INDICE.indiceEntrypoints,INDICE.indiceStorage) typed_address) in
   //let indice_contract = Test.to_contract indice_taddress in
-  let (address_indice, indice_taddress, indice_contract) : address * (INDICE.indiceEntrypoints, INDICE.indiceStorage) typed_address * INDICE.indiceEntrypoints contract = 
-    originate_from_file "indice.mligo" "indiceMain" (["indice_value"] : string list) iis in
+  let (address_indice, indice_taddress, indice_contract) : address * (INDICE.parameter, INDICE.storage) typed_address * INDICE.parameter contract = 
+    originate_from_file "contracts/indice/main.mligo" "indiceMain" (["indice_value"] : string list) iis in
   let actual_storage = Test.get_storage_of_address address_indice in
 
   // INDICE Increment(1)
@@ -38,14 +38,14 @@ let _test =
 
   // deploy ADVISOR contract 
   let () = Test.log("deploy ADVISOR smart contract") in
-  let advisor_initial_storage : ADVISOR.advisorStorage = {indiceAddress=address_indice; algorithm=(fun(i : int) -> if i < 10 then True else False); result=False} in
-  let ais = Test.run (fun (x:ADVISOR.advisorStorage) -> x) advisor_initial_storage in
+  let advisor_initial_storage : ADVISOR.storage = {indiceAddress=address_indice; algorithm=(fun(i : int) -> if i < 10 then True else False); result=False} in
+  let ais = Test.run (fun (x:ADVISOR.storage) -> x) advisor_initial_storage in
   //let advisor_contract_path = "advisor.mligo" in //"views_hangzhou/cameligo/advisor.mligo" in
   //let (address_advisor, code_advisor, _) = Test.originate_from_file advisor_contract_path "advisorMain" ([] : string list) ais 0tez in
   //let advisor_taddress = (Test.cast_address address_advisor : (ADVISOR.advisorEntrypoints,ADVISOR.advisorStorage) typed_address) in
   //let advisor_contract = Test.to_contract advisor_taddress in
-  let (address_advisor, advisor_taddress, advisor_contract) : address * (ADVISOR.advisorEntrypoints, ADVISOR.advisorStorage) typed_address * ADVISOR.advisorEntrypoints contract = 
-    originate_from_file "advisor.mligo" "advisorMain" ([] : string list) ais in
+  let (address_advisor, advisor_taddress, advisor_contract) : address * (ADVISOR.parameter, ADVISOR.storage) typed_address * ADVISOR.parameter contract = 
+    originate_from_file "contracts/advisor/main.mligo" "advisorMain" ([] : string list) ais in
 
   // ADVISOR call ExecuteAlgorithm
   let () = Test.log("call ExecuteAlgorithm entrypoint of ADVISOR smart contract") in

@@ -1,4 +1,4 @@
-#import "../../advisor.mligo" "ADVISOR"
+#import "../../contracts/advisor/main.mligo" "ADVISOR"
 #import "indice_no_view.mligo" "DUMMY"
 
 let assert_string_failure (res : test_exec_result) (expected : string) : unit =
@@ -9,10 +9,6 @@ let assert_string_failure (res : test_exec_result) (expected : string) : unit =
   | Success -> failwith "bad price check"
 
 // ========== DEPLOY CONTRACT HELPER ============
-let originate (type s p) (storage: s) (main: (p * s) -> operation list * s) : (p,s) typed_address * p contract =
-    let (typed_address, _, _) = Test.originate main storage 0tez in
-    typed_address, Test.to_contract typed_address
-
 let originate_from_file (type s p) (file_path: string) (mainName : string) (views: string list) (storage: michelson_program) : address * (p,s) typed_address * p contract =
     let (address_contract, code_contract, _) = Test.originate_from_file file_path mainName views storage 0tez in
     let taddress_contract = (Test.cast_address address_contract : (p, s) typed_address) in
@@ -50,15 +46,15 @@ let test =
 
   // deploy ADVISOR contract 
   let () = Test.log("deploy ADVISOR smart contract") in
-  let advisor_initial_storage : ADVISOR.advisorStorage = {indiceAddress=address_indice; algorithm=(fun(i : int) -> if i < 10 then True else False); result=False} in
+  let advisor_initial_storage : ADVISOR.storage = {indiceAddress=address_indice; algorithm=(fun(i : int) -> if i < 10 then True else False); result=False} in
   // transpile storage in michelson code
-  let ais = Test.run (fun (x:ADVISOR.advisorStorage) -> x) advisor_initial_storage in
+  let ais = Test.run (fun (x:ADVISOR.storage) -> x) advisor_initial_storage in
   //let advisor_contract_path = "advisor.mligo" in //"views_hangzhou/cameligo/advisor.mligo" in
   //let (address_advisor, code_advisor, _) = Test.originate_from_file advisor_contract_path "advisorMain" ([] : string list) ais 0tez in
   //let advisor_taddress = (Test.cast_address address_advisor : (ADVISOR.advisorEntrypoints,ADVISOR.advisorStorage) typed_address) in
   //let advisor_contract = Test.to_contract advisor_taddress in
-  let (address_advisor, advisor_taddress, advisor_contract) : address * (ADVISOR.advisorEntrypoints, ADVISOR.advisorStorage) typed_address * ADVISOR.advisorEntrypoints contract = 
-    originate_from_file "advisor.mligo" "advisorMain" ([] : string list) ais in
+  let (address_advisor, advisor_taddress, advisor_contract) : address * (ADVISOR.parameter, ADVISOR.storage) typed_address * ADVISOR.parameter contract = 
+    originate_from_file "contracts/advisor/main.mligo" "advisorMain" ([] : string list) ais in
 
   // ADVISOR call ExecuteAlgorithm
   let () = Test.log("call ExecuteAlgorithm entrypoint of ADVISOR smart contract (should fail because DUMMY has no view)") in
