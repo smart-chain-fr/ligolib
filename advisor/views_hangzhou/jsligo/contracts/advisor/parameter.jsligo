@@ -1,0 +1,5 @@
+#import "algo.jsligo" "Algo"
+
+export namespace Types {
+    export type t = ["ChangeAlgorithm", Algo.Types.t] | ["ExecuteAlgorithm"];
+}
