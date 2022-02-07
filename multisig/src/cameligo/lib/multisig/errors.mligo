@@ -1,5 +1,0 @@
-let only_signer = "Only one of the contract signer can create an proposal"
-let amount_must_be_zero_tez = "You must not send Tezos to the smart contract"
-let no_proposal_exist = "No proposal exists for this counter"
-let has_already_signed = "You have already signed this proposal"
-let unknown_reward_token_entrypoint = "Cannot connect to the target transfer token entrypoint"
