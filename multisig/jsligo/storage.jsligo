@@ -1,0 +1,99 @@
+#import "parameter.jsligo" "Parameter"
+#import "../common/errors.mligo" "Errors"
+#import "../fa2/fa2.mligo" "FA2"
+
+
+export namespace Types {
+    export type proposal = 
+    // @layout:comb
+    {
+        approved_signers: set<address>,
+        executed: bool,
+        number_of_signer: nat,
+        target_fa2: address,
+        transfers: FA2.transfer,
+        timestamp: timestamp
+    };
+
+    export type t = 
+    // @layout:comb
+    {
+        proposal_counter: nat,
+        proposal_map: big_map<nat, proposal>,
+        signers: set<address>,
+        threshold: nat
+    };
+};
+
+export namespace Utils {
+    // @inline
+    const new_storage = (
+        [signers, threshold]:
+        [set<address>, nat]
+    ): Types.t => ({
+        proposal_counter: 0 as nat,
+        proposal_map: Big_map.empty as big_map<nat, Types.proposal>,
+        signers: signers,
+        threshold: threshold
+    });
+
+
+    // @inline
+    const create_proposal = (params: Parameter.Types.proposal_params): Types.proposal => ({ 
+            approved_signers: Set.add(sender, Set.empty),
+            executed: false,
+            number_of_signer: 1 as nat,
+            target_fa2: params.target_fa2,
+            timestamp: Tezos.now,
+            transfers: params.transfers
+        });
+    
+    // @inline
+    const register_proposal = ([proposal, storage]: [Types.proposal, Types.t]): Types.t => {
+        const proposal_counter = storage.proposal_counter + (1 as nat);
+        const proposal_map = Big_map.add(
+            proposal_counter,
+            proposal,
+            storage.proposal_map
+        );
+        return { 
+            ...storage, 
+            proposal_map: proposal_map, 
+            proposal_counter: proposal_counter 
+        };
+    };
+
+    // @inline
+    const retrieve_proposal = (
+        [proposal_number, storage]:
+        [Parameter.Types.proposal_number, Types.t]
+    ): Types.proposal => 
+        (match(Big_map.find_opt(proposal_number, storage.proposal_map), {
+            None: () => failwith(Errors.no_proposal_exist),
+            Some: (proposal: Types.proposal) => proposal
+        }));
+
+    // @inline
+    const add_signer_to_proposal = (
+        [proposal, signer, threshold]:
+        [Types.proposal, address, nat]
+    ): Types.proposal => {
+        const approved_signers: set<address> = Set.add(signer, proposal.approved_signers);
+        const executed: bool = Set.size(approved_signers) >= threshold;
+        return { 
+            ...proposal,
+            approved_signers: approved_signers,
+            number_of_signer: proposal.number_of_signer + (1 as nat),
+            executed: executed
+        };
+    };
+
+    // @inline
+    const update_proposal = (
+        [proposal_number, proposal, storage]:
+        [Parameter.Types.proposal_number, Types.proposal, Types.t]
+    ): Types.t => ({ 
+            ...storage, 
+            proposal_map: Map.update(proposal_number, Some(proposal), storage.proposal_map)
+        });
+}
