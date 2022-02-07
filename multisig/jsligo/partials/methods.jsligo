@@ -8,6 +8,18 @@
 const no_operation:  list<operation> = list([]);
 
 
+// --------------
+// --  CHECKS  --
+// --------------
+
+
+const check_sender_and_value = (signers: set<address>): unit => {
+    assert_with_error(Set.mem(Tezos.sender, signers), E.only_signer);
+    assert_with_error (Tezos.amount == (0 as tez), E.amount_must_be_zero_tez);
+};
+
+
+
 // -----------------
 // --  INTERNALS  --
 // -----------------
@@ -27,8 +39,7 @@ const sendFA2 = ([transfers, target_fa2] : [T.FA2.transfer, address]): operation
 // ------------------
 
 const create_proposal = ([params, storage_multisig]: [T.proposal_params, T.storage_multisig]): T.return_multisig => {
-    assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.only_signer);
-    assert_with_error (Tezos.amount == (0 as tez), E.amount_must_be_zero_tez);
+    check_sender_and_value(storage_multisig.signers);
     const new_proposal: T.proposal = {
         approved_signers: Set.add(Tezos.sender, Set.empty) as set<address>,
         executed: false,
@@ -42,7 +53,7 @@ const create_proposal = ([params, storage_multisig]: [T.proposal_params, T.stora
 };
 
 const sign = ([proposal_id, storage_multisig]: [nat, T.storage_multisig]): T.return_multisig => {
-    assert_with_error(Set.mem(Tezos.sender, storage_multisig.signers), E.only_signer);
+    check_sender_and_value(storage_multisig.signers);
     let target_request: T.proposal = match (Big_map.find_opt(proposal_id, storage_multisig.proposal_map), {
         Some: (op: T.proposal) => op,
         None: () => (failwith(E.no_proposal_exist))
