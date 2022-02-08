@@ -5,9 +5,9 @@ type result = operation list * Storage.Types.t
 
 [@inline]
 let positive (n : nat) : nat option =
-  if n = 0n
-  then (None : nat option)
-  else Some n
+  if n > 0n
+  then Some n
+  else None
 
 let transfer (param, storage : Parameter.Types.transfer * Storage.Types.t) : result =
   let allowances = storage.allowances in
@@ -79,17 +79,13 @@ let getTotalSupply (param, storage : Parameter.Types.getTotalSupply * Storage.Ty
   [Tezos.transaction total 0mutez param.callback]
 
 let main (param, storage : Parameter.Types.t * Storage.Types.t) : result =
-  begin
-    if Tezos.amount <> 0mutez
-    then failwith "DontSendTez"
-    else ();
+    let () = assert_with_error (Tezos.amount <> 0mutez) "DontSendTez" in
     match param with
     | Transfer param -> transfer (param, storage)
     | Approve param -> approve (param, storage)
     | GetAllowance param -> (getAllowance (param, storage), storage)
     | GetBalance param -> (getBalance (param, storage), storage)
     | GetTotalSupply param -> (getTotalSupply (param, storage), storage)
-  end
 
 // Mocked view returning always 42 
 [@view] let superview ((),_ : unit * Storage.Types.t) : int = 42

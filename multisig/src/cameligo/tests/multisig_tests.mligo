@@ -21,7 +21,7 @@ let assert_string_failure (res : test_exec_result) (expected : string) : unit =
     match res with
     | Fail (Rejected (actual,_)) -> assert (Test.michelson_equal actual expected)
     | Fail (Other) -> failwith "Contract have failed"
-    | Success -> failwith "Test should have failed"
+    | Success (_) -> failwith "Test should have failed"
 
 // ========== DEPLOY CONTRACT HELPER ============
 let originate (type s p) (storage: s) (main: (p * s) -> operation list * s) : (p,s) typed_address * p contract =
