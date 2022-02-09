@@ -12,3 +12,4 @@ let amount_must_be_zero_tez (an_amout:tez): unit =
 let not_yet_signer (approved_signers: address set) : unit = 
     assert_with_error (Set.mem Tezos.sender approved_signers) Errors.has_already_signed
 
+

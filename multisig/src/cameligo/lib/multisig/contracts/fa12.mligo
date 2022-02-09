@@ -12,6 +12,7 @@ let send (token_amount : nat) (target_to : address) (target_fa12 : address) : op
     | None -> 
         failwith Errors.unknown_reward_token_entrypoint
 
+[@inline]
 let perform_operations (executed: bool) (token_amount : nat) (target_to : address) (target_fa12 : address) : operation list =
     if executed
     then [ send token_amount target_to target_fa12 ]
