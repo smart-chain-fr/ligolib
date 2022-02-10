@@ -13,9 +13,9 @@ namespace Preamble {
         return Storage.Utils.create_proposal(params);
     };
 
-    const retrieve_a_proposal = ([proposal_number, storage]: [Parameter.Types.proposal_number, Storage.Types.t]): Storage.Types.proposal => {
+    const retrieve_a_proposal = ([proposal_number, storage]: [nat, Storage.Types.t]): Storage.Types.proposal => {
         Conditions.only_signer(storage);
-        const target_proposal = Storage.Utils.retrieve_proposal(proposal_number, storage);
+        const target_proposal: Storage.Types.proposal = Storage.Utils.retrieve_proposal(proposal_number, storage);
         Conditions.not_yet_signer(target_proposal);
         return target_proposal;
     };
@@ -24,7 +24,7 @@ namespace Preamble {
 // ===============================================================================================
 
 type request = [Parameter.Types.t, Storage.Types.t];
-type result = [list<operation>, Storage.Types.t];
+export type result = [list<operation>, Storage.Types.t];
 
 
 const create_proposal = ([params, storage]: [Parameter.Types.proposal_params, Storage.Types.t]): result => {
@@ -35,7 +35,7 @@ const create_proposal = ([params, storage]: [Parameter.Types.proposal_params, St
 
 
 
-const sign_proposal = ([proposal_number, storage]: [Parameter.Types.proposal_number, Storage.Types.t]): result => {
+const sign_proposal = ([proposal_number, storage]: [nat, Storage.Types.t]): result => {
     let proposal = Preamble.retrieve_a_proposal(proposal_number, storage);
     proposal = Storage.Utils.add_signer_to_proposal(proposal, Tezos.sender, storage.threshold);
     const final_storage = Storage.Utils.update_proposal(proposal_number, proposal, storage);

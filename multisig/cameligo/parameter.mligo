@@ -11,5 +11,5 @@ module Types = struct
 
     type t =
     | Create_proposal of (proposal_params)
-    | Sign_proposal of (proposal_number)
+    | Sign_proposal of (nat)
 end

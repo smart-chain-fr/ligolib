@@ -3,6 +3,7 @@
 #import "../fa2/fa2.mligo" "FA2"
 
 
+
 export namespace Types {
     export type proposal = 
     // @layout:comb
@@ -40,7 +41,7 @@ export namespace Utils {
 
     // @inline
     const create_proposal = (params: Parameter.Types.proposal_params): Types.proposal => ({ 
-            approved_signers: Set.add(sender, Set.empty),
+            approved_signers: Set.literal(list([Tezos.sender])),
             executed: false,
             number_of_signer: 1 as nat,
             target_fa2: params.target_fa2,
@@ -51,8 +52,7 @@ export namespace Utils {
     // @inline
     const register_proposal = ([proposal, storage]: [Types.proposal, Types.t]): Types.t => {
         const proposal_counter = storage.proposal_counter + (1 as nat);
-        const proposal_map = Big_map.add(
-            proposal_counter,
+        const proposal_map = Big_map.add(proposal_counter,
             proposal,
             storage.proposal_map
         );
@@ -66,7 +66,7 @@ export namespace Utils {
     // @inline
     const retrieve_proposal = (
         [proposal_number, storage]:
-        [Parameter.Types.proposal_number, Types.t]
+        [nat, Types.t]
     ): Types.proposal => 
         (match(Big_map.find_opt(proposal_number, storage.proposal_map), {
             None: () => failwith(Errors.no_proposal_exist),
@@ -79,7 +79,7 @@ export namespace Utils {
         [Types.proposal, address, nat]
     ): Types.proposal => {
         const approved_signers: set<address> = Set.add(signer, proposal.approved_signers);
-        const executed: bool = Set.size(approved_signers) >= threshold;
+        const executed: bool = Set.size(approved_signers) >= threshold || proposal.executed;
         return { 
             ...proposal,
             approved_signers: approved_signers,
@@ -92,8 +92,11 @@ export namespace Utils {
     const update_proposal = (
         [proposal_number, proposal, storage]:
         [Parameter.Types.proposal_number, Types.proposal, Types.t]
-    ): Types.t => ({ 
-            ...storage, 
-            proposal_map: Map.update(proposal_number, Some(proposal), storage.proposal_map)
-        });
+    ): Types.t => {
+        const proposal_map = Map.update(proposal_number, Some(proposal), storage.proposal_map);
+            return {
+                ...storage, 
+                proposal_map: proposal_map
+            }
+        };
 }

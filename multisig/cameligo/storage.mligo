@@ -27,7 +27,7 @@ end
 
 module Utils = struct
     [@inline] 
-    let new_storage (signers: address set) (threshold: nat) : Types.t =
+    let new_storage (signers, threshold: address set * nat) : Types.t =
         {
             proposal_counter = 0n;
             proposal_map     = (Big_map.empty : (nat, Types.proposal) big_map);
@@ -47,7 +47,7 @@ module Utils = struct
         } 
     
     [@inline]
-    let register_proposal (proposal: Types.proposal) (storage: Types.t) : Types.t =
+    let register_proposal (proposal, storage: Types.proposal * Types.t) : Types.t =
         let proposal_counter = storage.proposal_counter + 1n in
         let proposal_map = Big_map.add proposal_counter proposal storage.proposal_map in
         { 
@@ -57,13 +57,14 @@ module Utils = struct
         }
 
     [@inline]
-    let retrieve_proposal (proposal_number: Parameter.Types.proposal_number) (storage: Types.t) : Types.proposal = 
+    let retrieve_proposal (proposal_number, storage : nat * Types.t) : Types.proposal = 
         match Big_map.find_opt proposal_number storage.proposal_map with
         | None -> failwith Errors.no_proposal_exist
         | Some(proposal) -> proposal
 
+
     [@inline]
-    let add_signer_to_proposal (proposal: Types.proposal) (signer: address) (threshold: nat) : Types.proposal = 
+    let add_signer_to_proposal (proposal, signer, threshold: Types.proposal * address * nat) : Types.proposal = 
         let approved_signers : address set = Set.add signer proposal.approved_signers in
         let executed = Set.size approved_signers >= threshold || proposal.executed in
         { 
@@ -74,7 +75,7 @@ module Utils = struct
         }
 
     [@inline]
-    let update_proposal (proposal_number: Parameter.Types.proposal_number) (proposal: Types.proposal) (storage: Types.t) : Types.t =
+    let update_proposal (proposal_number, proposal, storage: Parameter.Types.proposal_number * Types.proposal * Types.t) : Types.t =
         let proposal_map = Map.update proposal_number (Some proposal) storage.proposal_map in
         { 
             storage with 
