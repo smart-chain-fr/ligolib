@@ -1,0 +1,293 @@
+[ { "prim": "parameter",
+    "args":
+      [ { "prim": "or",
+          "args":
+            [ { "prim": "pair",
+                "args":
+                  [ { "prim": "address", "annots": [ "%target_fa2" ] },
+                    { "prim": "list",
+                      "args":
+                        [ { "prim": "pair",
+                            "args":
+                              [ { "prim": "address", "annots": [ "%from_" ] },
+                                { "prim": "list",
+                                  "args":
+                                    [ { "prim": "pair",
+                                        "args":
+                                          [ { "prim": "address",
+                                              "annots": [ "%to_" ] },
+                                            { "prim": "nat",
+                                              "annots": [ "%token_id" ] } ] } ],
+                                  "annots": [ "%tx" ] } ] } ],
+                      "annots": [ "%transfers" ] } ],
+                "annots": [ "%create_proposal" ] },
+              { "prim": "nat", "annots": [ "%sign_proposal" ] } ] } ] },
+  { "prim": "storage",
+    "args":
+      [ { "prim": "pair",
+          "args":
+            [ { "prim": "nat", "annots": [ "%proposal_counter" ] },
+              { "prim": "pair",
+                "args":
+                  [ { "prim": "big_map",
+                      "args":
+                        [ { "prim": "nat" },
+                          { "prim": "pair",
+                            "args":
+                              [ { "prim": "set",
+                                  "args": [ { "prim": "address" } ],
+                                  "annots": [ "%approved_signers" ] },
+                                { "prim": "pair",
+                                  "args":
+                                    [ { "prim": "bool",
+                                        "annots": [ "%executed" ] },
+                                      { "prim": "pair",
+                                        "args":
+                                          [ { "prim": "nat",
+                                              "annots":
+                                                [ "%number_of_signer" ] },
+                                            { "prim": "pair",
+                                              "args":
+                                                [ { "prim": "address",
+                                                    "annots":
+                                                      [ "%target_fa2" ] },
+                                                  { "prim": "pair",
+                                                    "args":
+                                                      [ { "prim": "list",
+                                                          "args":
+                                                            [ { "prim":
+                                                                  "pair",
+                                                                "args":
+                                                                  [ { "prim":
+                                                                    "address",
+                                                                    "annots":
+                                                                    [ "%from_" ] },
+                                                                    { "prim":
+                                                                    "list",
+                                                                    "args":
+                                                                    [ { "prim":
+                                                                    "pair",
+                                                                    "args":
+                                                                    [ { "prim":
+                                                                    "address",
+                                                                    "annots":
+                                                                    [ "%to_" ] },
+                                                                    { "prim":
+                                                                    "nat",
+                                                                    "annots":
+                                                                    [ "%token_id" ] } ] } ],
+                                                                    "annots":
+                                                                    [ "%tx" ] } ] } ],
+                                                          "annots":
+                                                            [ "%transfers" ] },
+                                                        { "prim": "timestamp",
+                                                          "annots":
+                                                            [ "%timestamp" ] } ] } ] } ] } ] } ] } ],
+                      "annots": [ "%proposal_map" ] },
+                    { "prim": "pair",
+                      "args":
+                        [ { "prim": "set", "args": [ { "prim": "address" } ],
+                            "annots": [ "%signers" ] },
+                          { "prim": "nat", "annots": [ "%threshold" ] } ] } ] } ] } ] },
+  { "prim": "code",
+    "args":
+      [ [ { "prim": "UNPAIR" },
+          { "prim": "IF_LEFT",
+            "args":
+              [ [ { "prim": "PAIR" }, { "prim": "DUP" }, { "prim": "CDR" },
+                  { "prim": "DUP" },
+                  { "prim": "DIG", "args": [ { "int": "2" } ] },
+                  { "prim": "CAR" }, { "prim": "PAIR" },
+                  { "prim": "PUSH",
+                    "args":
+                      [ { "prim": "string" },
+                        { "string":
+                            "Only one of the contract signer can create an proposal" } ] },
+                  { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "CDR" },
+                  { "prim": "GET", "args": [ { "int": "5" } ] },
+                  { "prim": "SENDER" }, { "prim": "MEM" },
+                  { "prim": "IF",
+                    "args":
+                      [ [ { "prim": "DROP" } ], [ { "prim": "FAILWITH" } ] ] },
+                  { "prim": "AMOUNT" },
+                  { "prim": "PUSH",
+                    "args":
+                      [ { "prim": "string" },
+                        { "string":
+                            "You must not send Tezos to the smart contract" } ] },
+                  { "prim": "PUSH",
+                    "args": [ { "prim": "mutez" }, { "int": "0" } ] },
+                  { "prim": "DIG", "args": [ { "int": "2" } ] },
+                  { "prim": "COMPARE" }, { "prim": "EQ" },
+                  { "prim": "IF",
+                    "args":
+                      [ [ { "prim": "DROP" } ], [ { "prim": "FAILWITH" } ] ] },
+                  { "prim": "CAR" }, { "prim": "NOW" }, { "prim": "SWAP" },
+                  { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "CDR" },
+                  { "prim": "DIG", "args": [ { "int": "2" } ] },
+                  { "prim": "CAR" },
+                  { "prim": "PUSH",
+                    "args": [ { "prim": "nat" }, { "int": "1" } ] },
+                  { "prim": "PUSH",
+                    "args": [ { "prim": "bool" }, { "prim": "False" } ] },
+                  { "prim": "EMPTY_SET", "args": [ { "prim": "address" } ] },
+                  { "prim": "PUSH",
+                    "args": [ { "prim": "bool" }, { "prim": "True" } ] },
+                  { "prim": "SENDER" }, { "prim": "UPDATE" },
+                  { "prim": "PAIR", "args": [ { "int": "6" } ] },
+                  { "prim": "PAIR" }, { "prim": "DUP" }, { "prim": "CDR" },
+                  { "prim": "PUSH",
+                    "args": [ { "prim": "nat" }, { "int": "1" } ] },
+                  { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "CAR" }, { "prim": "ADD" }, { "prim": "SWAP" },
+                  { "prim": "DUP" },
+                  { "prim": "GET", "args": [ { "int": "3" } ] },
+                  { "prim": "DIG", "args": [ { "int": "3" } ] },
+                  { "prim": "CAR" },
+                  { "prim": "DUP", "args": [ { "int": "4" } ] },
+                  { "prim": "SWAP" }, { "prim": "SOME" }, { "prim": "SWAP" },
+                  { "prim": "UPDATE" },
+                  { "prim": "UPDATE", "args": [ { "int": "3" } ] },
+                  { "prim": "SWAP" },
+                  { "prim": "UPDATE", "args": [ { "int": "1" } ] },
+                  { "prim": "NIL", "args": [ { "prim": "operation" } ] },
+                  { "prim": "PAIR" } ],
+                [ { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUP", "args": [ { "int": "3" } ] },
+                  { "prim": "PAIR" }, { "prim": "DUP" }, { "prim": "CDR" },
+                  { "prim": "PUSH",
+                    "args":
+                      [ { "prim": "string" },
+                        { "string":
+                            "Only one of the contract signer can create an proposal" } ] },
+                  { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "GET", "args": [ { "int": "5" } ] },
+                  { "prim": "SENDER" }, { "prim": "MEM" },
+                  { "prim": "IF",
+                    "args":
+                      [ [ { "prim": "DROP" } ], [ { "prim": "FAILWITH" } ] ] },
+                  { "prim": "SWAP" }, { "prim": "CAR" }, { "prim": "PAIR" },
+                  { "prim": "DUP" }, { "prim": "CDR" },
+                  { "prim": "GET", "args": [ { "int": "3" } ] },
+                  { "prim": "SWAP" }, { "prim": "CAR" }, { "prim": "GET" },
+                  { "prim": "IF_NONE",
+                    "args":
+                      [ [ { "prim": "PUSH",
+                            "args":
+                              [ { "prim": "string" },
+                                { "string":
+                                    "No proposal exists for this counter" } ] },
+                          { "prim": "FAILWITH" } ], [] ] },
+                  { "prim": "PUSH",
+                    "args":
+                      [ { "prim": "string" },
+                        { "string": "You have already signed this proposal" } ] },
+                  { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "CAR" }, { "prim": "SENDER" }, { "prim": "MEM" },
+                  { "prim": "NOT" },
+                  { "prim": "IF",
+                    "args":
+                      [ [ { "prim": "DROP" } ], [ { "prim": "FAILWITH" } ] ] },
+                  { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "GET", "args": [ { "int": "6" } ] },
+                  { "prim": "SENDER" },
+                  { "prim": "DIG", "args": [ { "int": "2" } ] },
+                  { "prim": "PAIR" }, { "prim": "PAIR" }, { "prim": "DUP" },
+                  { "prim": "CAR" }, { "prim": "CAR" }, { "prim": "DUP" },
+                  { "prim": "CAR" },
+                  { "prim": "DUP", "args": [ { "int": "3" } ] },
+                  { "prim": "CAR" }, { "prim": "CDR" },
+                  { "prim": "PUSH",
+                    "args": [ { "prim": "bool" }, { "prim": "True" } ] },
+                  { "prim": "SWAP" }, { "prim": "UPDATE" },
+                  { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "SWAP" }, { "prim": "DUP" },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "UPDATE", "args": [ { "int": "1" } ] },
+                  { "prim": "PUSH",
+                    "args": [ { "prim": "nat" }, { "int": "1" } ] },
+                  { "prim": "DUP", "args": [ { "int": "4" } ] },
+                  { "prim": "GET", "args": [ { "int": "5" } ] },
+                  { "prim": "ADD" },
+                  { "prim": "UPDATE", "args": [ { "int": "5" } ] },
+                  { "prim": "DIG", "args": [ { "int": "2" } ] },
+                  { "prim": "GET", "args": [ { "int": "3" } ] },
+                  { "prim": "DIG", "args": [ { "int": "3" } ] },
+                  { "prim": "CDR" },
+                  { "prim": "DIG", "args": [ { "int": "3" } ] },
+                  { "prim": "SIZE" }, { "prim": "COMPARE" },
+                  { "prim": "GE" }, { "prim": "OR" },
+                  { "prim": "UPDATE", "args": [ { "int": "3" } ] },
+                  { "prim": "DUP" },
+                  { "prim": "GET", "args": [ { "int": "3" } ] },
+                  { "prim": "IF",
+                    "args":
+                      [ [ { "prim": "NIL",
+                            "args": [ { "prim": "operation" } ] },
+                          { "prim": "SWAP" }, { "prim": "DUP" },
+                          { "prim": "DUG", "args": [ { "int": "2" } ] },
+                          { "prim": "GET", "args": [ { "int": "7" } ] },
+                          { "prim": "DUP", "args": [ { "int": "3" } ] },
+                          { "prim": "GET", "args": [ { "int": "9" } ] },
+                          { "prim": "PAIR" }, { "prim": "DUP" },
+                          { "prim": "CDR" },
+                          { "prim": "CONTRACT",
+                            "args":
+                              [ { "prim": "list",
+                                  "args":
+                                    [ { "prim": "pair",
+                                        "args":
+                                          [ { "prim": "address",
+                                              "annots": [ "%from_" ] },
+                                            { "prim": "list",
+                                              "args":
+                                                [ { "prim": "pair",
+                                                    "args":
+                                                      [ { "prim": "address",
+                                                          "annots":
+                                                            [ "%to_" ] },
+                                                        { "prim": "nat",
+                                                          "annots":
+                                                            [ "%token_id" ] } ] } ],
+                                              "annots": [ "%tx" ] } ] } ] } ],
+                            "annots": [ "%transfer" ] },
+                          { "prim": "IF_NONE",
+                            "args":
+                              [ [ { "prim": "DROP" },
+                                  { "prim": "PUSH",
+                                    "args":
+                                      [ { "prim": "string" },
+                                        { "string":
+                                            "Cannot connect to the target transfer token entrypoint" } ] },
+                                  { "prim": "FAILWITH" } ],
+                                [ { "prim": "PUSH",
+                                    "args":
+                                      [ { "prim": "mutez" }, { "int": "0" } ] },
+                                  { "prim": "DIG",
+                                    "args": [ { "int": "2" } ] },
+                                  { "prim": "CAR" },
+                                  { "prim": "TRANSFER_TOKENS" } ] ] },
+                          { "prim": "CONS" } ],
+                        [ { "prim": "NIL",
+                            "args": [ { "prim": "operation" } ] } ] ] },
+                  { "prim": "DUG", "args": [ { "int": "2" } ] },
+                  { "prim": "DIG", "args": [ { "int": "3" } ] },
+                  { "prim": "PAIR" }, { "prim": "PAIR" }, { "prim": "DUP" },
+                  { "prim": "CDR" }, { "prim": "DUP" },
+                  { "prim": "GET", "args": [ { "int": "3" } ] },
+                  { "prim": "DUP", "args": [ { "int": "3" } ] },
+                  { "prim": "CAR" }, { "prim": "CDR" }, { "prim": "SOME" },
+                  { "prim": "DIG", "args": [ { "int": "3" } ] },
+                  { "prim": "CAR" }, { "prim": "CAR" }, { "prim": "UPDATE" },
+                  { "prim": "UPDATE", "args": [ { "int": "3" } ] },
+                  { "prim": "SWAP" }, { "prim": "PAIR" } ] ] } ] ] } ]
+
