@@ -1,0 +1,38 @@
+#import "multisig.test.jsligo" "Test_Multisig"
+
+type main_tuple = (main_multisig: Test_Multisig.func_main, main_fa2: Test_Multisig.func_mainfa2) => unit;
+
+const _test_mutation_complex = (func: main_tuple): unit => {
+    match(Test.mutation_test([Test_Multisig.Main.main, Test_Multisig.FA2.main], func), {
+    None: () => unit,
+    Some: pmutation => { 
+        Test.log(pmutation[1]);
+    }
+    })
+};
+
+
+const _test_mutation_func = (func: (mainf: Test_Multisig.func_main) => unit): unit => {
+    match(Test.mutation_test(Test_Multisig.Main.main, func), {
+        None: () => unit,
+        Some: pmutation => { 
+            const mut: option<string> = Test.save_mutation("mutations", pmutation[1]);
+        }
+    });
+}
+const _tests = list([
+    Test_Multisig._test_signer_creates_proposal_works, Test_Multisig._test_unknown_creates_proposal_fails,
+    Test_Multisig._test_signer_signs_proposal_works, Test_Multisig._test_unknown_signs_proposal_fails,
+    Test_Multisig._test_unknown_signs_unknown_proposal_fails,
+    Test_Multisig._test_signer_signs_unknown_proposal_fails
+]);
+const _tests_complex = list([
+    Test_Multisig._signer_creates_proposal_signers_sign_proposal_execute_works,
+    Test_Multisig._signer_creates_proposal_signers_sign_proposal_execute_over_threshold_works
+]);
+const mutation_tests = (): unit => {
+    List.iter(_test_mutation_func, _tests);
+    List.iter(_test_mutation_complex, _tests_complex);
+};  
+
+const _ = mutation_tests();
