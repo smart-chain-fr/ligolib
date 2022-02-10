@@ -1,6 +1,6 @@
 import { InMemorySigner } from '@taquito/signer'
 import { TezosToolkit, MichelsonMap } from '@taquito/taquito'
-import multisig from './Multisig.json'
+import multisig from '../compiled/Multisig_mligo.json'
 
 const rpc = 'https://hangzhounet.smartpy.io/'
 const pk: string = ''
@@ -19,8 +19,8 @@ async function originate() {
   const storage = {
     signers: signers,
     threshold: 3,
-    operation_map: new MichelsonMap(),
-    operation_counter: 0
+    proposal_map: new MichelsonMap(),
+    proposal_counter: 0
   }
 
   try {
