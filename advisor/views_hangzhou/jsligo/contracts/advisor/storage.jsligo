@@ -1,0 +1,25 @@
+#import "errors.jsligo" "Errors"
+#import "algo.jsligo" "Algo"
+
+export namespace Types {
+    export type t = {
+        indiceAddress : address,
+        algorithm : Algo.Types.t,
+        result : bool
+    };
+};
+
+export namespace Utils {
+    const change = ([p, s] : [Algo.Types.t, Types.t]) : Types.t => {
+        return { ...s, algorithm: p}
+    };
+
+    const executeAlgorithm = (s : Types.t) : Types.t => {
+        let indiceValOpt : option<int> = Tezos.call_view("indice_value", unit, s.indiceAddress);
+        let indiceVal : int = match (indiceValOpt , {
+            None: () => (failwith(Errors.unknownView) as int),
+            Some: (v: int) => v
+        });
+        return { ...s, result: s.algorithm(indiceVal) }
+    };
+};

@@ -24,19 +24,19 @@ indice: indice.tz indice.json
 
 advisor: advisor.tz advisor.json
 
-indice.tz: indice.mligo
+indice.tz: contracts/indice/main.mligo
 	@echo "Compiling Indice smart contract to Michelson"
 	@$(ligo_compiler) compile contract $^ -e indiceMain $(PROTOCOL_OPT) > compiled/$@
 
-indice.json: indice.mligo
+indice.json: contracts/indice/main.mligo
 	@echo "Compiling Indice smart contract to Michelson in JSON format"
 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e indiceMain $(PROTOCOL_OPT) > compiled/$@
 
-advisor.tz: advisor.mligo
+advisor.tz: contracts/advisor/main.mligo
 	@echo "Compiling Advisor smart contract to Michelson"
 	@$(ligo_compiler) compile contract $^ -e advisorMain $(PROTOCOL_OPT) > compiled/$@
 
-advisor.json: advisor.mligo
+advisor.json: contracts/advisor/main.mligo
 	@echo "Compiling Advisor smart contract to Michelson in JSON format"
 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e advisorMain $(PROTOCOL_OPT) > compiled/$@
 
@@ -81,10 +81,10 @@ dry-run: dry-run_indice dry-run_advisor
 
 dry-run_advisor: advisor.mligo
 #	@echo $(simulateline)
-	$(ligo_compiler) compile parameter advisor.mligo 'ExecuteAlgorithm(unit)' -e advisorMain $(PROTOCOL_OPT)
-	$(ligo_compiler) compile parameter advisor.mligo 'ChangeAlgorithm(fun(i : int) -> False)' -e advisorMain $(PROTOCOL_OPT)
-	$(ligo_compiler) run dry-run advisor.mligo  'ExecuteAlgorithm(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT) 
-	$(ligo_compiler) run dry-run advisor.mligo  'ChangeAlgorithm(fun(i : int) -> False)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) compile parameter contracts/advisor/main.mligo 'ExecuteAlgorithm(unit)' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) compile parameter contracts/advisor/main.mligo 'ChangeAlgorithm(fun(i : int) -> False)' -e advisorMain $(PROTOCOL_OPT)
+	$(ligo_compiler) run dry-run contracts/advisor/main.mligo  'ExecuteAlgorithm(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT) 
+	$(ligo_compiler) run dry-run contracts/advisor/main.mligo  'ChangeAlgorithm(fun(i : int) -> False)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT)
 
 dry-run_indice: indice.mligo
 	$(ligo_compiler) compile parameter indice.mligo 'Increment(5)' -e indiceMain $(PROTOCOL_OPT)

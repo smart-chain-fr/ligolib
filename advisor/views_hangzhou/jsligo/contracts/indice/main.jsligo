@@ -1,0 +1,29 @@
+export namespace Storage {
+    export type t = int;    
+};
+
+export namespace Parameter {
+    export type t = ["Increment", int] | ["Decrement", int];
+};
+
+export type storage = Storage.t;
+export type parameter = Parameter.t;
+export type return_ = [list<operation>, storage];
+
+
+export let increment = ([param, store] : [int, storage]) : return_ => {
+    return [list([]) as list<operation>, store + param]
+};
+
+export let decrement = ([param, store] : [int, storage]) : return_ => {
+    return [list([]) as list<operation>, store - param]
+};
+
+let indiceMain = ([ep, store] : [parameter, storage]) : return_ => {
+    return match (ep, { 
+        Increment: (p: int) => increment(p, store),
+        Decrement: (p: int) => decrement(p, store)
+    });
+};
+
+[@view] let indice_value = ([_params, store] : [unit, storage]) : int => { return store };

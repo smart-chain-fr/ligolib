@@ -129,6 +129,7 @@ tezos-client originate contract advisor transferring 1 from bootstrap1  running 
 - Verify the entrypoint is callable
 ```
 tezos-client transfer 0 from bootstrap3 to advisor --arg '(Right Unit)' --dry-run
+tezos-client transfer 0 from tz1RyejUffjfnHzWoRp1vYyZwGnfPuHsD5F5 to KT1N6thksQc11X8bgL9AUBHztcFVEPj9C1bL --entrypoint "executeAlgorithm" --arg "Unit"
 ```
 
 ### Test deployment/interact (with ligo compiler)
