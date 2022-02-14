@@ -42,8 +42,8 @@ clean:
 test: tests/multisig.test.jsligo
 	@echo "Running tests"
 	@$(ligo) run test tests/multisig.test.jsligo $(protocol)
-	@echo "Running mutation tests"
-	@$(ligo) run test tests/multisig_mutation.test.jsligo $(protocol)
+	# @echo "Running mutation tests"
+	# @$(ligo) run test tests/multisig_mutation.test.jsligo $(protocol)
 
 originate: origination/deployMultisig.ts compile
 	@echo "Deploying contract"

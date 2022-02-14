@@ -1,7 +1,6 @@
 #import "../fa2/fa2.mligo" "FA2"
 
 #import "../cameligo/contract.mligo" "Main"
-#import "../cameligo/main.mligo" "Main"
 
 export type func_main = (p: Main.Parameter.Types.t, s: Main.Storage.Types.t) =>  Main.result;
 export type func_mainfa2 = (p: FA2.parameter, s: FA2.storage) =>  [list<operation>, FA2.storage];
@@ -15,7 +14,7 @@ const assert_error = ([res, expected_error]: [test_exec_result, string]): unit =
             Rejected: (x: [michelson_code, address]) => assert(Test.michelson_equal(x[0], expected_error)),
             Other: () => failwith("contract failed for an unknown reason")
         })),
-        Success: () => failwith("Expected to fail but passed")
+        Success: (_ : nat) => failwith("Expected to fail but passed")
     });
 };
 const _: unit = Test.log("here");
@@ -81,7 +80,7 @@ const _test_signer_creates_proposal_works = (mainf: func_main): unit => {
     const expected_proposal: Main.Storage.Types.proposal = {
         approved_signers: Set.add(alice, Set.empty as set<address>),
         executed: false,
-        number_of_signers: 1 as nat,
+        number_of_signer: 1 as nat,
         target_fa2: bob as address,
         transfers:transfers,
         timestamp: 0 as timestamp
@@ -116,7 +115,7 @@ const _test_signer_signs_proposal_works = (mainf: func_main): unit => {
     const init_proposal: Main.Storage.Types.proposal = {
         approved_signers: Set.add(alice, Set.empty as set<address>),
         executed: false,
-        number_of_signers: 1 as nat,
+        number_of_signer: 1 as nat,
         target_fa2: bob as address,
         transfers: transfers,
         timestamp: 5 as timestamp,
@@ -129,7 +128,7 @@ const _test_signer_signs_proposal_works = (mainf: func_main): unit => {
     , 0 as tez);
     const contr = Test.to_contract(taddr);
     Test.set_source(bob);
-    const gas_used: nat = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    const gas_used: nat = Test.transfer_to_contract_exn(contr, Sign_proposal(1 as nat), 0 as tez);
     const curr_storage = Test.get_storage(taddr);
     const end_signed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
         Some: (op: proposal) => op,
@@ -150,7 +149,7 @@ const _test_unknown_signs_proposal_fails = (mainf: func_main): unit => {
     const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
     const contr = Test.to_contract(taddr);
     Test.set_source(unknown);
-    const fail_tx = Test.transfer_to_contract(contr, Sign(1 as nat), 0 as tez);
+    const fail_tx = Test.transfer_to_contract(contr, Sign_proposal(1 as nat), 0 as tez);
     assert_error(fail_tx, Main.Conditions.Errors.only_signer);
     const curr_storage = Test.get_storage(taddr);
     assert(curr_storage == storage);
@@ -162,7 +161,7 @@ const _test_unknown_signs_unknown_proposal_fails = (mainf : func_main): unit => 
     const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
     const contr = Test.to_contract(taddr);
     Test.set_source(unknown);
-    const fail_sign_tx = Test.transfer_to_contract(contr, Sign(2 as nat), 0 as tez);
+    const fail_sign_tx = Test.transfer_to_contract(contr, Sign_proposal(2 as nat), 0 as tez);
     assert_error(fail_sign_tx, Main.Conditions.Errors.only_signer);
 };
 
@@ -171,7 +170,7 @@ const _test_signer_signs_unknown_proposal_fails = (mainf: func_main): unit => {
     const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
     const contr = Test.to_contract(taddr);
     Test.set_source(alice);
-    const fail_sign_tx = Test.transfer_to_contract(contr, Sign(2 as nat), 0 as tez);
+    const fail_sign_tx = Test.transfer_to_contract(contr, Sign_proposal(2 as nat), 0 as tez);
     assert_error(fail_sign_tx, Main.Conditions.Errors.no_proposal_exist);
 };
 
@@ -218,9 +217,9 @@ const _signer_creates_proposal_signers_sign_proposal_execute_works = ([mainf, ma
 
 
     Test.set_source(bob);
-    gas_used = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    gas_used = Test.transfer_to_contract_exn(contr, Sign_proposal(1 as nat), 0 as tez);
     Test.set_source(charly);
-    gas_used = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    gas_used = Test.transfer_to_contract_exn(contr, Sign_proposal(1 as nat), 0 as tez);
 
     const expected_executed_signers = Set.add(
         alice,
@@ -292,7 +291,7 @@ const _signer_creates_proposal_signers_sign_proposal_execute_over_threshold_work
 
 
     Test.set_source(bob);
-    gas_used = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    gas_used = Test.transfer_to_contract_exn(contr, Sign_proposal(1 as nat), 0 as tez);
 
     const expected_executed_signers = Set.add(
         alice,
