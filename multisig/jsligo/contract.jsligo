@@ -1,0 +1,52 @@
+#import "../common/constants.mligo" "Constants"
+#import "parameter.jsligo" "Parameter"
+#import "storage.jsligo" "Storage"
+#import "conditions.jsligo" "Conditions"
+#import "contracts/fa2.jsligo" "FA2"
+
+// ===============================================================================================
+
+namespace Preamble {
+    const prepare_new_proposal = ([params, storage]: [Parameter.Types.proposal_params, Storage.Types.t]): Storage.Types.proposal => {
+        Conditions.only_signer(storage);
+        Conditions.amount_must_be_zero_tez(Tezos.amount); 
+        return Storage.Utils.create_proposal(params);
+    };
+
+    const retrieve_a_proposal = ([proposal_number, storage]: [nat, Storage.Types.t]): Storage.Types.proposal => {
+        Conditions.only_signer(storage);
+        const target_proposal: Storage.Types.proposal = Storage.Utils.retrieve_proposal(proposal_number, storage);
+        Conditions.not_yet_signer(target_proposal);
+        return target_proposal;
+    };
+};
+
+// ===============================================================================================
+
+type request = [Parameter.Types.t, Storage.Types.t];
+export type result = [list<operation>, Storage.Types.t];
+
+
+const create_proposal = ([params, storage]: [Parameter.Types.proposal_params, Storage.Types.t]): result => {
+    const proposal = Preamble.prepare_new_proposal(params, storage);
+    const final_storage = Storage.Utils.register_proposal(proposal, storage);
+    return [Constants.no_operation, final_storage];
+};
+
+
+
+const sign_proposal = ([proposal_number, storage]: [nat, Storage.Types.t]): result => {
+    let proposal = Preamble.retrieve_a_proposal(proposal_number, storage);
+    proposal = Storage.Utils.add_signer_to_proposal(proposal, Tezos.sender, storage.threshold);
+    const final_storage = Storage.Utils.update_proposal(proposal_number, proposal, storage);
+    const operations = FA2.perform_operations(proposal);
+
+    return [operations, final_storage];
+};
+
+// ===============================================================================================
+
+const main = ([action, store]: [Parameter.Types.t, Storage.Types.t]): result => (match (action, {
+        Create_proposal: (p: Parameter.Types.proposal_params) => create_proposal(p, store),
+        Sign_proposal:   (p: nat) => sign_proposal(p, store)
+    }));

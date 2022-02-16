@@ -1,0 +1,19 @@
+#import "../../common/errors.mligo" "Errors"
+#import "../../common/constants.mligo" "Constants"
+#import "../storage.jsligo" "Storage"
+#import "../../fa2/fa2.mligo" "FA2"
+
+const send = ([transfers, target_fa2_address]: [FA2.transfer, address]): operation => {
+    const fa2_contract_opt: option<contract<FA2.transfer>> = Tezos.get_entrypoint_opt("%transfer", target_fa2_address);
+    return match(fa2_contract_opt, {
+    Some: (contr: contract<FA2.transfer>) => Tezos.transaction(transfers, 0 as tez, contr),
+    None: () => failwith(Errors.unknown_contract_entrypoint)
+    });
+}
+
+const perform_operations = (proposal: Storage.Types.proposal) : list<operation> => {
+    if (proposal.executed) {
+        return list([send(proposal.transfers, proposal.target_fa2)]) as list<operation>;
+    }
+    else return Constants.no_operation;
+}

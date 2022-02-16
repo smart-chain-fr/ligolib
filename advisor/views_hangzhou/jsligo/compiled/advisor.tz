@@ -3,17 +3,7 @@
     (pair (pair (lambda %algorithm int bool) (address %indiceAddress)) (bool %result)) ;
   code { UNPAIR ;
          IF_LEFT
-           { PAIR ;
-             DUP ;
-             CDR ;
-             UNPAIR ;
-             CDR ;
-             DIG 2 ;
-             CAR ;
-             PAIR ;
-             PAIR ;
-             NIL operation ;
-             PAIR }
+           { PAIR ; DUP ; CDR ; UNPAIR ; CDR ; DIG 2 ; CAR ; PAIR ; PAIR }
            { DROP ;
              DUP ;
              CAR ;
@@ -30,7 +20,7 @@
              EXEC ;
              SWAP ;
              CAR ;
-             PAIR ;
-             NIL operation ;
-             PAIR } } }
+             PAIR } ;
+         NIL operation ;
+         PAIR } }
 

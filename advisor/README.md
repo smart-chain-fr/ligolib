@@ -35,16 +35,16 @@ So an entrypoint `ChangeAlgorithm` is provided to modify the algorithm that comp
 
 ## Content
 
-The `src` directory contains 2 directories:
+The `src` directory illustrates the old-style callback pattern and contains 3 implementations:
 - cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
 - jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
 - pascaligo: for smart contracts implementation in pascaligo and `ligo` command lines for simulating all entrypoints
 
-The `views_hangzhou` directory contains 2 directories:
+The `views_hangzhou` directory illustrates the new on-chain views style and contains 2 implementations:
 - cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
 - jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
 
-The `v2` directory contains 2 directories:
+The `v2` directory illustrates an advisor interacting with multiple indices. This directory contains 2 implementations:
 - cameligo: for smart contracts implementation in cameligo and `ligo` command lines for simulating all entrypoints
 - jsligo: for smart contracts implementation in JSligo and `ligo` command lines for simulating all entrypoints
 
@@ -52,6 +52,6 @@ The `v2` directory contains 2 directories:
 
 You may need to install the following tools:
 - node & npm
-- typescript compiler
+- typescript compiler - `npm install typescript --save-dev`
 - docker
 - pytezos

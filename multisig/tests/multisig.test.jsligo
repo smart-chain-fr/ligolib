@@ -1,0 +1,329 @@
+#import "../fa2/fa2.mligo" "FA2"
+
+#import "../cameligo/contract.mligo" "Main"
+#import "../cameligo/main.mligo" "Main"
+
+export type func_main = (p: Main.Parameter.Types.t, s: Main.Storage.Types.t) =>  Main.result;
+export type func_mainfa2 = (p: FA2.parameter, s: FA2.storage) =>  [list<operation>, FA2.storage];
+
+
+const assert_error = ([res, expected_error]: [test_exec_result, string]): unit => {
+    const expected_error = Test.eval(expected_error);
+    match(res, {
+        Fail: (x: test_exec_error) => (
+        match (x, {
+            Rejected: (x: [michelson_code, address]) => assert(Test.michelson_equal(x[0], expected_error)),
+            Other: () => failwith("contract failed for an unknown reason")
+        })),
+        Success: () => failwith("Expected to fail but passed")
+    });
+};
+const _: unit = Test.log("here");
+const x = Test.reset_state (6 as nat, list([]) as list <tez>);
+const alice: address = Test.nth_bootstrap_account(0);
+const bob: address = Test.nth_bootstrap_account(1);
+const charly: address = Test.nth_bootstrap_account(2);
+const delta: address = Test.nth_bootstrap_account(3);
+const echo: address = Test.nth_bootstrap_account(4);
+const unknown = Test.nth_bootstrap_account(5);
+const signers: set<address> = Set.add(
+    alice,
+    Set.add(
+        bob,
+        Set.add(
+            charly,
+            Set.add(
+                delta, 
+                Set.add(
+                    echo,
+                    Set.empty as set<address>
+                )
+            )
+        )
+    )
+);
+const threshold: nat = 3 as nat;
+const proposal_map: big_map<nat, Main.Storage.Types.proposal> = Big_map.empty;
+const proposal_counter: nat = 1 as nat;
+const c: unit = Test.log("here");
+const storage: Main.Storage.Types.t = ({
+    signers: signers,
+    threshold: threshold,
+    proposal_map: proposal_map,
+    proposal_counter: proposal_counter
+});
+const v: unit = Test.log("here");
+
+const atomic: FA2.atomic_trans = {
+        to_: bob,
+        token_id: 1 as nat
+    };
+const b: unit = Test.log("here");
+const transfer_from: FA2.transfer_from = {
+    from_: alice,
+    tx: list([atomic]) as list<FA2.atomic_trans>
+};
+//_ = Test.log("here");
+const transfers: FA2.transfer = list([transfer_from]) as FA2.transfer;
+//_ = Test.log("here");
+const create_proposal_params: Main.Parameter.Types.proposal_params = {
+    target_fa2: bob as address,
+    transfers: transfers
+};
+//_ = Test.log("here");
+
+
+const _test_signer_creates_proposal_works = (mainf: func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    Test.set_source(alice);
+
+    const expected_proposal: Main.Storage.Types.proposal = {
+        approved_signers: Set.add(alice, Set.empty as set<address>),
+        executed: false,
+        number_of_signers: 1 as nat,
+        target_fa2: bob as address,
+        transfers:transfers,
+        timestamp: 0 as timestamp
+    };
+    const gas_used: nat = Test.transfer_to_contract_exn(contr, Create_proposal(create_proposal_params), 0 as mutez);
+    Test.log(gas_used);
+    const end_storage = Test.get_storage(taddr);
+    const end_proposal: Main.Storage.Types.proposal = match(Big_map.find_opt(1 as nat, end_storage.proposal_map), {
+        Some: (op: Main.Storage.Types.proposal) => op,
+        None: () => failwith(Main.Conditions.Errors.no_proposal_exist)
+    });
+    const final_proposal: Main.Storage.Types.proposal = {
+        ...end_proposal,
+        timestamp: (0 as timestamp)
+    };
+    assert(final_proposal == expected_proposal);
+};
+
+const _test_unknown_creates_proposal_fails = (mainf: func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    Test.set_source(unknown);
+    const fail_tx = Test.transfer_to_contract(contr, Create_proposal(create_proposal_params), 0 as tez);
+    assert_error(fail_tx, Main.Conditions.Errors.only_signer); 
+    const curr_storage = Test.get_storage(taddr);
+    assert(curr_storage == storage);
+};
+
+
+
+const _test_signer_signs_proposal_works = (mainf: func_main): unit => {
+    const init_proposal: Main.Storage.Types.proposal = {
+        approved_signers: Set.add(alice, Set.empty as set<address>),
+        executed: false,
+        number_of_signers: 1 as nat,
+        target_fa2: bob as address,
+        transfers: transfers,
+        timestamp: 5 as timestamp,
+    };
+    
+    const [taddr, _, _] = Test.originate(mainf, {
+        ...storage, proposal_map: Big_map.literal(list([
+        [1 as nat, init_proposal]
+    ]))}
+    , 0 as tez);
+    const contr = Test.to_contract(taddr);
+    Test.set_source(bob);
+    const gas_used: nat = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    const curr_storage = Test.get_storage(taddr);
+    const end_signed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
+        Some: (op: proposal) => op,
+        None: () => failwith(Main.Conditions.Errors.no_proposal_exist)
+    });
+    const expected_signer: set<address> = Set.add(
+        bob,
+        Set.add(
+            alice,
+            Set.empty as set<address>
+        )
+    );
+    assert(end_signed_proposal.approved_signers == expected_signer);
+};
+
+
+const _test_unknown_signs_proposal_fails = (mainf: func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    Test.set_source(unknown);
+    const fail_tx = Test.transfer_to_contract(contr, Sign(1 as nat), 0 as tez);
+    assert_error(fail_tx, Main.Conditions.Errors.only_signer);
+    const curr_storage = Test.get_storage(taddr);
+    assert(curr_storage == storage);
+};
+
+
+
+const _test_unknown_signs_unknown_proposal_fails = (mainf : func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    Test.set_source(unknown);
+    const fail_sign_tx = Test.transfer_to_contract(contr, Sign(2 as nat), 0 as tez);
+    assert_error(fail_sign_tx, Main.Conditions.Errors.only_signer);
+};
+
+
+const _test_signer_signs_unknown_proposal_fails = (mainf: func_main): unit => {
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    Test.set_source(alice);
+    const fail_sign_tx = Test.transfer_to_contract(contr, Sign(2 as nat), 0 as tez);
+    assert_error(fail_sign_tx, Main.Conditions.Errors.no_proposal_exist);
+};
+
+
+
+const _signer_creates_proposal_signers_sign_proposal_execute_works = ([mainf, mainfa2]: [
+    func_main, 
+    func_mainfa2
+    ]): unit => {
+    Test.set_source(alice);
+    const [taddr, _, _] = Test.originate(mainf, storage, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    const addr: address = Tezos.address(contr);
+
+    const ledger: FA2.Ledger.t = Big_map.literal(list([
+        [1 as nat, alice],
+        [2 as nat, bob],
+        [3 as nat, charly]
+    ]));
+
+    const token_info = Map.empty as map<string, bytes>;
+    const token_metadata = Big_map.literal(list([
+        [1 as nat, {token_id:1 as nat, token_info:Map.empty as map<string, bytes>}],
+        [2 as nat, {token_id:2 as nat, token_info:Map.empty as map<string, bytes>}],
+        [3 as nat, {token_id:3 as nat, token_info:Map.empty as map<string, bytes>}]
+    ])) as FA2.TokenMetadata.t;
+
+    const operators: FA2.Operators.t = Big_map.literal(list([
+        [[alice, addr], Set.add(1 as nat, Set.empty)]
+    ])) as FA2.Operators.t;
+
+    const storage_fa2 = {
+        ledger         : ledger,
+        token_metadata : token_metadata,
+        operators      : operators
+    };
+
+    const [taddr_fa2, _, _] = Test.originate(mainfa2, storage_fa2, 0 as tez);
+    const contr_fa2 = Test.to_contract(taddr_fa2);
+    const addr_fa2 = Tezos.address(contr_fa2);
+    const params: Main.Parameter.Types.proposal_params = {...create_proposal_params, target_fa2: addr_fa2};
+    let gas_used: nat = Test.transfer_to_contract_exn(contr, Create_proposal(params), 0 as mutez);
+
+
+
+    Test.set_source(bob);
+    gas_used = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+    Test.set_source(charly);
+    gas_used = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+
+    const expected_executed_signers = Set.add(
+        alice,
+        Set.add(
+            bob,
+            Set.add(
+                charly,
+                Set.empty as set<address>
+            )
+        )
+    );
+
+    const curr_storage = Test.get_storage(taddr);
+    const end_executed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
+        Some: (op: proposal) => op,
+        None: () => failwith(Main.Conditions.Errors.no_proposal_exist)
+    });
+
+    assert(end_executed_proposal.executed);
+    assert(end_executed_proposal.approved_signers == expected_executed_signers);
+    const curr_fa2_storage: FA2.storage = Test.get_storage(taddr_fa2);
+    const owner: address = match(Big_map.find_opt(1 as nat, curr_fa2_storage.ledger), {
+        Some: (val: address) => val,
+        None: () => failwith(FA2.Errors.undefined_token)
+    });
+    assert(owner == bob);
+};
+
+
+const _signer_creates_proposal_signers_sign_proposal_execute_over_threshold_works = ([mainf, mainfa2]: [
+    func_main, 
+    func_mainfa2
+    ]): unit => {
+    Test.set_source(alice);
+    const storage_init = {...storage, threshold: 1 as nat};
+    const [taddr, _, _] = Test.originate(mainf, storage_init, 0 as tez);
+    const contr = Test.to_contract(taddr);
+    const addr: address = Tezos.address(contr);
+
+    const ledger: FA2.Ledger.t = Big_map.literal(list([
+        [1 as nat, alice],
+        [2 as nat, bob],
+        [3 as nat, charly]
+    ]));
+
+    const token_info = Map.empty as map<string, bytes>;
+    const token_metadata = Big_map.literal(list([
+        [1 as nat, {token_id:1 as nat, token_info:Map.empty as map<string, bytes>}],
+        [2 as nat, {token_id:2 as nat, token_info:Map.empty as map<string, bytes>}],
+        [3 as nat, {token_id:3 as nat, token_info:Map.empty as map<string, bytes>}]
+    ])) as FA2.TokenMetadata.t;
+
+    const operators: FA2.Operators.t = Big_map.literal(list([
+        [[alice, addr], Set.add(1 as nat, Set.empty)]
+    ])) as FA2.Operators.t;
+
+    const storage_fa2 = {
+        ledger         : ledger,
+        token_metadata : token_metadata,
+        operators      : operators
+    };
+
+    const [taddr_fa2, _, _] = Test.originate(mainfa2, storage_fa2, 0 as tez);
+    const contr_fa2 = Test.to_contract(taddr_fa2);
+    const addr_fa2 = Tezos.address(contr_fa2);
+    const params: Main.Parameter.Types.proposal_params = {...create_proposal_params, target_fa2: addr_fa2};
+    let gas_used: nat = Test.transfer_to_contract_exn(contr, Create_proposal(params), 0 as mutez);
+
+
+
+    Test.set_source(bob);
+    gas_used = Test.transfer_to_contract_exn(contr, Sign(1 as nat), 0 as tez);
+
+    const expected_executed_signers = Set.add(
+        alice,
+        Set.add(
+            bob,
+            Set.empty as set<address>
+        )
+    );
+
+    const curr_storage = Test.get_storage(taddr);
+    Test.log(curr_storage);
+    const end_executed_proposal = match(Big_map.find_opt(1 as nat, curr_storage.proposal_map), {
+        Some: (op: proposal) => op,
+        None: () => failwith(Main.Conditions.Errors.no_proposal_exist)
+    });
+
+    assert(end_executed_proposal.executed);
+    assert(end_executed_proposal.approved_signers == expected_executed_signers);
+    const curr_fa2_storage: FA2.storage = Test.get_storage(taddr_fa2);
+    const owner: address = match(Big_map.find_opt(1 as nat, curr_fa2_storage.ledger), {
+        Some: (val: address) => val,
+        None: () => failwith(FA2.Errors.undefined_token)
+    });
+    assert(owner == bob);
+};
+
+const test_1 = _test_signer_creates_proposal_works(Main.main);
+const test_2 = _test_unknown_creates_proposal_fails(Main.main);
+const test_3 = _test_signer_signs_proposal_works(Main.main);
+const test_4 = _test_unknown_signs_proposal_fails(Main.main);
+const test_5 = _test_unknown_signs_unknown_proposal_fails(Main.main);
+const test_6 = _test_signer_signs_unknown_proposal_fails(Main.main);
+const test_7 = _signer_creates_proposal_signers_sign_proposal_execute_works(Main.main, FA2.main);
+const test_8 = _signer_creates_proposal_signers_sign_proposal_execute_over_threshold_works(Main.main, FA2.main);
