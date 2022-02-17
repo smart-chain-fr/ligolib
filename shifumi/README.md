@@ -10,3 +10,8 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile contract s
 ```
 docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile contract src/cameligo/main.mligo --michelson-format json -e shifumiMain --protocol hangzhou > src/cameligo/compiled/shifumi.tz
 ```
+
+- run tests
+```
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test src/cameligo/ref.mligo  --protocol hangzhou
+```
