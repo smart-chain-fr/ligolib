@@ -127,9 +127,9 @@ let test =
         let _ = Test.transfer_to_contract_exn x (Reveal(reveal_args2)) 0mutez in
         
         let () = Test.log("check storage") in
-        let s2 = Test.get_storage addr in
+        let s2 : storage = Test.get_storage addr in
+        let () = Test.log(s2) in
         let () = assert (s2.result <> (None : bytes option)) in
-        //let () = Test.log(s2) in
         Test.log("test finished")
     in
     ()
