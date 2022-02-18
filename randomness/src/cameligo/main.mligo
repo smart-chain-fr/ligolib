@@ -17,12 +17,15 @@ type parameter = Commit of commit_param | Reveal of reveal_param
 type return = operation list * storage
 
 // Once everybody has commit & reveal we compute some bytes as result
-let trigger(payloads : (address, bytes) map) : bytes =
-    let get_payload = fun(acc, elt: bytes list * (address * bytes)) : bytes list -> elt.1 :: acc in
-    let pl : bytes list = Map.fold get_payload payloads ([]:bytes list) in
-    let hashthemall = fun(acc, elt: bytes * bytes) : bytes -> Crypto.keccak (Bytes.concat elt acc) in
-    let result : bytes = List.fold hashthemall pl (Bytes.pack Tezos.now) in
-    result
+let trigger(payloads : (address, bytes) map) : bytes option =
+    let hash_payload = fun(acc, elt: bytes list * (address * bytes)) : bytes list -> (Crypto.keccak elt.1) :: acc in
+    let pl : bytes list = Map.fold hash_payload payloads ([]:bytes list) in
+    let hashthemall = fun(acc, elt: bytes option * bytes) : bytes option -> 
+        match acc with 
+        | None -> Some(elt)
+        | Some pred -> Some(Crypto.keccak (Bytes.concat elt pred)) 
+    in
+    List.fold hashthemall pl (None : bytes option)
 
 // Sender commits its chest
 let commit(p, st : commit_param * storage) : return =
@@ -35,6 +38,7 @@ let commit(p, st : commit_param * storage) : return =
     
 // Sender reveals its chest content
 let reveal(p, s : reveal_param * storage) : return =
+    let _check_authorized : unit = assert_with_error (Set.mem Tezos.sender s.participants) "Not authorized" in
     // check all chest has been received
     let committed = fun (acc, elt : bool * address) : bool -> match Map.find_opt elt s.secrets with
         | None -> acc && false
@@ -47,8 +51,8 @@ let reveal(p, s : reveal_param * storage) : return =
     let decoded_payload =
         match Tezos.open_chest ck c secret with
         | Ok_opening b -> b
-        | Fail_timelock -> 0x00
-        | Fail_decrypt -> 0x01
+        | Fail_timelock -> (failwith("Could not open chest") : bytes)
+        | Fail_decrypt -> (failwith("Could not open chest") : bytes)
     in
     let new_decoded_payloads = match Map.find_opt Tezos.sender s.decoded_payloads with
     | None -> Map.add Tezos.sender decoded_payload s.decoded_payloads
@@ -61,7 +65,7 @@ let reveal(p, s : reveal_param * storage) : return =
     in
     let all_chests_revealed = Set.fold revealed s.participants true in
     if all_chests_revealed = true then
-        (([] : operation list), { s with decoded_payloads=new_decoded_payloads; result=Some(trigger(new_decoded_payloads)) })  
+        (([] : operation list), { s with decoded_payloads=new_decoded_payloads; result=trigger(new_decoded_payloads) })  
     else
         (([] : operation list), { s with decoded_payloads=new_decoded_payloads })
 
