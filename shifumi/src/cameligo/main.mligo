@@ -114,7 +114,6 @@ type play_param = {
 type reveal_param = {
     sessionId : nat;
     roundId : nat;
-    player_chest : chest;
     player_key : chest_key;
     player_secret : nat
 }
@@ -179,12 +178,27 @@ let reveal (param, store : reveal_param * shifumiStorage) : shifumiFullReturn =
     let listsize (acc, _elt: nat * player_action) : nat = acc + 1n in 
     let numberOfActions : nat = List.fold listsize current_round_actions 0n in 
     let _check_all_players_have_played : unit = assert_with_error (numberOfPlayers = numberOfActions) "a player has not played" in
+
+    let rec find_chest(addr, lst_opt : address * player_actions option) : chest option =
+        match lst_opt with
+        | None -> (None : chest option)
+        | Some lst -> (match List.head_opt lst with
+            | None -> (None : chest option) 
+            | Some elt -> if (elt.player = addr) then
+                    (Some(elt.action) : chest option)
+                else
+                    find_chest(addr, (List.tail_opt lst)))
+    in
+    let user_chest : chest = match find_chest(Tezos.sender, (Some(current_round_actions))) with
+    | None -> (failwith("Missing chest") : chest)
+    | Some ch -> ch
+    in
     // decode action
     let decoded_payload =
-        match Tezos.open_chest param.player_key param.player_chest param.player_secret with
+        match Tezos.open_chest param.player_key user_chest param.player_secret with
         | Ok_opening b -> b
-        | Fail_timelock -> 0x00
-        | Fail_decrypt -> 0x01
+        | Fail_timelock -> (failwith("Failed to open chest") : bytes)
+        | Fail_decrypt -> (failwith("Failed to open chest") : bytes)
     in
     let decoded_action : action = match (Bytes.unpack decoded_payload : action option) with
     | None -> failwith("Failed to unpack the payload")

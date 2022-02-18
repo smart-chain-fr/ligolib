@@ -11,13 +11,7 @@ let test =
     let s_init = Test.get_storage addr in
     let () = Test.log(s_init) in
 
-    let _test_should_works = (* chest key/payload and time matches -> OK *)
-        //let payload2 : bytes = 0x02 in
-        //let time_secret2 : nat = 99n in 
-        //let (my_chest2,chest_key2) = Test.create_chest payload2 time_secret2 in
-
-        //let () = Test.log("chests created") in
-
+    let _test_should_works = 
         let x : SHIFUMI.shifumiEntrypoints contract = Test.to_contract addr in
 
         // alice create session
@@ -26,9 +20,7 @@ let test =
         let session_args : SHIFUMI.createsession_param = { total_rounds=10n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.player set)) } in
         //let () = Test.log(commit_args) in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
-
         //let store : storage = Test.get_storage addr in
-
 
         // bob plays in (session=0n, round=1) 
         let () = Test.log("bob plays in session 0 round 1") in
@@ -59,7 +51,7 @@ let test =
         let reveal_args : SHIFUMI.reveal_param = {
             sessionId=0n;
             roundId=1n;
-            player_chest=alice_chest;
+            //player_chest=alice_chest;
             player_key=alice_chest_key;
             player_secret=alice_secret_1
         } in
@@ -73,7 +65,7 @@ let test =
         let bob_reveal_args : SHIFUMI.reveal_param = {
             sessionId=0n;
             roundId=1n;
-            player_chest=bob_chest;
+            //player_chest=bob_chest;
             player_key=bob_chest_key;
             player_secret=bob_secret_1
         } in
