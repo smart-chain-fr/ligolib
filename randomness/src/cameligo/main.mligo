@@ -117,9 +117,13 @@ let test =
         let _ = Test.transfer_to_contract_exn x (Commit(commit_args)) 0mutez in
 
         let () = Test.log("check alice chest") in
-        //let s : storage = Test.get_storage addr in
-        // TODO, waiting for fix
-        //let () = assert (Map.find_opt alice s.secrets <> (None : chest option)) in
+        let s : storage = Test.get_storage addr in
+        let response : bool = match Map.find_opt alice s.secrets with
+        | None -> false
+        | Some x -> true
+        in
+        let () = assert (response) in
+
 
         // bob commits
         let () = Test.log("bob commits") in
@@ -129,9 +133,12 @@ let test =
         let _ = Test.transfer_to_contract_exn x (Commit(commit_args2)) 0mutez in
 
         let () = Test.log("check bob chest") in
-        //let s : storage = Test.get_storage addr in
-        // TODO, waiting for fix
-        //let () = assert (Map.find_opt bob s.secrets <> (None : chest option)) in
+        let s3 : storage = Test.get_storage addr in
+        let response2 : bool = match Map.find_opt bob s3.secrets with
+        | None -> false
+        | Some x -> true
+        in
+        let () = assert (response2) in
 
         // alice reveals
         let () = Test.log("alice reveals") in
