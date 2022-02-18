@@ -46,8 +46,16 @@ let reveal(p, s : reveal_param * storage) : return =
     in
     let _all_chests_committed = Set.fold committed s.participants true in
     let _check_all_chests : unit = assert_with_error (_all_chests_committed = true) "Missing some chest" in
-    // open chest and stores the chest content
+
+    // check if chest match the chest given with commit entrypoint  
     let (ck,c, secret) = p in
+    let sender_chest : chest = match Map.find_opt Tezos.sender s.secrets with
+    | None -> failwith("Missing some chest")
+    | Some ch -> ch
+    in
+    // TODO  .. is it a bug ?
+    //let _check_chest : unit = assert_with_error (sender_chest = c) "Chests mismatch" in
+    // open chest and stores the chest content
     let decoded_payload =
         match Tezos.open_chest ck c secret with
         | Ok_opening b -> b
