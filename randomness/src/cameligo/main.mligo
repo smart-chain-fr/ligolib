@@ -10,7 +10,7 @@ type commit_param = {
     secret_action : chest
 }
 
-type reveal_param = chest_key * chest * nat
+type reveal_param = chest_key * nat
 
 type parameter = Commit of commit_param | Reveal of reveal_param 
 
@@ -38,7 +38,8 @@ let commit(p, st : commit_param * storage) : return =
     
 // Sender reveals its chest content
 let reveal(p, s : reveal_param * storage) : return =
-    let _check_authorized : unit = assert_with_error (Set.mem Tezos.sender s.participants) "Not authorized" in
+    let sender : address = Tezos.sender in
+    let _check_authorized : unit = assert_with_error (Set.mem sender s.participants) "Not authorized" in
     // check all chest has been received
     let committed = fun (acc, elt : bool * address) : bool -> match Map.find_opt elt s.secrets with
         | None -> acc && false
@@ -47,22 +48,19 @@ let reveal(p, s : reveal_param * storage) : return =
     let _all_chests_committed = Set.fold committed s.participants true in
     let _check_all_chests : unit = assert_with_error (_all_chests_committed = true) "Missing some chest" in
 
-    // check if chest match the chest given with commit entrypoint  
-    let (ck,c, secret) = p in
-    let sender_chest : chest = match Map.find_opt Tezos.sender s.secrets with
+    let (ck, secret) = p in
+    let sender_chest : chest = match Map.find_opt sender s.secrets with
     | None -> failwith("Missing some chest")
     | Some ch -> ch
     in
-    // TODO  .. is it a bug ?
-    //let _check_chest : unit = assert_with_error (sender_chest = c) "Chests mismatch" in
     // open chest and stores the chest content
     let decoded_payload =
-        match Tezos.open_chest ck c secret with
+        match Tezos.open_chest ck sender_chest secret with
         | Ok_opening b -> b
-        | Fail_timelock -> (failwith("Could not open chest") : bytes)
-        | Fail_decrypt -> (failwith("Could not open chest") : bytes)
+        | Fail_timelock -> (failwith("Could not open chest: Fail_timelock") : bytes)
+        | Fail_decrypt -> (failwith("Could not open chest: Fail_decrypt") : bytes)
     in
-    let new_decoded_payloads = match Map.find_opt Tezos.sender s.decoded_payloads with
+    let new_decoded_payloads = match Map.find_opt sender s.decoded_payloads with
     | None -> Map.add Tezos.sender decoded_payload s.decoded_payloads
     | Some _elt -> (failwith("Already revealed") : (address, bytes) map)
     in 
@@ -99,11 +97,11 @@ let test =
 
     let _test_should_works = (* chest key/payload and time matches -> OK *)
     
-        let payload : bytes = 0x01 in
+        let payload : bytes = 0x0a in
         let time_secret : nat = 10n in 
         let (my_chest,chest_key) = Test.create_chest payload time_secret in
 
-        let payload2 : bytes = 0x02 in
+        let payload2 : bytes = 0x0b in
         let time_secret2 : nat = 99n in 
         let (my_chest2,chest_key2) = Test.create_chest payload2 time_secret2 in
 
@@ -118,24 +116,34 @@ let test =
         //let () = Test.log(commit_args) in
         let _ = Test.transfer_to_contract_exn x (Commit(commit_args)) 0mutez in
 
+        let () = Test.log("check alice chest") in
+        //let s : storage = Test.get_storage addr in
+        // TODO, waiting for fix
+        //let () = assert (Map.find_opt alice s.secrets <> (None : chest option)) in
+
         // bob commits
         let () = Test.log("bob commits") in
         let () = Test.set_source bob in
-        let commit_args2 : commit_param = {secret_action=my_chest} in
+        let commit_args2 : commit_param = {secret_action=my_chest2} in
         //let () = Test.log(commit_args) in
         let _ = Test.transfer_to_contract_exn x (Commit(commit_args2)) 0mutez in
+
+        let () = Test.log("check bob chest") in
+        //let s : storage = Test.get_storage addr in
+        // TODO, waiting for fix
+        //let () = assert (Map.find_opt bob s.secrets <> (None : chest option)) in
 
         // alice reveals
         let () = Test.log("alice reveals") in
         let () = Test.set_source alice in
-        let reveal_args : reveal_param = (chest_key, my_chest, time_secret) in
+        let reveal_args : reveal_param = (chest_key, time_secret) in
         //let () = Test.log(reveal_args) in
         let _ = Test.transfer_to_contract_exn x (Reveal(reveal_args)) 0mutez in
 
         // bob reveals
         let () = Test.log("bob reveals") in
         let () = Test.set_source bob in
-        let reveal_args2 : reveal_param = (chest_key2, my_chest2, time_secret2) in
+        let reveal_args2 : reveal_param = (chest_key2, time_secret2) in
         let _ = Test.transfer_to_contract_exn x (Reveal(reveal_args2)) 0mutez in
         
         let () = Test.log("check storage") in
