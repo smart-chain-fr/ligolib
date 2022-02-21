@@ -13,5 +13,5 @@ docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile contract s
 
 - run tests
 ```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test src/cameligo/ref.mligo  --protocol hangzhou
+docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test src/cameligo/test.mligo  --protocol hangzhou
 ```
