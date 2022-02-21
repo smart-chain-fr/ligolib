@@ -1,4 +1,5 @@
-ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
+# ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
+ligo_compiler=../../../ligo
 PROTOCOL_OPT=--protocol hangzhou
 JSON_OPT=--michelson-format json
 
@@ -6,23 +7,17 @@ help:
 	@echo  'Usage:'
 	@echo  '  all             - Remove generated Michelson files, recompile smart contracts and lauch all tests'
 	@echo  '  clean           - Remove generated Michelson files'
-	@echo  '  compile         - Compiles smart contract advisor and indice'
-	@echo  '  advisor         - Compiles smart contract advisor'
-	@echo  '  indice          - Compiles smart contract indice'
-	@echo  '  test            - Run integration tests (written in Ligo) and unit tests (written in pytezos)'
-	@echo  '  test_ligo       - Run integration tests (written in Ligo)'
-	@echo  '  test_pytezos    - Run unit tests (written in pytezos)'
+	@echo  '  compile         - Compiles smart contract Random'
+	@echo  '  test            - Run integration tests (written in Ligo)'
 	@echo  '  dry-run         - Simulate execution of entrypoints (with the Ligo compiler)'
 	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
 	@echo  ''
 
 all: clean compile test
 
-compile: indice advisor
+compile: random
 
-indice: indice.tz indice.json
-
-advisor: advisor.tz advisor.json
+random: random.tz random.json
 
 random.tz: contracts/main.mligo
 	@echo "Compiling smart contract to Michelson"

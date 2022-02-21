@@ -1,0 +1,138 @@
+{ parameter (or (chest %commit) (pair %reveal chest_key nat)) ;
+  storage
+    (pair (pair (map %decoded_payloads address bytes) (set %participants address))
+          (pair (option %result bytes) (map %secrets address chest))) ;
+  code { UNPAIR ;
+         IF_LEFT
+           { PUSH string "Not authorized" ;
+             DUP 3 ;
+             CAR ;
+             CDR ;
+             SENDER ;
+             MEM ;
+             IF { DROP } { FAILWITH } ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CDR ;
+             CDR ;
+             SENDER ;
+             GET ;
+             IF_NONE
+               { SWAP ; DUP ; DUG 2 ; CDR ; CDR ; SWAP ; SOME ; SENDER ; UPDATE }
+               { DROP 2 ; PUSH string "Sender has already given its chest" ; FAILWITH } ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CDR ;
+             CAR ;
+             PAIR ;
+             SWAP ;
+             CAR ;
+             PAIR ;
+             NIL operation ;
+             PAIR }
+           { PUSH string "Not authorized" ;
+             DUP 3 ;
+             CAR ;
+             CDR ;
+             SENDER ;
+             MEM ;
+             IF { DROP } { FAILWITH } ;
+             PUSH bool True ;
+             DUP 3 ;
+             CAR ;
+             CDR ;
+             ITER { SWAP ;
+                    DUP 4 ;
+                    CDR ;
+                    CDR ;
+                    DIG 2 ;
+                    GET ;
+                    IF_NONE { PUSH bool False ; AND } { DROP ; PUSH bool True ; AND } } ;
+             PUSH string "Missing some chest" ;
+             PUSH bool True ;
+             DIG 2 ;
+             COMPARE ;
+             EQ ;
+             IF { DROP } { FAILWITH } ;
+             UNPAIR ;
+             DUP 3 ;
+             CDR ;
+             CDR ;
+             SENDER ;
+             GET ;
+             IF_NONE { PUSH string "Missing some chest" ; FAILWITH } {} ;
+             DIG 2 ;
+             SWAP ;
+             DIG 2 ;
+             OPEN_CHEST ;
+             IF_LEFT
+               { RIGHT (or unit unit) }
+               { IF { UNIT ; LEFT unit ; LEFT bytes } { UNIT ; RIGHT unit ; LEFT bytes } } ;
+             IF_LEFT
+               { IF_LEFT
+                   { DROP ; PUSH string "Could not open chest: Fail_decrypt" ; FAILWITH }
+                   { DROP ; PUSH string "Could not open chest: Fail_timelock" ; FAILWITH } }
+               {} ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CAR ;
+             SENDER ;
+             GET ;
+             IF_NONE
+               { SWAP ; DUP ; DUG 2 ; CAR ; CAR ; SWAP ; SOME ; SENDER ; UPDATE }
+               { DROP 2 ; PUSH string "Already revealed" ; FAILWITH } ;
+             PUSH bool True ;
+             DUP 3 ;
+             CAR ;
+             CDR ;
+             ITER { SWAP ;
+                    DUP 3 ;
+                    DIG 2 ;
+                    GET ;
+                    IF_NONE { PUSH bool False ; AND } { DROP ; PUSH bool True ; AND } } ;
+             PUSH bool True ;
+             SWAP ;
+             COMPARE ;
+             EQ ;
+             IF { SWAP ;
+                  DUP ;
+                  DUG 2 ;
+                  CDR ;
+                  DIG 2 ;
+                  CAR ;
+                  CDR ;
+                  DUP 3 ;
+                  PAIR ;
+                  PAIR ;
+                  DUP ;
+                  CDR ;
+                  CDR ;
+                  NIL bytes ;
+                  DIG 3 ;
+                  ITER { CDR ; KECCAK ; CONS } ;
+                  NONE bytes ;
+                  SWAP ;
+                  ITER { SWAP ; IF_NONE { SOME } { SWAP ; CONCAT ; KECCAK ; SOME } } ;
+                  PAIR ;
+                  SWAP ;
+                  CAR ;
+                  PAIR ;
+                  NIL operation ;
+                  PAIR }
+                { SWAP ;
+                  DUP ;
+                  DUG 2 ;
+                  CDR ;
+                  DIG 2 ;
+                  CAR ;
+                  CDR ;
+                  DIG 2 ;
+                  PAIR ;
+                  PAIR ;
+                  NIL operation ;
+                  PAIR } } } }
+

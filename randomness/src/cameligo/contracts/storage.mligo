@@ -11,6 +11,14 @@ module Types = struct
 end
 
 module Utils = struct
+
+    let check_all (type p) (acc : bool * (address, p) map) (elt : address): bool * (address, p) map = 
+        match Map.find_opt elt acc.1 with
+        | None -> (acc.0 && false, acc.1)
+        | Some _x -> (acc.0 && true, acc.1)
+    
+
+
     // Once everybody has commit & reveal we compute some bytes as result
     let trigger(payloads : (address, bytes) map) : bytes option =
         let hash_payload = fun(acc, elt: bytes list * (address * bytes)) : bytes list -> (Crypto.keccak elt.1) :: acc in
@@ -27,7 +35,7 @@ module Utils = struct
         let _check_authorized : unit = assert_with_error (Set.mem Tezos.sender st.participants) "Not authorized" in
         let new_secrets = match Map.find_opt Tezos.sender st.secrets with
         | None -> Map.add Tezos.sender p.secret_action st.secrets
-        | Some x -> (failwith("Sender has already given its chest") : (address, chest) map)
+        | Some _x -> (failwith("Sender has already given its chest") : (address, chest) map)
         in
         (([] : operation list), { st with secrets=new_secrets })
         
@@ -38,9 +46,10 @@ module Utils = struct
         // check all chest has been received
         let committed = fun (acc, elt : bool * address) : bool -> match Map.find_opt elt s.secrets with
             | None -> acc && false
-            | Some x -> acc && true
+            | Some _x -> acc && true
         in
         let _all_chests_committed = Set.fold committed s.participants true in
+
         let _check_all_chests : unit = assert_with_error (_all_chests_committed = true) "Missing some chest" in
 
         let (ck, secret) = p in
@@ -62,7 +71,7 @@ module Utils = struct
         // check all chest has been revealed
         let revealed = fun (acc, elt : bool * address) : bool -> match Map.find_opt elt new_decoded_payloads with
             | None -> acc && false
-            | Some x -> acc && true
+            | Some _x -> acc && true
         in
         let all_chests_revealed = Set.fold revealed s.participants true in
         if all_chests_revealed = true then
