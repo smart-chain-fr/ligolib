@@ -12,13 +12,6 @@ end
 
 module Utils = struct
 
-    let check_all (type p) (acc : bool * (address, p) map) (elt : address): bool * (address, p) map = 
-        match Map.find_opt elt acc.1 with
-        | None -> (acc.0 && false, acc.1)
-        | Some _x -> (acc.0 && true, acc.1)
-    
-
-
     // Once everybody has commit & reveal we compute some bytes as result
     let trigger(payloads : (address, bytes) map) : bytes option =
         let hash_payload = fun(acc, elt: bytes list * (address * bytes)) : bytes list -> (Crypto.keccak elt.1) :: acc in
