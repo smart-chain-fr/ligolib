@@ -235,21 +235,6 @@ let play(param, store : play_param * shifumiStorage) : shifumiFullReturn =
     in
     let new_current_session : session = { current_session with asleep=Tezos.now + 600; rounds=new_rounds } in
     let new_storage : shifumiStorage = { store with sessions=Map.update param.sessionId (Some(new_current_session)) store.sessions} in 
-    
-    // compute board if all players have played
-    //let performed_actions : player_actions = match Map.find_opt current_session.current_round current_session.rounds with
-    //| None -> ([] : player_actions)
-    //| Some (pacts) -> pacts
-    //in
-    //let all_player_have_played((acc, pactions), elt : (bool * player_actions) * player) : (bool * player_actions) = (acc && has_played_(pactions, elt), pactions) in
-    //let (check_all_players_have_played, _all_actions) : (bool * player_actions) = Set.fold all_player_have_played new_current_session.players (true, performed_actions) in
-    //// all players have given their actions, now the board can be resolved and goes to next round
-    //let modified_new_current_session : session = if (check_all_players_have_played = true) then 
-    //    { new_current_session with current_round=new_current_session.current_round+1n; board=resolve_board(new_current_session) }
-    //    else
-    //    new_current_session
-    //in
-    //let new_storage : shifumiStorage = { store with sessions=Map.update param.sessionId (Some(modified_new_current_session)) store.sessions } in 
     (([]: operation list), new_storage)
 
 let reveal (param, store : reveal_param * shifumiStorage) : shifumiFullReturn =
@@ -325,8 +310,16 @@ let reveal (param, store : reveal_param * shifumiStorage) : shifumiFullReturn =
     (([]: operation list), new_storage)
 
 // TODO computes points
-let retrieve_board(_sess : session) : sessionBoard =
-    { points=(Map.empty : (player, nat) map) }
+let retrieve_board(sess : session) : sessionBoard =
+    let scores : (address, nat) map = (Map.empty : (address, nat) map) in
+    let myfunc(acc, elt : (address, nat) map * (round * player option)) : (address, nat) map = match elt.1 with
+    | None -> acc
+    | Some winner_round -> (match Map.find_opt winner_round acc with
+        | None -> Map.add winner_round 1n acc
+        | Some old_value -> Map.update winner_round (Some(old_value + 1n)) acc)
+    in
+    let final_scores = Map.fold myfunc sess.board scores in
+    { points=final_scores }
 
 let shifumiMain(ep, store : shifumiEntrypoints * shifumiStorage) : shifumiFullReturn =
     match ep with 
