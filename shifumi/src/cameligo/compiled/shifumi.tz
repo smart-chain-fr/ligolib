@@ -829,5 +829,33 @@
                            PAIR ;
                            NIL operation ;
                            PAIR }
-                         { DROP 3 ; NIL operation ; PAIR } } } } } }
+                         { DROP 3 ; NIL operation ; PAIR } } } } } ;
+  view "board"
+       nat
+       (map address nat)
+       { UNPAIR ;
+         SWAP ;
+         CDR ;
+         SWAP ;
+         GET ;
+         IF_NONE
+           { PUSH string "Unknown session" ; FAILWITH }
+           { EMPTY_MAP address nat ;
+             SWAP ;
+             CAR ;
+             CAR ;
+             CDR ;
+             ITER { CDR ;
+                    IF_NONE
+                      {}
+                      { SWAP ;
+                        DUP ;
+                        DUG 2 ;
+                        SWAP ;
+                        DUP ;
+                        DUG 2 ;
+                        GET ;
+                        IF_NONE
+                          { SWAP ; PUSH nat 1 ; DIG 2 ; SWAP ; SOME ; SWAP ; UPDATE }
+                          { DIG 2 ; PUSH nat 1 ; DIG 2 ; ADD ; SOME ; DIG 2 ; UPDATE } } } } } }
 
