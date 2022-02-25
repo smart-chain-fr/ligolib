@@ -1,7 +1,7 @@
 #import "storage.mligo" "Storage"
 #import "parameter.mligo" "Parameter"
 #import "views.mligo" "Views"
-
+#import "errors.mligo" "Errors"
 
 type storage = Storage.Types.t
 type parameter = Parameter.Types.t

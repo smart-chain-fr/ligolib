@@ -20,12 +20,12 @@ module Utils = struct
 
     let stopSession(param, store : Parameter.Types.stopsession_param * Types.t) : operation list * Types.t = 
         let current_session : Session.Types.t = match Map.find_opt param.sessionId store.sessions with
-        | None -> (failwith("Unknown session") : Session.Types.t)
+        | None -> (failwith(Errors.unknown_session) : Session.Types.t)
         | Some (sess) -> sess
         in
-        let _check_asleep : unit = assert_with_error (Tezos.now > current_session.asleep) "Must wait at least 600 seconds before claiming Victory (in case opponent is not playing)" in
-        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) "Not allowed to stop this session" in
-        let _check_session_end : unit = assert_with_error (current_session.result = (Inplay : Session.Types.result)) "this session is finished" in
+        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) Errors.user_not_allowed_to_stop_session in
+        let _check_session_end : unit = assert_with_error (current_session.result = (Inplay : Session.Types.result)) Errors.session_finished in
+        let _check_asleep : unit = assert_with_error (Tezos.now > current_session.asleep) Errors.must_wait_10_min in
         let current_round = match Map.find_opt current_session.current_round current_session.rounds with
         | None -> (failwith("SHOULD NOT BE HERE SESSION IS BROKEN") : Session.Types.player_actions)
         | Some rnd -> rnd 
@@ -63,16 +63,17 @@ module Utils = struct
     // once the chest is created, the player send its chest to the smart contract
     let play(param, store : Parameter.Types.play_param * Types.t) : operation list * Types.t = 
         let current_session : Session.Types.t = match Map.find_opt param.sessionId store.sessions with
-        | None -> (failwith("Unknown session") : Session.Types.t)
+        | None -> (failwith(Errors.unknown_session) : Session.Types.t)
         | Some (sess) -> sess
         in
-        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) "Not allowed to play in this session" in
-        let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) "Wrong round parameter" in
+        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) Errors.user_not_allowed_to_play_in_session in
+        let _check_session_end : unit = assert_with_error (current_session.result = (Inplay : Session.Types.result)) Errors.session_finished in
+        let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) Errors.wrong_current_round in
         // register action
         let new_rounds = match Map.find_opt current_session.current_round current_session.rounds with 
         | None -> Map.add current_session.current_round [{player=Tezos.sender; action=param.action}] current_session.rounds
         | Some (playerActions) ->
-            let _check_player_has_played_this_round = assert_with_error (Session.Utils.has_played(current_session, param.roundId, Tezos.sender) = false) "You already have played for this round" in
+            let _check_player_has_played_this_round = assert_with_error (Session.Utils.has_played(current_session, param.roundId, Tezos.sender) = false) Errors.user_already_played in
             Map.update current_session.current_round (Some({player=Tezos.sender; action=param.action} :: playerActions)) current_session.rounds
         in
         let new_current_session : Session.Types.t = { current_session with asleep=Tezos.now + 600; rounds=new_rounds } in
@@ -82,19 +83,20 @@ module Utils = struct
     let reveal (param, store : Parameter.Types.reveal_param * Types.t) : operation list * Types.t =
         // players can reveal only if all players have sent their chest
         let current_session : Session.Types.t = match Map.find_opt param.sessionId store.sessions with
-        | None -> (failwith("Unknown session") : Session.Types.t)
+        | None -> (failwith(Errors.unknown_session) : Session.Types.t)
         | Some (sess) -> sess
         in
-        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) "Not allowed to play in this session" in
-        let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) "Wrong round parameter" in
+        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) Errors.user_not_allowed_to_reveal_in_session in
+        let _check_session_end : unit = assert_with_error (current_session.result = (Inplay : Session.Types.result)) Errors.session_finished in
+        let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) Errors.wrong_current_round in
         let current_round_actions : Session.Types.player_actions = match Map.find_opt current_session.current_round current_session.rounds with 
-        | None -> failwith("no actions registered")
+        | None -> failwith(Errors.missing_all_chests)
         | Some (round_actions) -> round_actions 
         in
         let numberOfPlayers : nat = Set.size current_session.players in
         let listsize (acc, _elt: nat * Session.Types.player_action) : nat = acc + 1n in 
         let numberOfActions : nat = List.fold listsize current_round_actions 0n in 
-        let _check_all_players_have_played : unit = assert_with_error (numberOfPlayers = numberOfActions) "a player has not played" in
+        let _check_all_players_have_played : unit = assert_with_error (numberOfPlayers = numberOfActions) Errors.missing_player_chest in
 
         let rec find_chest(addr, lst_opt : address * Session.Types.player_actions option) : chest option =
             match lst_opt with
@@ -107,24 +109,24 @@ module Utils = struct
                         find_chest(addr, (List.tail_opt lst)))
         in
         let user_chest : chest = match find_chest(Tezos.sender, (Some(current_round_actions))) with
-        | None -> (failwith("Missing chest") : chest)
+        | None -> (failwith(Errors.missing_sender_chest) : chest)
         | Some ch -> ch
         in
         // decode action
         let decoded_payload =
             match Tezos.open_chest param.player_key user_chest param.player_secret with
             | Ok_opening b -> b
-            | Fail_timelock -> (failwith("Failed to open chest") : bytes)
-            | Fail_decrypt -> (failwith("Failed to open chest") : bytes)
+            | Fail_timelock -> (failwith(Errors.failed_to_open_chest) : bytes)
+            | Fail_decrypt -> (failwith(Errors.failed_to_open_chest) : bytes)
         in
         let decoded_action : Session.Types.action = match (Bytes.unpack decoded_payload : Session.Types.action option) with
-        | None -> failwith("Failed to unpack the payload")
+        | None -> failwith(Errors.failed_to_unpack_payload)
         | Some x -> x
         in
         let new_decoded_rounds = match Map.find_opt current_session.current_round current_session.decoded_rounds with 
         | None -> Map.add current_session.current_round [{player=Tezos.sender; action=decoded_action}] current_session.decoded_rounds
         | Some (decodedPlayerActions) ->
-            let _check_player_has_revealed_this_round = assert_with_error (Session.Utils.has_revealed(current_session, param.roundId, Tezos.sender) = false) "You already have revealed your play for this round" in
+            let _check_player_has_revealed_this_round = assert_with_error (Session.Utils.has_revealed(current_session, param.roundId, Tezos.sender) = false) Errors.user_already_revealed in
             Map.update current_session.current_round (Some({player=Tezos.sender; action=decoded_action} :: decodedPlayerActions)) current_session.decoded_rounds
         in
         let new_current_session : Session.Types.t = { current_session with asleep=Tezos.now + 600; decoded_rounds=new_decoded_rounds } in
