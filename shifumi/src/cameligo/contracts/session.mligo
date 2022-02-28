@@ -44,33 +44,30 @@ module Utils = struct
         let discard_player(acc, elt : address set * Types.decoded_player_action) : address set = Set.remove elt.player acc in
         List.fold discard_player pactions all_players 
 
-
-
-    let has_played(sess, roundId, player : Types.t * nat * Types.player) : bool =
-        match Map.find_opt roundId sess.rounds with
-        | Some (acts) -> 
-            let check_contains(acc, elt : bool * Types.player_action) : bool = if acc then acc else (elt.player = player) in
-            List.fold check_contains acts false 
-        | None -> false 
-
+    [@inline]
     let has_played_(pactions, player : Types.player_actions * Types.player) : bool =
         let check_contains(acc, elt : bool * Types.player_action) : bool = if acc then acc else (elt.player = player) in
         List.fold check_contains pactions false 
 
-    let has_revealed(sess, roundId, player : Types.t * nat * Types.player) : bool =
-        match Map.find_opt roundId sess.decoded_rounds with
-        | Some (acts) -> 
-            let check_contains(acc, elt : bool * Types.decoded_player_action) : bool = if acc then acc else (elt.player = player) in
-            List.fold check_contains acts false 
+    [@inline]
+    let has_played(sess, roundId, player : Types.t * nat * Types.player) : bool =
+        match Map.find_opt roundId sess.rounds with
+        | Some (acts) -> has_played_(acts, player)
         | None -> false 
 
+    [@inline]
     let has_revealed_(pactions, player : Types.decoded_player_actions * Types.player) : bool =
         let check_contains(acc, elt : bool * Types.decoded_player_action) : bool = if acc then acc else (elt.player = player) in
         List.fold check_contains pactions false 
+    
+    [@inline]
+    let has_revealed(sess, roundId, player : Types.t * nat * Types.player) : bool =
+        match Map.find_opt roundId sess.decoded_rounds with
+        | Some (acts) -> has_revealed_(acts, player)
+        | None -> false 
 
+    [@inline]
     let resolve(first, second : Types.decoded_player_action * Types.decoded_player_action) : Types.player option = 
-        //let first_action : action = first.action in
-        //let second_action : action = second.action in 
         let result : Types.player option = match first.action, second.action with
         | Stone, Stone -> None
         | Stone, Paper -> Some(second.player)
@@ -112,14 +109,14 @@ module Utils = struct
 
     let compute_result(sess: Types.t) : Types.result =
         // parse board and compute who won
-        let scores : (address, nat) map = (Map.empty : (address, nat) map) in
-        let myfunc(acc, elt : (address, nat) map * (Types.round * Types.player option)) : (address, nat) map = match elt.1 with
+        //let scores : (address, nat) map = (Map.empty : (address, nat) map) in
+        let compute_points(acc, elt : (address, nat) map * (Types.round * Types.player option)) : (address, nat) map = match elt.1 with
         | None -> acc
         | Some winner_round -> (match Map.find_opt winner_round acc with
             | None -> Map.add winner_round 1n acc
             | Some old_value -> Map.update winner_round (Some(old_value + 1n)) acc)
         in
-        let final_scores = Map.fold myfunc sess.board scores in
+        let final_scores = Map.fold compute_points sess.board (Map.empty : (address, nat) map) in
         let (winner_addr, winner_points, multiple_winners) : (address option * nat * bool) = ((None : address option), 0n, false) in
         let leader_score((win_addr, win_points, multiple), elt : (address option * nat * bool) * (address * nat)) : (address option * nat * bool) =
             match win_addr with

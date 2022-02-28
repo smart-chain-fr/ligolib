@@ -1281,4 +1281,24 @@ let test =
         let fail_reveal = Test.transfer_to_contract x (RevealPlay(reveal_args)) 0mutez in
         assert_string_failure fail_reveal SHIFUMI.Errors.failed_to_unpack_payload
     in
+    let session_23_stop_session_all_troller = 
+        let x : SHIFUMI.parameter contract = Test.to_contract addr in
+
+        // alice create session
+        let () = Test.log("alice create session 23") in
+        let () = Test.set_source alice in
+        let () = Test.set_now ("2022-02-26t20:00:00Z" : timestamp) in
+        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let current_session_id : nat = 23n in
+        let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
+
+        // alice stops session (session=23n) 
+        let () = Test.log("alice stops session 23") in
+        let () = Test.set_source alice in
+        let () = Test.set_now ("2022-02-26t20:15:00Z" : timestamp) in
+        let stop_args : SHIFUMI.Parameter.Types.stopsession_param = {sessionId=current_session_id} in
+        let fail_stop_session = Test.transfer_to_contract x (StopSession(stop_args)) 0mutez in
+        assert_string_failure fail_stop_session SHIFUMI.Errors.no_winner
+    in
+
     ()

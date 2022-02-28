@@ -1,6 +1,7 @@
 #import "errors.mligo" "Errors"
 #import "parameter.mligo" "Parameter"
 #import "session.mligo" "Session"
+#import "conditions.mligo" "Conditions"
 
 module Types = struct
 
@@ -13,27 +14,35 @@ end
 
 module Utils = struct
 
+    module Helpers = struct 
+
+        let getSession(sessionId, store : nat * Types.t) : Session.Types.t =
+            match Map.find_opt sessionId store.sessions with
+            | None -> (failwith(Errors.unknown_session) : Session.Types.t)
+            | Some (sess) -> sess
+
+    end
+
+
     let createSession(param, store : Parameter.Types.createsession_param * Types.t) : operation list * Types.t = 
         let new_session : Session.Types.t = { asleep=Tezos.now + 600; total_rounds=param.total_rounds; players=param.players; current_round=1n; rounds=(Map.empty : (Session.Types.round, Session.Types.player_actions) map); decoded_rounds=(Map.empty : (Session.Types.round, Session.Types.decoded_player_actions) map); board=(Map.empty : Session.Types.board); result=Inplay } in
         let new_storage : Types.t = { next_session=store.next_session + 1n; sessions=Map.add store.next_session new_session store.sessions} in
         (([]: operation list), new_storage)
 
     let stopSession(param, store : Parameter.Types.stopsession_param * Types.t) : operation list * Types.t = 
-        let current_session : Session.Types.t = match Map.find_opt param.sessionId store.sessions with
-        | None -> (failwith(Errors.unknown_session) : Session.Types.t)
-        | Some (sess) -> sess
-        in
-        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) Errors.user_not_allowed_to_stop_session in
-        let _check_session_end : unit = assert_with_error (current_session.result = (Inplay : Session.Types.result)) Errors.session_finished in
-        let _check_asleep : unit = assert_with_error (Tezos.now > current_session.asleep) Errors.must_wait_10_min in
+        let current_session : Session.Types.t = Helpers.getSession(param.sessionId, store) in
+        let _check_players : unit = Conditions.check_player_authorized(current_session, Errors.user_not_allowed_to_stop_session) in
+        let _check_session_end : unit = Conditions.check_session_end(current_session) in
+        let _check_asleep : unit = Conditions.check_asleep(current_session) in
         let current_round = match Map.find_opt current_session.current_round current_session.rounds with
-        | None -> (failwith("SHOULD NOT BE HERE SESSION IS BROKEN") : Session.Types.player_actions)
+        | None -> ([] : Session.Types.player_actions)
         | Some rnd -> rnd 
         in
         let missing_players = Session.Utils.find_missing_players(current_round, current_session.players) in
         if Set.size missing_players > 0n then
             let rem_player(acc, elt : address set * address ) : address set = Set.remove elt acc in
             let winners_set : address set = Set.fold rem_player missing_players current_session.players in
+            let _check_has_winner : unit = assert_with_error (Set.size winners_set > 0n) Errors.no_winner in 
             let add_player(acc, elt : address list * address) : address list = elt :: acc in
             let winners_list : address list = Set.fold add_player winners_set ([] : address list) in
             let winner : address = Option.unopt (List.head_opt winners_list) in
@@ -62,12 +71,9 @@ module Utils = struct
     // the player create a chest with the chosen action (Stone | Paper | Cisor) in backend
     // once the chest is created, the player send its chest to the smart contract
     let play(param, store : Parameter.Types.play_param * Types.t) : operation list * Types.t = 
-        let current_session : Session.Types.t = match Map.find_opt param.sessionId store.sessions with
-        | None -> (failwith(Errors.unknown_session) : Session.Types.t)
-        | Some (sess) -> sess
-        in
-        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) Errors.user_not_allowed_to_play_in_session in
-        let _check_session_end : unit = assert_with_error (current_session.result = (Inplay : Session.Types.result)) Errors.session_finished in
+        let current_session : Session.Types.t = Helpers.getSession(param.sessionId, store) in
+        let _check_players : unit = Conditions.check_player_authorized(current_session, Errors.user_not_allowed_to_play_in_session) in
+        let _check_session_end : unit = Conditions.check_session_end(current_session) in
         let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) Errors.wrong_current_round in
         // register action
         let new_rounds = match Map.find_opt current_session.current_round current_session.rounds with 
@@ -82,12 +88,9 @@ module Utils = struct
 
     let reveal (param, store : Parameter.Types.reveal_param * Types.t) : operation list * Types.t =
         // players can reveal only if all players have sent their chest
-        let current_session : Session.Types.t = match Map.find_opt param.sessionId store.sessions with
-        | None -> (failwith(Errors.unknown_session) : Session.Types.t)
-        | Some (sess) -> sess
-        in
-        let _check_players : unit = assert_with_error (Set.mem Tezos.sender current_session.players) Errors.user_not_allowed_to_reveal_in_session in
-        let _check_session_end : unit = assert_with_error (current_session.result = (Inplay : Session.Types.result)) Errors.session_finished in
+        let current_session : Session.Types.t = Helpers.getSession(param.sessionId, store) in
+        let _check_players : unit = Conditions.check_player_authorized(current_session, Errors.user_not_allowed_to_reveal_in_session) in
+        let _check_session_end : unit = Conditions.check_session_end(current_session) in
         let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) Errors.wrong_current_round in
         let current_round_actions : Session.Types.player_actions = match Map.find_opt current_session.current_round current_session.rounds with 
         | None -> failwith(Errors.missing_all_chests)
