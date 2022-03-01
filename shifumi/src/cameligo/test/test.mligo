@@ -14,33 +14,33 @@ let test =
     let james: address = Test.nth_bootstrap_account 2 in
     let init_storage : SHIFUMI.storage = { 
         next_session=0n;
-        sessions=(Map.empty : (nat, SHIFUMI.Storage.Session.Types.t) map)
+        sessions=(Map.empty : (nat, SHIFUMI.Storage.Session.t) map)
     } in
     let (addr,_,_) = Test.originate SHIFUMI.main init_storage 0tez in
     let s_init = Test.get_storage addr in
     let () = Test.log(s_init) in
 
 
-    let get_session_from_storage(contract_address, sessionId : (SHIFUMI.parameter, SHIFUMI.storage) typed_address * nat) : SHIFUMI.Storage.Session.Types.t =
-        let storage_with_session : SHIFUMI.Storage.Types.t = Test.get_storage contract_address in
-        let session_x : SHIFUMI.Storage.Session.Types.t = match Map.find_opt sessionId storage_with_session.sessions with
+    let get_session_from_storage(contract_address, sessionId : (SHIFUMI.parameter, SHIFUMI.storage) typed_address * nat) : SHIFUMI.Storage.Session.t =
+        let storage_with_session : SHIFUMI.Storage.t = Test.get_storage contract_address in
+        let session_x : SHIFUMI.Storage.Session.t = match Map.find_opt sessionId storage_with_session.sessions with
         | None -> failwith("could not find session 0")
         | Some sess -> sess 
         in
         session_x
     in
 
-    let get_round_from_session(sess, roundId : SHIFUMI.Storage.Session.Types.t * nat) : SHIFUMI.Storage.Session.Types.player_actions =
-        let session_x_round_y : SHIFUMI.Storage.Session.Types.player_actions = match Map.find_opt roundId sess.rounds with
-        | None -> ([]: SHIFUMI.Storage.Session.Types.player_actions)
+    let get_round_from_session(sess, roundId : SHIFUMI.Storage.Session.t * nat) : SHIFUMI.Storage.Session.player_actions =
+        let session_x_round_y : SHIFUMI.Storage.Session.player_actions = match Map.find_opt roundId sess.rounds with
+        | None -> ([]: SHIFUMI.Storage.Session.player_actions)
         | Some pactions -> pactions
         in
         session_x_round_y
     in
 
-    let get_decoded_round_from_session(sess, roundId : SHIFUMI.Storage.Session.Types.t * nat) : SHIFUMI.Storage.Session.Types.decoded_player_actions =
-        let session_x_round_y : SHIFUMI.Storage.Session.Types.decoded_player_actions = match Map.find_opt roundId sess.decoded_rounds with
-        | None -> ([]: SHIFUMI.Storage.Session.Types.decoded_player_actions)
+    let get_decoded_round_from_session(sess, roundId : SHIFUMI.Storage.Session.t * nat) : SHIFUMI.Storage.Session.decoded_player_actions =
+        let session_x_round_y : SHIFUMI.Storage.Session.decoded_player_actions = match Map.find_opt roundId sess.decoded_rounds with
+        | None -> ([]: SHIFUMI.Storage.Session.decoded_player_actions)
         | Some pactions -> pactions
         in
         session_x_round_y
@@ -52,103 +52,103 @@ let test =
         // alice create session
         let () = Test.log("alice create session") in
         let () = Test.set_source alice in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 0n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
         // verify session creation
-        let session_0 : SHIFUMI.Storage.Session.Types.t = get_session_from_storage(addr, current_session_id) in
+        let session_0 : SHIFUMI.Storage.Session.t = get_session_from_storage(addr, current_session_id) in
         let () = assert (session_0.current_round = 1n) in
         let () = assert (session_0.total_rounds = 1n) in
         let () = assert (session_0.result = Inplay) in
-        let session_0_round_1 : SHIFUMI.Storage.Session.Types.player_actions = get_round_from_session(session_0, 1n) in
-        let count (acc, i: nat * SHIFUMI.Storage.Session.Types.player_action) : nat = acc + 1n in
+        let session_0_round_1 : SHIFUMI.Storage.Session.player_actions = get_round_from_session(session_0, 1n) in
+        let count (acc, i: nat * SHIFUMI.Storage.Session.player_action) : nat = acc + 1n in
         let nb_of_elements : nat = List.fold_left count 0n session_0_round_1 in
         let () = assert (nb_of_elements = 0n) in
-        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.Types.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
-        let count_ (acc, i: nat * SHIFUMI.Storage.Session.Types.decoded_player_action) : nat = acc + 1n in
+        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
+        let count_ (acc, i: nat * SHIFUMI.Storage.Session.decoded_player_action) : nat = acc + 1n in
         let nb_of_decoded_elements : nat = List.fold count_ session_0_decoded_round_1 0n in
         let () = assert (nb_of_decoded_elements = 0n) in
 
         // bob plays in (session=0n, round=1) 
         let () = Test.log("bob plays in session 0 round 1") in
         let () = Test.set_source bob in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
         // verify round register bob chest
-        let session_0 : SHIFUMI.Storage.Session.Types.t = get_session_from_storage(addr, current_session_id) in
+        let session_0 : SHIFUMI.Storage.Session.t = get_session_from_storage(addr, current_session_id) in
         let () = assert (session_0.current_round = 1n) in
         let () = assert (session_0.total_rounds = 1n) in
         let () = assert (session_0.result = Inplay) in
-        let session_0_round_1 : SHIFUMI.Storage.Session.Types.player_actions = get_round_from_session(session_0, 1n) in
-        let count (acc, i: nat * SHIFUMI.Storage.Session.Types.player_action) : nat = acc + 1n in
+        let session_0_round_1 : SHIFUMI.Storage.Session.player_actions = get_round_from_session(session_0, 1n) in
+        let count (acc, i: nat * SHIFUMI.Storage.Session.player_action) : nat = acc + 1n in
         let nb_of_elements : nat = List.fold_left count 0n session_0_round_1 in
         let () = assert (nb_of_elements = 1n) in
-        let bob_action : SHIFUMI.Storage.Session.Types.player_action = Option.unopt (List.head_opt session_0_round_1) in
+        let bob_action : SHIFUMI.Storage.Session.player_action = Option.unopt (List.head_opt session_0_round_1) in
         let () = assert (bob_action.player = bob) in
         // cannot compare chest
         //let () = assert (bob_action.action = bob_chest) in
-        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.Types.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
-        let count_ (acc, i: nat * SHIFUMI.Storage.Session.Types.decoded_player_action) : nat = acc + 1n in
+        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
+        let count_ (acc, i: nat * SHIFUMI.Storage.Session.decoded_player_action) : nat = acc + 1n in
         let nb_of_decoded_elements : nat = List.fold_left count_ 0n session_0_decoded_round_1 in
         let () = assert (nb_of_decoded_elements = 0n) in
 
         // alice plays in (session=0n, round=1) 
         let () = Test.log("alice plays in session 0 round 1") in
         let () = Test.set_source alice in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
         // verify round 1 register alice chest
-        let session_0 : SHIFUMI.Storage.Session.Types.t = get_session_from_storage(addr, current_session_id) in
+        let session_0 : SHIFUMI.Storage.Session.t = get_session_from_storage(addr, current_session_id) in
         let () = assert (session_0.current_round = 1n) in
         let () = assert (session_0.total_rounds = 1n) in
         let () = assert (session_0.result = Inplay) in
-        let session_0_round_1 : SHIFUMI.Storage.Session.Types.player_actions = get_round_from_session(session_0, 1n) in
-        let count (acc, i: nat * SHIFUMI.Storage.Session.Types.player_action) : nat = acc + 1n in
+        let session_0_round_1 : SHIFUMI.Storage.Session.player_actions = get_round_from_session(session_0, 1n) in
+        let count (acc, i: nat * SHIFUMI.Storage.Session.player_action) : nat = acc + 1n in
         let nb_of_elements : nat = List.fold_left count 0n session_0_round_1 in
         let () = assert (nb_of_elements = 2n) in
 
         // alice reveals
         let () = Test.log("alice reveals in session 0 round 1") in
         let () = Test.set_source alice in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
             player_secret=alice_secret_1
         } in
         let _ = Test.transfer_to_contract_exn x (RevealPlay(reveal_args)) 0mutez in
-        let session_0 : SHIFUMI.Storage.Session.Types.t = get_session_from_storage(addr, current_session_id) in
+        let session_0 : SHIFUMI.Storage.Session.t = get_session_from_storage(addr, current_session_id) in
         let () = assert (session_0.current_round = 1n) in
         let () = assert (session_0.total_rounds = 1n) in
         let () = assert (session_0.result = Inplay) in
-        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.Types.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
+        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
         let () = Test.log(session_0_decoded_round_1) in
-        let count_ (acc, i: nat * SHIFUMI.Storage.Session.Types.decoded_player_action) : nat = acc + 1n in
+        let count_ (acc, i: nat * SHIFUMI.Storage.Session.decoded_player_action) : nat = acc + 1n in
         let nb_of_decoded_elements : nat = List.fold_left count_ 0n session_0_decoded_round_1 in
         let () = assert (nb_of_decoded_elements = 1n) in
 
         // bob reveals
         let () = Test.log("bob reveals in session 0 round 1") in
         let () = Test.set_source bob in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
             player_secret=bob_secret_1
         } in
         let _ = Test.transfer_to_contract_exn x (RevealPlay(bob_reveal_args)) 0mutez in
-        let session_0 : SHIFUMI.Storage.Session.Types.t = get_session_from_storage(addr, current_session_id) in
-        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.Types.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
+        let session_0 : SHIFUMI.Storage.Session.t = get_session_from_storage(addr, current_session_id) in
+        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
         let () = Test.log(session_0_decoded_round_1) in
-        let count_ (acc, i: nat * SHIFUMI.Storage.Session.Types.decoded_player_action) : nat = acc + 1n in
+        let count_ (acc, i: nat * SHIFUMI.Storage.Session.decoded_player_action) : nat = acc + 1n in
         let nb_of_decoded_elements : nat = List.fold_left count_ 0n session_0_decoded_round_1 in
         let () = assert (nb_of_decoded_elements = 2n) in
         let board_round_1 : address option = match Map.find_opt 1n session_0.board with
@@ -165,7 +165,7 @@ let test =
         // alice create session
         let () = Test.log("alice create session") in
         let () = Test.set_source alice in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=3n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=3n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         //let () = Test.log(commit_args) in
         let current_session_id : nat = 1n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
@@ -173,22 +173,22 @@ let test =
         // bob plays in (session=0n, round=1) 
         let () = Test.log("bob plays in session 1 round 1") in
         let () = Test.set_source bob in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         //let () = Test.log(play_args) in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=0n, round=1) 
         let () = Test.log("alice plays in session 1 round 1") in
         let () = Test.set_source alice in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         //let () = Test.log(play_args) in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
@@ -196,7 +196,7 @@ let test =
         // alice reveals
         let () = Test.log("alice reveals in session 1 round 1") in
         let () = Test.set_source alice in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             //player_chest=alice_chest;
@@ -210,7 +210,7 @@ let test =
         // bob reveals
         let () = Test.log("bob reveals in session 1 round 1") in
         let () = Test.set_source bob in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             //player_chest=bob_chest;
@@ -222,9 +222,9 @@ let test =
 
         // check storage
         let () = Test.log("check storage") in
-        let s2 : SHIFUMI.Storage.Types.t = Test.get_storage addr in
+        let s2 : SHIFUMI.Storage.t = Test.get_storage addr in
         //let () = Test.log(s2) in
-        let session_1 : SHIFUMI.Storage.Session.Types.t = match Map.find_opt current_session_id s2.sessions with
+        let session_1 : SHIFUMI.Storage.Session.t = match Map.find_opt current_session_id s2.sessions with
         | None -> failwith("could not find session 0")
         | Some sess -> sess 
         in
@@ -242,7 +242,7 @@ let test =
         // alice create session
         let () = Test.log("alice create session") in
         let () = Test.set_source alice in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         //let () = Test.log(commit_args) in
         let current_session_id : nat = 2n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
@@ -250,22 +250,22 @@ let test =
         // bob plays in (session=0n, round=1) 
         let () = Test.log("bob plays in session 2 round 1") in
         let () = Test.set_source bob in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         //let () = Test.log(play_args) in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=0n, round=1) 
         let () = Test.log("alice plays in session 2 round 1") in
         let () = Test.set_source alice in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         //let () = Test.log(play_args) in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
@@ -273,7 +273,7 @@ let test =
         // alice reveals
         let () = Test.log("alice reveals in session 2 round 1") in
         let () = Test.set_source alice in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             //player_chest=alice_chest;
@@ -287,7 +287,7 @@ let test =
         // bob reveals
         let () = Test.log("bob reveals in session 2 round 1") in
         let () = Test.set_source bob in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             //player_chest=bob_chest;
@@ -299,9 +299,9 @@ let test =
 
         // check storage
         let () = Test.log("check storage") in
-        let s2 : SHIFUMI.Storage.Types.t = Test.get_storage addr in
+        let s2 : SHIFUMI.Storage.t = Test.get_storage addr in
         //let () = Test.log(s2) in
-        let session_2 : SHIFUMI.Storage.Session.Types.t = match Map.find_opt current_session_id s2.sessions with
+        let session_2 : SHIFUMI.Storage.Session.t = match Map.find_opt current_session_id s2.sessions with
         | None -> failwith("could not find session 2")
         | Some sess -> sess 
         in
@@ -320,7 +320,7 @@ let test =
         // alice create session
         let () = Test.log("alice create session") in
         let () = Test.set_source alice in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=2n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=2n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         //let () = Test.log(commit_args) in
         let current_session_id : nat = 3n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
@@ -328,27 +328,27 @@ let test =
         // bob plays in (session=3n, round=1) 
         let () = Test.log("bob plays in session 3 round 1") in
         let () = Test.set_source bob in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=3n, round=1) 
         let () = Test.log("alice plays in session 3 round 1") in
         let () = Test.set_source alice in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals in (session=3n, round=1) 
         let () = Test.log("alice reveals in session 3 round 1") in
         let () = Test.set_source alice in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -359,7 +359,7 @@ let test =
         // bob reveals in (session=3n, round=1) 
         let () = Test.log("bob reveals in session 3 round 1") in
         let () = Test.set_source bob in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -370,27 +370,27 @@ let test =
         // bob plays in (session=3n, round=2) 
         let () = Test.log("bob plays in session 3 round 2") in
         let () = Test.set_source bob in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=2n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=2n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=3n, round=2) 
         let () = Test.log("alice plays in session 3 round 2") in
         let () = Test.set_source alice in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=2n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=2n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals in (session=3n, round=2) 
         let () = Test.log("alice reveals in session 3 round 2") in
         let () = Test.set_source alice in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=2n;
             player_key=alice_chest_key;
@@ -401,7 +401,7 @@ let test =
         // bob reveals in (session=3n, round=2) 
         let () = Test.log("bob reveals in session 3 round 2") in
         let () = Test.set_source bob in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=2n;
             player_key=bob_chest_key;
@@ -411,9 +411,9 @@ let test =
 
         // check storage
         let () = Test.log("check storage") in
-        let s2 : SHIFUMI.Storage.Types.t = Test.get_storage addr in
+        let s2 : SHIFUMI.Storage.t = Test.get_storage addr in
         //let () = Test.log(s2) in
-        let session_3 : SHIFUMI.Storage.Session.Types.t = match Map.find_opt current_session_id s2.sessions with
+        let session_3 : SHIFUMI.Storage.Session.t = match Map.find_opt current_session_id s2.sessions with
         | None -> failwith("could not find session 2")
         | Some sess -> sess 
         in
@@ -438,7 +438,7 @@ let test =
         let () = Test.log("alice create session") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-22t10:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=3n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=3n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 4n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
         
@@ -446,29 +446,29 @@ let test =
         let () = Test.log("bob plays in session 4 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-22t10:05:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // bob stops session (session=4n) 
         let () = Test.log("bob stops session 4") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-22t10:16:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let stop_args : SHIFUMI.Parameter.Types.stopsession_param = {sessionId=current_session_id} in
+        let stop_args : SHIFUMI.Parameter.stopsession_param = {sessionId=current_session_id} in
         //let () = Test.log(play_args) in
         let _ = Test.transfer_to_contract_exn x (StopSession(stop_args)) 0mutez in
 
         // check storage
         let () = Test.log("check storage") in
-        let s2 : SHIFUMI.Storage.Types.t = Test.get_storage addr in
-        let session_4 : SHIFUMI.Storage.Session.Types.t = match Map.find_opt current_session_id s2.sessions with
+        let s2 : SHIFUMI.Storage.t = Test.get_storage addr in
+        let session_4 : SHIFUMI.Storage.Session.t = match Map.find_opt current_session_id s2.sessions with
         | None -> failwith("could not find session 4")
         | Some sess -> sess 
         in
@@ -483,21 +483,21 @@ let test =
         let () = Test.log("alice create session 5") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-22t20:22:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 5n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
         // verify session creation
-        let session_0 : SHIFUMI.Storage.Session.Types.t = get_session_from_storage(addr, current_session_id) in
+        let session_0 : SHIFUMI.Storage.Session.t = get_session_from_storage(addr, current_session_id) in
         let () = assert (session_0.current_round = 1n) in
         let () = assert (session_0.total_rounds = 1n) in
         let () = assert (session_0.result = Inplay) in
-        let session_0_round_1 : SHIFUMI.Storage.Session.Types.player_actions = get_round_from_session(session_0, 1n) in
-        let count (acc, i: nat * SHIFUMI.Storage.Session.Types.player_action) : nat = acc + 1n in
+        let session_0_round_1 : SHIFUMI.Storage.Session.player_actions = get_round_from_session(session_0, 1n) in
+        let count (acc, i: nat * SHIFUMI.Storage.Session.player_action) : nat = acc + 1n in
         let nb_of_elements : nat = List.fold_left count 0n session_0_round_1 in
         let () = assert (nb_of_elements = 0n) in
-        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.Types.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
-        let count_ (acc, i: nat * SHIFUMI.Storage.Session.Types.decoded_player_action) : nat = acc + 1n in
+        let session_0_decoded_round_1 : SHIFUMI.Storage.Session.decoded_player_actions = get_decoded_round_from_session(session_0, 1n) in
+        let count_ (acc, i: nat * SHIFUMI.Storage.Session.decoded_player_action) : nat = acc + 1n in
         let nb_of_decoded_elements : nat = List.fold count_ session_0_decoded_round_1 0n in
         let () = assert (nb_of_decoded_elements = 0n) in
 
@@ -505,19 +505,19 @@ let test =
         let () = Test.log("alice plays in session 5 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-22t20:24:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
         // verify round 1 register alice chest
-        let session_0 : SHIFUMI.Storage.Session.Types.t = get_session_from_storage(addr, current_session_id) in
+        let session_0 : SHIFUMI.Storage.Session.t = get_session_from_storage(addr, current_session_id) in
         let () = assert (session_0.current_round = 1n) in
         let () = assert (session_0.total_rounds = 1n) in
         let () = assert (session_0.result = Inplay) in
-        let session_0_round_1 : SHIFUMI.Storage.Session.Types.player_actions = get_round_from_session(session_0, 1n) in
-        let count (acc, i: nat * SHIFUMI.Storage.Session.Types.player_action) : nat = acc + 1n in
+        let session_0_round_1 : SHIFUMI.Storage.Session.player_actions = get_round_from_session(session_0, 1n) in
+        let count (acc, i: nat * SHIFUMI.Storage.Session.player_action) : nat = acc + 1n in
         let nb_of_elements : nat = List.fold_left count 0n session_0_round_1 in
         let () = assert (nb_of_elements = 1n) in
 
@@ -526,7 +526,7 @@ let test =
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-22t22:00:00Z" : timestamp) in
         let bad_session_id : nat = 99n in
-        let stop_args : SHIFUMI.Parameter.Types.stopsession_param = {sessionId=bad_session_id} in
+        let stop_args : SHIFUMI.Parameter.stopsession_param = {sessionId=bad_session_id} in
         let fail_stop_session = Test.transfer_to_contract x (StopSession(stop_args)) 0mutez in
         assert_string_failure fail_stop_session SHIFUMI.Errors.unknown_session
     in
@@ -537,7 +537,7 @@ let test =
         let () = Test.log("alice create session 6") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-23t20:04:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 6n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -545,18 +545,18 @@ let test =
         let () = Test.log("alice plays in session 6 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-23t20:06:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice stops session (session=6n) 
         let () = Test.log("alice stops session 6") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-23t20:08:00Z" : timestamp) in
-        let stop_args : SHIFUMI.Parameter.Types.stopsession_param = {sessionId=current_session_id} in
+        let stop_args : SHIFUMI.Parameter.stopsession_param = {sessionId=current_session_id} in
         let fail_stop_session = Test.transfer_to_contract x (StopSession(stop_args)) 0mutez in
         assert_string_failure fail_stop_session SHIFUMI.Errors.must_wait_10_min
     in
@@ -567,7 +567,7 @@ let test =
         let () = Test.log("alice create session 7") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-24t20:04:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 7n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -575,18 +575,18 @@ let test =
         let () = Test.log("alice plays in session 7 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-24t20:06:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // james stops session (session=7n) 
         let () = Test.log("alice stops session 7") in
         let () = Test.set_source james in
         let () = Test.set_now ("2022-02-24t21:08:00Z" : timestamp) in
-        let stop_args : SHIFUMI.Parameter.Types.stopsession_param = {sessionId=current_session_id} in
+        let stop_args : SHIFUMI.Parameter.stopsession_param = {sessionId=current_session_id} in
         let fail_stop_session = Test.transfer_to_contract x (StopSession(stop_args)) 0mutez in
         assert_string_failure fail_stop_session SHIFUMI.Errors.user_not_allowed_to_stop_session
     in
@@ -597,7 +597,7 @@ let test =
         let () = Test.log("alice create session 8") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-25t01:04:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 8n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -605,29 +605,29 @@ let test =
         let () = Test.log("bob plays in session 8 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-25t01:06:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=8n, round=1) 
         let () = Test.log("alice plays in session 8 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-25t01:08:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals
         let () = Test.log("alice reveals in session 8 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-25t01:12:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -639,7 +639,7 @@ let test =
         let () = Test.log("bob reveals in session 8 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-25t01:14:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -651,7 +651,7 @@ let test =
         let () = Test.log("bob stops session 8") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-25t01:20:00Z" : timestamp) in
-        let stop_args : SHIFUMI.Parameter.Types.stopsession_param = {sessionId=current_session_id} in
+        let stop_args : SHIFUMI.Parameter.stopsession_param = {sessionId=current_session_id} in
         let fail_stop_session = Test.transfer_to_contract x (StopSession(stop_args)) 0mutez in
         //Test.log(fail_stop_session)
         assert_string_failure fail_stop_session SHIFUMI.Errors.session_finished
@@ -664,7 +664,7 @@ let test =
         let () = Test.log("alice create session 9") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t00:22:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 9n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -672,11 +672,11 @@ let test =
         let () = Test.log("alice plays in session 9 round 1") in
         let () = Test.set_source james in
         let () = Test.set_now ("2022-02-26t00:24:00Z" : timestamp) in
-        let james_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let james_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let james_payload : bytes = Bytes.pack james_payload_v in
         let james_secret_1 : nat = 654843n in 
         let (james_chest,james_chest_key) = Test.create_chest james_payload james_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=james_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=james_chest} in
         let fail_play = Test.transfer_to_contract x (Play(play_args)) 0mutez in
         assert_string_failure fail_play SHIFUMI.Errors.user_not_allowed_to_play_in_session
     in
@@ -687,7 +687,7 @@ let test =
         let () = Test.log("alice create session 10") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t02:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 10n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -696,11 +696,11 @@ let test =
         let bad_session_id : nat = 99n in 
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t02:02:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=bad_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=bad_session_id; roundId=1n; action=alice_chest} in
         let fail_play = Test.transfer_to_contract x (Play(play_args)) 0mutez in
         assert_string_failure fail_play SHIFUMI.Errors.unknown_session
     in
@@ -711,7 +711,7 @@ let test =
         let () = Test.log("alice create session 11") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t04:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 11n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -720,11 +720,11 @@ let test =
         let bad_round_id : nat = 2n in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t04:02:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=bad_round_id; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=bad_round_id; action=alice_chest} in
         let fail_play = Test.transfer_to_contract x (Play(play_args)) 0mutez in
         assert_string_failure fail_play SHIFUMI.Errors.wrong_current_round
     in
@@ -735,7 +735,7 @@ let test =
         let () = Test.log("alice create session 12") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t06:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 12n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -743,22 +743,22 @@ let test =
         let () = Test.log("alice plays in session 12 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t06:02:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=12n, round=1) 
         let () = Test.log("alice plays in session 12 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t06:04:00Z" : timestamp) in
-        let alice_payload_v2 : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v2 : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload2 : bytes = Bytes.pack alice_payload_v2 in
         let alice_secret_2 : nat = 357924n in 
         let (alice_chest2,alice_chest_key2) = Test.create_chest alice_payload2 alice_secret_2 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest2} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest2} in
         let fail_play = Test.transfer_to_contract x (Play(play_args)) 0mutez in
         assert_string_failure fail_play SHIFUMI.Errors.user_already_played
     in
@@ -769,7 +769,7 @@ let test =
         let () = Test.log("alice create session 13") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t08:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 13n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -777,22 +777,22 @@ let test =
         let () = Test.log("bob plays in session 13 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t08:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=8n, round=1) 
         let () = Test.log("alice plays in session 13 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t08:04:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals
@@ -800,7 +800,7 @@ let test =
         let bad_session_id : nat = 99n in 
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t08:06:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=bad_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -817,7 +817,7 @@ let test =
         let () = Test.log("alice create session 14") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t10:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 14n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -825,29 +825,29 @@ let test =
         let () = Test.log("bob plays in session 14 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t10:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=14n, round=1) 
         let () = Test.log("alice plays in session 14 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t10:04:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // james reveals
         let () = Test.log("james reveals in session 14 round 1") in
         let () = Test.set_source james in
         let () = Test.set_now ("2022-02-26t10:06:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -863,7 +863,7 @@ let test =
         let () = Test.log("alice create session 15") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t11:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 15n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -871,29 +871,29 @@ let test =
         let () = Test.log("bob plays in session 15 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t11:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=8n, round=1) 
         let () = Test.log("alice plays in session 15 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t11:04:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals
         let () = Test.log("alice reveals in session 15 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t11:06:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -906,7 +906,7 @@ let test =
         let bad_round_id : nat = 99n in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t11:08:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=bad_round_id;
             player_key=bob_chest_key;
@@ -922,7 +922,7 @@ let test =
         let () = Test.log("alice create session 16") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t12:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 16n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -930,18 +930,18 @@ let test =
         let () = Test.log("bob plays in session 16 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t12:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // bob reveals
         let () = Test.log("bob reveals in session 16 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t12:08:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -957,7 +957,7 @@ let test =
         let () = Test.log("alice create session 17") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t13:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 17n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -965,7 +965,7 @@ let test =
         let () = Test.log("bob plays in session 17 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t13:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
@@ -974,7 +974,7 @@ let test =
         let () = Test.log("bob reveals in session 17 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t13:08:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -990,7 +990,7 @@ let test =
         let () = Test.log("alice create session 18") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t14:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 18n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -998,29 +998,29 @@ let test =
         let () = Test.log("bob plays in session 18 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t14:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=8n, round=1) 
         let () = Test.log("alice plays in session 18 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t14:04:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals
         let () = Test.log("alice reveals in session 18 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t14:06:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -1033,7 +1033,7 @@ let test =
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t14:08:00Z" : timestamp) in
         let bad_secret_bob : nat = 11n in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -1049,7 +1049,7 @@ let test =
         let () = Test.log("alice create session 19") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t15:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 19n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -1057,29 +1057,29 @@ let test =
         let () = Test.log("bob plays in session 19 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t15:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=19n, round=1) 
         let () = Test.log("alice plays in session 19 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t15:04:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals
         let () = Test.log("alice reveals in session 19 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t15:06:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -1092,12 +1092,12 @@ let test =
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t15:08:00Z" : timestamp) in
 
-        let bob_payload_v2 : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v2 : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload2 : bytes = Bytes.pack bob_payload_v2 in
         let bob_secret_2 : nat = 10n in 
         let (bob_chest2,bob_chest_key2) = Test.create_chest bob_payload2 bob_secret_2 in
 
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key2;
@@ -1113,7 +1113,7 @@ let test =
         let () = Test.log("alice create session 20") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t16:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 20n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -1121,29 +1121,29 @@ let test =
         let () = Test.log("bob plays in session 20 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t16:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=20n, round=1) 
         let () = Test.log("alice plays in session 20 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t16:04:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // bob reveals
         let () = Test.log("bob reveals in session 20 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t16:08:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -1155,7 +1155,7 @@ let test =
         let () = Test.log("bob reveals in session 20 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t16:10:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -1171,7 +1171,7 @@ let test =
         let () = Test.log("alice create session 21") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t17:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 21n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -1179,29 +1179,29 @@ let test =
         let () = Test.log("bob plays in session 21 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t17:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=20n, round=1) 
         let () = Test.log("alice plays in session 21 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t17:04:00Z" : timestamp) in
-        let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload : bytes = Bytes.pack alice_payload_v in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals
         let () = Test.log("alice reveals in session 21 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t17:06:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -1213,7 +1213,7 @@ let test =
         let () = Test.log("bob reveals in session 21 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t17:08:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -1225,7 +1225,7 @@ let test =
         let () = Test.log("bob reveals in session 21 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t17:10:00Z" : timestamp) in
-        let bob_reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let bob_reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=bob_chest_key;
@@ -1241,7 +1241,7 @@ let test =
         let () = Test.log("alice create session 22") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t18:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 22n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -1249,30 +1249,30 @@ let test =
         let () = Test.log("bob plays in session 22 round 1") in
         let () = Test.set_source bob in
         let () = Test.set_now ("2022-02-26t18:02:00Z" : timestamp) in
-        let bob_payload_v : SHIFUMI.Storage.Session.Types.action = Paper in
+        let bob_payload_v : SHIFUMI.Storage.Session.action = Paper in
         let bob_payload : bytes = Bytes.pack bob_payload_v in
         let bob_secret_1 : nat = 10n in 
         let (bob_chest,bob_chest_key) = Test.create_chest bob_payload bob_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=bob_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice plays in (session=22n, round=1) 
         let () = Test.log("alice plays in session 22 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t18:04:00Z" : timestamp) in
-        //let alice_payload_v : SHIFUMI.Storage.Session.Types.action = Stone in
+        //let alice_payload_v : SHIFUMI.Storage.Session.action = Stone in
         let alice_payload_str : string = "Stone" in
         let alice_payload : bytes = Bytes.pack alice_payload_str in
         let alice_secret_1 : nat = 654843n in 
         let (alice_chest,alice_chest_key) = Test.create_chest alice_payload alice_secret_1 in
-        let play_args : SHIFUMI.Parameter.Types.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
+        let play_args : SHIFUMI.Parameter.play_param = {sessionId=current_session_id; roundId=1n; action=alice_chest} in
         let _ = Test.transfer_to_contract_exn x (Play(play_args)) 0mutez in
 
         // alice reveals
         let () = Test.log("alice reveals in session 22 round 1") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t18:06:00Z" : timestamp) in
-        let reveal_args : SHIFUMI.Parameter.Types.reveal_param = {
+        let reveal_args : SHIFUMI.Parameter.reveal_param = {
             sessionId=current_session_id;
             roundId=1n;
             player_key=alice_chest_key;
@@ -1288,7 +1288,7 @@ let test =
         let () = Test.log("alice create session 23") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t20:00:00Z" : timestamp) in
-        let session_args : SHIFUMI.Parameter.Types.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.Types.player set)) } in
+        let session_args : SHIFUMI.Parameter.createsession_param = { total_rounds=1n; players=Set.add alice (Set.add bob (Set.empty : SHIFUMI.Storage.Session.player set)) } in
         let current_session_id : nat = 23n in
         let _ = Test.transfer_to_contract_exn x (CreateSession(session_args)) 0mutez in
 
@@ -1296,7 +1296,7 @@ let test =
         let () = Test.log("alice stops session 23") in
         let () = Test.set_source alice in
         let () = Test.set_now ("2022-02-26t20:15:00Z" : timestamp) in
-        let stop_args : SHIFUMI.Parameter.Types.stopsession_param = {sessionId=current_session_id} in
+        let stop_args : SHIFUMI.Parameter.stopsession_param = {sessionId=current_session_id} in
         let fail_stop_session = Test.transfer_to_contract x (StopSession(stop_args)) 0mutez in
         assert_string_failure fail_stop_session SHIFUMI.Errors.no_winner
     in

@@ -18,10 +18,86 @@
                                (or %result (or (unit %draw) (unit %inplay)) (address %winner)))
                          (pair (map %rounds nat (list (pair (chest %action) (address %player))))
                                (nat %total_rounds)))))) ;
-  code { UNPAIR ;
+  code { PUSH string "Unknown session" ;
+         PUSH string "Wrong current round parameter" ;
+         PUSH string "Failed to open chest" ;
+         LAMBDA
+           (pair (pair nat (set address))
+                 (pair (pair (pair (pair timestamp (map nat (option address)))
+                                   (pair nat (map nat (list (pair (or (or unit unit) unit) address)))))
+                             (pair (pair (set address) (or (or unit unit) address))
+                                   (pair (map nat (list (pair chest address))) nat)))
+                       (pair nat
+                             (map nat
+                                  (pair (pair (pair timestamp (map nat (option address)))
+                                              (pair nat (map nat (list (pair (or (or unit unit) unit) address)))))
+                                        (pair (pair (set address) (or (or unit unit) address))
+                                              (pair (map nat (list (pair chest address))) nat)))))))
+           (pair (list operation)
+                 (pair nat
+                       (map nat
+                            (pair (pair (pair timestamp (map nat (option address)))
+                                        (pair nat (map nat (list (pair (or (or unit unit) unit) address)))))
+                                  (pair (pair (set address) (or (or unit unit) address))
+                                        (pair (map nat (list (pair chest address))) nat))))))
+           { UNPAIR ;
+             UNPAIR ;
+             DIG 2 ;
+             UNPAIR ;
+             DUP ;
+             CDR ;
+             CAR ;
+             CAR ;
+             DIG 4 ;
+             ITER { PUSH bool False ; SWAP ; UPDATE } ;
+             PUSH string
+                  "No players have played in the current round, thus cannot deduce troller" ;
+             PUSH nat 0 ;
+             DUP 3 ;
+             SIZE ;
+             COMPARE ;
+             GT ;
+             IF { DROP } { FAILWITH } ;
+             NIL address ;
+             SWAP ;
+             ITER { CONS } ;
+             IF_CONS { SWAP ; DROP ; SOME } { NONE address } ;
+             IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
+             DUP 3 ;
+             CDR ;
+             DUP 3 ;
+             CDR ;
+             CDR ;
+             DIG 2 ;
+             RIGHT (or unit unit) ;
+             DUP 4 ;
+             CDR ;
+             CAR ;
+             CAR ;
+             PAIR ;
+             PAIR ;
+             DIG 2 ;
+             CAR ;
+             PAIR ;
+             SOME ;
+             DIG 3 ;
+             UPDATE ;
+             SWAP ;
+             CAR ;
+             PAIR ;
+             NIL operation ;
+             PAIR } ;
+         DIG 4 ;
+         UNPAIR ;
          IF_LEFT
-           { IF_LEFT
-               { DUP ;
+           { DIG 2 ;
+             DIG 3 ;
+             DROP 2 ;
+             IF_LEFT
+               { DIG 2 ;
+                 DIG 3 ;
+                 DROP 2 ;
+                 DUP ;
                  CDR ;
                  EMPTY_MAP nat (list (pair chest address)) ;
                  PAIR ;
@@ -63,14 +139,16 @@
                { SWAP ;
                  DUP ;
                  DUG 2 ;
-                 CDR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
                  CDR ;
+                 SWAP ;
+                 CDR ;
+                 SWAP ;
                  GET ;
-                 IF_NONE { PUSH string "Unknown session" ; FAILWITH } {} ;
-                 PUSH string "Not allowed to play in this session" ;
+                 IF_NONE { DIG 3 ; FAILWITH } { DIG 4 ; DROP } ;
+                 PUSH string "Not allowed to play this session" ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -78,9 +156,22 @@
                  CAR ;
                  CAR ;
                  SENDER ;
+                 PAIR 3 ;
+                 UNPAIR 3 ;
                  MEM ;
                  IF { DROP } { FAILWITH } ;
-                 PUSH string "Wrong round parameter" ;
+                 PUSH string "this session is finished" ;
+                 UNIT ;
+                 RIGHT unit ;
+                 LEFT address ;
+                 DUP 3 ;
+                 CDR ;
+                 CAR ;
+                 CDR ;
+                 COMPARE ;
+                 EQ ;
+                 IF { DROP } { FAILWITH } ;
+                 DIG 3 ;
                  DUP 3 ;
                  CAR ;
                  CDR ;
@@ -132,6 +223,8 @@
                      CDR ;
                      CDR ;
                      CAR ;
+                     PAIR 3 ;
+                     UNPAIR 3 ;
                      SWAP ;
                      GET ;
                      IF_NONE
@@ -210,18 +303,22 @@
                  NIL operation ;
                  PAIR } }
            { IF_LEFT
-               { SWAP ;
+               { DIG 2 ;
+                 DROP ;
+                 SWAP ;
                  DUP ;
                  DUG 2 ;
-                 CDR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
                  CDR ;
                  CDR ;
+                 SWAP ;
+                 CDR ;
+                 SWAP ;
                  GET ;
-                 IF_NONE { PUSH string "Unknown session" ; FAILWITH } {} ;
-                 PUSH string "Not allowed to play in this session" ;
+                 IF_NONE { DIG 4 ; FAILWITH } { DIG 5 ; DROP } ;
+                 PUSH string "Not allowed to reveal this session" ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -229,9 +326,22 @@
                  CAR ;
                  CAR ;
                  SENDER ;
+                 PAIR 3 ;
+                 UNPAIR 3 ;
                  MEM ;
                  IF { DROP } { FAILWITH } ;
-                 PUSH string "Wrong round parameter" ;
+                 PUSH string "this session is finished" ;
+                 UNIT ;
+                 RIGHT unit ;
+                 LEFT address ;
+                 DUP 3 ;
+                 CDR ;
+                 CAR ;
+                 CDR ;
+                 COMPARE ;
+                 EQ ;
+                 IF { DROP } { FAILWITH } ;
+                 DIG 4 ;
                  DUP 3 ;
                  CDR ;
                  CAR ;
@@ -300,7 +410,7 @@
                                   SWAP ;
                                   PAIR ;
                                   LEFT (option chest) } } } } ;
-                 IF_NONE { PUSH string "Missing chest" ; FAILWITH } {} ;
+                 IF_NONE { PUSH string "user has not played" ; FAILWITH } {} ;
                  DUP 3 ;
                  CAR ;
                  CDR ;
@@ -313,10 +423,8 @@
                    { RIGHT (or unit unit) }
                    { IF { UNIT ; LEFT unit ; LEFT bytes } { UNIT ; RIGHT unit ; LEFT bytes } } ;
                  IF_LEFT
-                   { IF_LEFT
-                       { DROP ; PUSH string "Failed to open chest" ; FAILWITH }
-                       { DROP ; PUSH string "Failed to open chest" ; FAILWITH } }
-                   {} ;
+                   { IF_LEFT { DROP ; DIG 3 ; FAILWITH } { DROP ; DIG 3 ; FAILWITH } }
+                   { DIG 4 ; DROP } ;
                  UNPACK (or (or (unit %cisor) (unit %paper)) (unit %stone)) ;
                  IF_NONE { PUSH string "Failed to unpack the payload" ; FAILWITH } {} ;
                  SWAP ;
@@ -360,6 +468,8 @@
                      CAR ;
                      CDR ;
                      CDR ;
+                     PAIR 3 ;
+                     UNPAIR 3 ;
                      SWAP ;
                      GET ;
                      IF_NONE
@@ -446,15 +556,12 @@
                         SWAP ;
                         DUP ;
                         DUG 2 ;
-                        DIG 3 ;
-                        DIG 3 ;
                         PUSH bool False ;
-                        SWAP ;
+                        DIG 3 ;
                         ITER { SWAP ;
                                DUP ;
-                               IF { SWAP ; DROP }
-                                  { DROP ; SWAP ; DUP ; DUG 2 ; SWAP ; CDR ; COMPARE ; EQ } } ;
-                        SWAP ;
+                               IF { SWAP ; DROP } { DROP ; DUP 4 ; SWAP ; CDR ; COMPARE ; EQ } } ;
+                        DIG 3 ;
                         DROP ;
                         DIG 2 ;
                         AND ;
@@ -658,27 +765,20 @@
                  PAIR ;
                  NIL operation ;
                  PAIR }
-               { SWAP ;
+               { DIG 3 ;
+                 DIG 4 ;
+                 DROP 2 ;
+                 SWAP ;
                  DUP ;
                  DUG 2 ;
+                 SWAP ;
+                 DUP ;
+                 DUG 2 ;
+                 SWAP ;
                  CDR ;
                  SWAP ;
-                 DUP ;
-                 DUG 2 ;
                  GET ;
-                 IF_NONE { PUSH string "Unknown session" ; FAILWITH } {} ;
-                 PUSH string
-                      "Must wait at least 600 seconds before claiming Victory (in case opponent is not playing)" ;
-                 SWAP ;
-                 DUP ;
-                 DUG 2 ;
-                 CAR ;
-                 CAR ;
-                 CAR ;
-                 NOW ;
-                 COMPARE ;
-                 GT ;
-                 IF { DROP } { FAILWITH } ;
+                 IF_NONE { DIG 3 ; FAILWITH } { DIG 4 ; DROP } ;
                  PUSH string "Not allowed to stop this session" ;
                  SWAP ;
                  DUP ;
@@ -687,6 +787,8 @@
                  CAR ;
                  CAR ;
                  SENDER ;
+                 PAIR 3 ;
+                 UNPAIR 3 ;
                  MEM ;
                  IF { DROP } { FAILWITH } ;
                  PUSH string "this session is finished" ;
@@ -700,25 +802,34 @@
                  COMPARE ;
                  EQ ;
                  IF { DROP } { FAILWITH } ;
+                 PUSH string
+                      "Must wait at least 600 seconds before claiming Victory (in case opponent is not playing)" ;
+                 SWAP ;
+                 DUP ;
+                 DUG 2 ;
+                 CAR ;
+                 CAR ;
+                 CAR ;
+                 NOW ;
+                 COMPARE ;
+                 GT ;
+                 IF { DROP } { FAILWITH } ;
                  DUP ;
                  CDR ;
-                 CDR ;
+                 CAR ;
                  CAR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
+                 CDR ;
+                 CDR ;
+                 CAR ;
+                 DUP 3 ;
                  CAR ;
                  CDR ;
                  CAR ;
                  GET ;
-                 IF_NONE { PUSH string "SHOULD NOT BE HERE SESSION IS BROKEN" ; FAILWITH } {} ;
-                 SWAP ;
-                 DUP ;
-                 DUG 2 ;
-                 CDR ;
-                 CAR ;
-                 CAR ;
-                 SWAP ;
+                 IF_NONE { NIL (pair chest address) } {} ;
                  ITER { CDR ; PUSH bool False ; SWAP ; UPDATE } ;
                  PUSH nat 0 ;
                  SWAP ;
@@ -727,43 +838,7 @@
                  SIZE ;
                  COMPARE ;
                  GT ;
-                 IF { SWAP ;
-                      DUP ;
-                      DUG 2 ;
-                      CDR ;
-                      CAR ;
-                      CAR ;
-                      SWAP ;
-                      ITER { PUSH bool False ; SWAP ; UPDATE } ;
-                      NIL address ;
-                      SWAP ;
-                      ITER { CONS } ;
-                      IF_CONS { SWAP ; DROP ; SOME } { NONE address } ;
-                      IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
-                      DUP 4 ;
-                      CDR ;
-                      DUP 3 ;
-                      CDR ;
-                      CDR ;
-                      DIG 2 ;
-                      RIGHT (or unit unit) ;
-                      DUP 4 ;
-                      CDR ;
-                      CAR ;
-                      CAR ;
-                      PAIR ;
-                      PAIR ;
-                      DIG 2 ;
-                      CAR ;
-                      PAIR ;
-                      SOME ;
-                      DIG 2 ;
-                      UPDATE ;
-                      SWAP ;
-                      CAR ;
-                      PAIR ;
-                      NIL operation ;
-                      PAIR }
+                 IF { DIG 3 ; DIG 2 ; PAIR ; SWAP ; DIG 2 ; PAIR ; PAIR ; EXEC }
                     { DROP ;
                       DUP ;
                       CAR ;
@@ -792,44 +867,8 @@
                       SIZE ;
                       COMPARE ;
                       GT ;
-                      IF { SWAP ;
-                           DUP ;
-                           DUG 2 ;
-                           CDR ;
-                           CAR ;
-                           CAR ;
-                           SWAP ;
-                           ITER { PUSH bool False ; SWAP ; UPDATE } ;
-                           NIL address ;
-                           SWAP ;
-                           ITER { CONS } ;
-                           IF_CONS { SWAP ; DROP ; SOME } { NONE address } ;
-                           IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
-                           DUP 4 ;
-                           CDR ;
-                           DUP 3 ;
-                           CDR ;
-                           CDR ;
-                           DIG 2 ;
-                           RIGHT (or unit unit) ;
-                           DUP 4 ;
-                           CDR ;
-                           CAR ;
-                           CAR ;
-                           PAIR ;
-                           PAIR ;
-                           DIG 2 ;
-                           CAR ;
-                           PAIR ;
-                           SOME ;
-                           DIG 2 ;
-                           UPDATE ;
-                           SWAP ;
-                           CAR ;
-                           PAIR ;
-                           NIL operation ;
-                           PAIR }
-                         { DROP 3 ; NIL operation ; PAIR } } } } } ;
+                      IF { DIG 3 ; DIG 2 ; PAIR ; SWAP ; DIG 2 ; PAIR ; PAIR ; EXEC }
+                         { SWAP ; DIG 2 ; DIG 4 ; DROP 4 ; NIL operation ; PAIR } } } } } ;
   view "board"
        nat
        (map address nat)
