@@ -9,3 +9,4 @@ let main(ep, store : parameter * storage) : return =
     match ep with 
     | Commit(p) -> Storage.Utils.commit(p, store)
     | Reveal(p) -> Storage.Utils.reveal(p, store)
+    | Reset(p) -> Storage.Utils.reset(p, store)
