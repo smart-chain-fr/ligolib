@@ -5,5 +5,10 @@ module Types = struct
 
     type reveal_param = chest_key * nat
 
-    type t = Commit of commit_param | Reveal of reveal_param 
+    type reset_param = {
+        min : nat;
+        max : nat
+    }
+
+    type t = Commit of commit_param | Reveal of reveal_param | Reset of reset_param
 end 
