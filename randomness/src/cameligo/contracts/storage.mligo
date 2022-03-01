@@ -1,16 +1,49 @@
 #import "errors.mligo" "Errors"
 #import "parameter.mligo" "Parameter"
+#import "bytes_utils.mligo" "Convert"
 
 module Types = struct
     type t = {
         participants : address set;
         secrets : (address, chest) map;
         decoded_payloads: (address, bytes) map;
-        result : bytes option
+        result : bytes option;
+        result_nat : nat option;
+        last_seed : nat;
+        max : nat;
+        min: nat
     }
 end
 
 module Utils = struct
+
+
+    let trigger_to_nat(payloads, min, max, last_seed : (address, bytes) map * nat * nat * nat) : nat * nat =
+        let hash_payload = fun(acc, elt: bytes list * (address * bytes)) : bytes list -> (Crypto.keccak elt.1) :: acc in
+        let pl : bytes list = Map.fold hash_payload payloads ([]:bytes list) in
+        let hashthemall = fun(acc, elt: bytes option * bytes) : bytes option -> 
+            match acc with 
+            | None -> Some(elt)
+            | Some pred -> Some(Crypto.keccak (Bytes.concat elt pred)) 
+        in
+        let res = List.fold hashthemall pl (None : bytes option) in
+        let seed : nat = match res with 
+        | None -> (failwith("could not construct a hash") : nat)
+        | Some hsh -> Convert.Utils.bytes_to_nat(hsh)
+        in
+        let random_range (state0: nat) (state1:nat) (min:nat) (max:nat) = 
+            let random (state0: nat) (state1: nat) = 
+                let s0 = state0 in
+                let s1 = state1 in
+                let s1 =  s1 lxor (s1 lsl 23n) in 
+                let s1 =  s1 lxor (s1 lsr 17n) in 
+                let s1 =  s1 lxor s0 in 
+                let s1 =  s1 lxor (s0 lsr 26n) in 
+                s0 + s1 in
+            let ns = random state0 state1 in 
+            (ns, ns mod (max + 1n - min) + min)
+        in
+        random_range last_seed seed min max
 
     // Once everybody has commit & reveal we compute some bytes as result
     let trigger(payloads : (address, bytes) map) : bytes option =
@@ -68,7 +101,8 @@ module Utils = struct
         in
         let all_chests_revealed = Set.fold revealed s.participants true in
         if all_chests_revealed = true then
-            (([] : operation list), { s with decoded_payloads=new_decoded_payloads; result=trigger(new_decoded_payloads) })  
+            let (seed, value) = trigger_to_nat(new_decoded_payloads, s.min, s.max, s.last_seed) in
+            (([] : operation list), { s with decoded_payloads=new_decoded_payloads; result=trigger(new_decoded_payloads); result_nat=(Some(value)); last_seed=seed })  
         else
             (([] : operation list), { s with decoded_payloads=new_decoded_payloads })
 end
