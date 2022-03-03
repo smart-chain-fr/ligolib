@@ -1,0 +1,1 @@
+type t = GenerateCollection of unit | Nothing of unit
