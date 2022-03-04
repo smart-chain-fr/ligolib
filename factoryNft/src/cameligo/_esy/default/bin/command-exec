@@ -1,0 +1,40 @@
+#!/bin/bash
+# Command environment
+
+#
+# Built-in
+#
+export ESY__ROOT_PACKAGE_CONFIG_PATH="/home/frank/Ligolib/factoryNft/src/cameligo/package.json"
+export PATH='/usr/local/share/.config/yarn/global/node_modules/esy/3/i/esy-9905b877/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+export HOSTNAME='0b368d1dcb3e'
+export _='/usr/local/share/.config/yarn/global/node_modules/esy/3/i/esy-9905b877/bin/esy'
+export OCAMLPATH='/usr/local/share/.config/yarn/global/node_modules/esy/3/i/esy-9905b877/lib:'
+export HOME='/root'
+export CAML_LD_LIBRARY_PATH='/usr/local/share/.config/yarn/global/node_modules/esy/3/i/esy-9905b877/stublibs:/usr/local/share/.config/yarn/global/node_modules/esy/3/i/esy-9905b877/lib/stublibs:'
+export MAN_PATH='/usr/local/share/.config/yarn/global/node_modules/esy/3/i/esy-9905b877/man:'
+export SHELL='/bin/sh'
+export PATH="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/bin:$PATH"
+export cur__etc="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/etc"
+export cur__share="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/share"
+export cur__toplevel="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/toplevel"
+export cur__stublibs="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/stublibs"
+export cur__doc="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/doc"
+export cur__man="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/man"
+export cur__lib="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/lib"
+export cur__sbin="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/sbin"
+export cur__bin="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/bin"
+export cur__install="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91"
+export cur__target_dir="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/b/cameligo-57976c91"
+export cur__original_root="/home/frank/Ligolib/factoryNft/src/cameligo"
+export cur__root="/home/frank/Ligolib/factoryNft/src/cameligo"
+export cur__dev="true"
+export cur__version="link-dev:./package.json"
+export cur__name="cameligo"
+export OCAMLFIND_LDCONF="ignore"
+export OCAMLFIND_DESTDIR="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/i/cameligo-57976c91/lib"
+export DUNE_BUILD_DIR="/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/store/b/cameligo-57976c91"
+export DUNE_STORE_ORIG_SOURCE_DIR="true"
+export SHELL="env -i /bin/bash --norc --noprofile"
+export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export SHELL="/bin/sh"
+exec "$@"
