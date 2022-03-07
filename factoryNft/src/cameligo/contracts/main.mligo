@@ -3,7 +3,6 @@
 #import "tezos-ligo/lib/fa2/nft/NFT.mligo" "NFT_FA2"
 //#import "views.mligo" "Views"
 //#import "errors.mligo" "Errors"
-//#import "session.mligo" "Session"
 //#import "conditions.mligo" "Conditions"
 
 type storage = Storage.t
@@ -29,15 +28,12 @@ let generateCollection(_param, store : Parameter.generate_collection_param * Sto
 
     let initial_delegate : key_hash option = (None: key_hash option) in
     let initial_amount : tez = 1tez in
-    //let nft = [%Michelson ( #include "tezos-ligo/compiled/fa2/nft/NFT_mligo.tz" : )] in
-
     let create_my_contract : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address) =
       [%Michelson ( {| { UNPPAIIR ;
                      CREATE_CONTRACT {
 #include "tezos-ligo/compiled/fa2/nft/NFT_mligo.tz"
               
               } ;
-
                      PAIR } |}
               : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address))]
     in
@@ -51,6 +47,7 @@ let generateCollection(_param, store : Parameter.generate_collection_param * Sto
     | Some addr_set -> Big_map.update Tezos.sender (Some(Set.add originate.1 addr_set)) store.owned_collections
     in
     ([originate.0], { store with all_collections=new_all_collections; owned_collections=new_owned_collections})
+
 
 let main(ep, store : parameter * storage) : return =
     match ep with 

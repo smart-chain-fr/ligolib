@@ -39,7 +39,7 @@ test: test_ligo
 
 test_ligo: test/test.mligo 
 	@echo "Running integration tests"
-	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
+	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT) $(PROJECTROOT_OPT)
 
 # test_ligo_2: test/test2.mligo 
 # 	@echo "Running integration tests (fail)"
