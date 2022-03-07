@@ -1,0 +1,4 @@
+#!/bin/sh
+export ESY__NODE_BIN_PATH='/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/bin'
+exec '/usr/bin/node' -r '/home/frank/Ligolib/factoryNft/src/cameligo/_esy/default/pnp.js' "$@"
+              
