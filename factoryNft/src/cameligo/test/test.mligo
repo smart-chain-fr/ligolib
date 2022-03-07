@@ -26,7 +26,7 @@ let test =
         let () = Test.set_source alice in
         let gencol_args : Factory.Parameter.generate_collection_param = {name="alice_collection_1"} in
         //let () = Test.log(gencol_args) in
-        let _ = Test.transfer_to_contract_exn x (GenerateCollection(gencol_args)) 0mutez in
+        let _ = Test.transfer_to_contract_exn x (GenerateCollection(gencol_args)) 1000000mutez in
 
         let () = Test.log("check alice collection") in
         let s : Factory.storage = Test.get_storage addr in

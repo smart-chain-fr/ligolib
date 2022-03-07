@@ -29,12 +29,13 @@ let generateCollection(_param, store : Parameter.generate_collection_param * Sto
     let initial_delegate : key_hash option = (None: key_hash option) in
     let initial_amount : tez = 1tez in
     let create_my_contract : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address) =
-      [%Michelson ( {| { UNPPAIIR ;
-                     CREATE_CONTRACT {
-#include "tezos-ligo/compiled/fa2/nft/NFT_mligo.tz"
-              
+      [%Michelson ( {| { 
+            UNPAIR ;
+            UNPAIR ;
+            CREATE_CONTRACT {
+#include "tezos-ligo/compiled/fa2/nft/NFT_mligo.tz"  
               } ;
-                     PAIR } |}
+            PAIR } |}
               : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address))]
     in
 
