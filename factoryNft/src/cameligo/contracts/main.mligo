@@ -9,18 +9,17 @@ type storage = Storage.t
 type parameter = Parameter.t
 type return = operation list * storage
 
-let generateCollection(_param, store : Parameter.generate_collection_param * Storage.t) : return = 
+let generateCollection(param, store : Parameter.generate_collection_param * Storage.t) : return = 
     // create new collection
+    let token_ids = param.token_ids in
     let ledger = (Big_map.empty : NFT_FA2.Ledger.t) in
+    let myfunc(acc, elt : NFT_FA2.Ledger.t * nat) : NFT_FA2.Ledger.t = Big_map.add elt Tezos.sender acc in
+    let new_ledger : NFT_FA2.Ledger.t = List.fold myfunc token_ids ledger in 
+    let token_metadata = param.token_metas in
     let operators = (Big_map.empty : NFT_FA2.Operators.t) in
-    let token_info_1 = (Map.empty: (string, bytes) map) in
-    let token_ids = ([1n] : nat list) in
-    let token_metadata = (Big_map.literal [
-        (1n, ({token_id=1n;token_info=token_info_1;} : NFT_FA2.TokenMetadata.data));
-    ] : NFT_FA2.TokenMetadata.t) in
-
+    
     let initial_storage : NFT_FA2.Storage.t = {
-        ledger=ledger;
+        ledger=new_ledger;
         operators=operators;
         token_ids=token_ids;
         token_metadata=token_metadata
@@ -29,12 +28,13 @@ let generateCollection(_param, store : Parameter.generate_collection_param * Sto
     let initial_delegate : key_hash option = (None: key_hash option) in
     let initial_amount : tez = 1tez in
     let create_my_contract : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address) =
-      [%Michelson ( {| { UNPPAIIR ;
-                     CREATE_CONTRACT {
-#include "tezos-ligo/compiled/fa2/nft/NFT_mligo.tz"
-              
+      [%Michelson ( {| { 
+            UNPAIR ;
+            UNPAIR ;
+            CREATE_CONTRACT {
+#include "tezos-ligo/compiled/fa2/nft/NFT_mligo.tz"  
               } ;
-                     PAIR } |}
+            PAIR } |}
               : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address))]
     in
 
