@@ -24,11 +24,21 @@ let test =
 
         let () = Test.log("alice generates a collection") in
         let () = Test.set_source alice in
-        let gencol_args : Factory.Parameter.generate_collection_param = {name="alice_collection_1"} in
+ 
+ 
+        let token_ids : nat list = [1n] in
+        let token_info_1 = (Map.literal[
+            ("QRcode", 0x623d82eff132);
+        ] : (string, bytes) map) in
+        let token_metadata = (Big_map.literal [
+            (1n, ({token_id=1n;token_info=token_info_1;} : Factory.NFT_FA2.TokenMetadata.data));
+        ] : Factory.NFT_FA2.TokenMetadata.t) in
+
+        let gencol_args : Factory.Parameter.generate_collection_param = {name="alice_collection_1"; token_ids=token_ids; token_metas=token_metadata} in
         //let () = Test.log(gencol_args) in
         let _ = Test.transfer_to_contract_exn x (GenerateCollection(gencol_args)) 1000000mutez in
 
-        let () = Test.log("check alice collection") in
+        let () = Test.log("check alice collections") in
         let s : Factory.storage = Test.get_storage addr in
         let colls : address set = match Big_map.find_opt alice s.owned_collections with
         | None -> (Set.empty : address set)
@@ -36,6 +46,8 @@ let test =
         in
         let owned_coll_size : nat = Set.size colls in 
         let () = assert (owned_coll_size = 1n) in
+        let print(i : address) : unit = Test.log(i) in 
+        let () = Set.iter print colls in
         Test.log(s)
     in
     ()

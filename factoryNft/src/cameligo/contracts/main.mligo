@@ -9,18 +9,23 @@ type storage = Storage.t
 type parameter = Parameter.t
 type return = operation list * storage
 
-let generateCollection(_param, store : Parameter.generate_collection_param * Storage.t) : return = 
-    // create new collection
-    let ledger = (Big_map.empty : NFT_FA2.Ledger.t) in
-    let operators = (Big_map.empty : NFT_FA2.Operators.t) in
-    let token_info_1 = (Map.empty: (string, bytes) map) in
-    let token_ids = ([1n] : nat list) in
-    let token_metadata = (Big_map.literal [
-        (1n, ({token_id=1n;token_info=token_info_1;} : NFT_FA2.TokenMetadata.data));
-    ] : NFT_FA2.TokenMetadata.t) in
+let generateCollection(param, store : Parameter.generate_collection_param * Storage.t) : return = 
+    // parse parameter
+    //let get_token_id(acc, elt : nat list * Parameter.metadata) : nat list = elt.token_id :: acc in
+    //let param_all_ids : nat list = Big_map.fold get_token_id param.metadatas ([] : nat list) in
+    //let metadatas = Big_map.fold in
 
+
+    // create new collection
+    let token_ids = param.token_ids in
+    let ledger = (Big_map.empty : NFT_FA2.Ledger.t) in
+    let myfunc(acc, elt : NFT_FA2.Ledger.t * nat) : NFT_FA2.Ledger.t = Big_map.add elt Tezos.sender acc in
+    let new_ledger : NFT_FA2.Ledger.t = List.fold myfunc token_ids ledger in 
+    let token_metadata = param.token_metas in
+    let operators = (Big_map.empty : NFT_FA2.Operators.t) in
+    
     let initial_storage : NFT_FA2.Storage.t = {
-        ledger=ledger;
+        ledger=new_ledger;
         operators=operators;
         token_ids=token_ids;
         token_metadata=token_metadata
