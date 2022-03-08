@@ -10,12 +10,6 @@ type parameter = Parameter.t
 type return = operation list * storage
 
 let generateCollection(param, store : Parameter.generate_collection_param * Storage.t) : return = 
-    // parse parameter
-    //let get_token_id(acc, elt : nat list * Parameter.metadata) : nat list = elt.token_id :: acc in
-    //let param_all_ids : nat list = Big_map.fold get_token_id param.metadatas ([] : nat list) in
-    //let metadatas = Big_map.fold in
-
-
     // create new collection
     let token_ids = param.token_ids in
     let ledger = (Big_map.empty : NFT_FA2.Ledger.t) in
