@@ -1,22 +1,25 @@
-{ parameter (or (string %generateCollection) (unit %nothing)) ;
+{ parameter
+    (or (pair %generateCollection
+           (pair (string %name) (list %token_ids nat))
+           (big_map %token_metas nat (pair (nat %token_id) (map %token_info string bytes))))
+        (unit %nothing)) ;
   storage
     (pair (big_map %all_collections address address)
           (big_map %owned_collections address (set address))) ;
   code { UNPAIR ;
          IF_LEFT
-           { DROP ;
+           { DUP ;
+             CAR ;
+             CDR ;
              EMPTY_BIG_MAP nat address ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             ITER { SWAP ; SENDER ; DIG 2 ; SWAP ; SOME ; SWAP ; UPDATE } ;
              EMPTY_BIG_MAP (pair address address) (set nat) ;
-             EMPTY_BIG_MAP nat (pair nat (map string bytes)) ;
-             EMPTY_MAP string bytes ;
-             PUSH nat 1 ;
-             PAIR ;
-             SOME ;
-             PUSH nat 1 ;
-             UPDATE ;
-             NIL nat ;
-             PUSH nat 1 ;
-             CONS ;
+             DIG 3 ;
+             CDR ;
+             DIG 3 ;
              PAIR ;
              SWAP ;
              DIG 2 ;
@@ -24,9 +27,6 @@
              PAIR ;
              PUSH mutez 1000000 ;
              NONE key_hash ;
-             PAIR ;
-             PAIR ;
-             UNPPAIIR ;
              CREATE_CONTRACT
                { parameter
                    (or (list %transfer
