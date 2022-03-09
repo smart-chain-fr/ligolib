@@ -8,7 +8,7 @@ help:
 	@echo  'Usage:'
 	@echo  '  all             - Remove generated Michelson files, recompile smart contracts and lauch all tests'
 	@echo  '  clean           - Remove generated Michelson files'
-	@echo  '  compile         - Compiles smart contract Random'
+	@echo  '  compile         - Compiles smart contract Factory'
 	@echo  '  test            - Run integration tests (written in Ligo)'
 	@echo  '  dry-run         - Simulate execution of entrypoints (with the Ligo compiler)'
 	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
