@@ -1,18 +1,7 @@
-
 type player = address
 type round = nat
 type action = Stone | Paper | Cisor
 type result = Inplay | Draw | Winner of address
-
-//type player_action = {
-//    player : player;
-//    action : chest 
-//}
-
-//type decoded_player_action = {
-//    player : player;
-//    action : action 
-//}
 
 type 'a an_action = {
     player : player;
@@ -57,7 +46,6 @@ let new (total_rounds: nat) (players: player set): t =
 [@inline]
 let update_rounds (session: t) (rounds: (round, player_actions) map): t =
     { session with asleep=Tezos.now + 600; rounds=rounds }    
-
 
 [@inline]
 let find_missing (type a) (pactions, all_players : a an_action list * player set) =
