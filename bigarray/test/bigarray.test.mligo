@@ -161,7 +161,7 @@ let test_drop_with_string_should_work =
 (**
  *  Slice
  *)
-let test_drop_with_int_should_work =
+let test_slice_with_int_should_work =
   //Given
   let lst1 : int list = [1; 2; 3; 4] in
   let i : nat = 1n in
@@ -172,7 +172,7 @@ let test_drop_with_int_should_work =
   //Then
   let () = assert (result = intended_result) in "OK"
 
-let test_drop_with_string_should_work =
+let test_slice_with_string_should_work =
   //Given
   let lst1 : string list = ["one"; "two"; "three"; "four"] in
   let i : nat = 0n in
@@ -182,6 +182,48 @@ let test_drop_with_string_should_work =
   let result = Bigarray.slice i j lst1 in
   //Then
   let () = assert (result = intended_result) in "OK"
+
+(**
+ *  Split
+ *)
+let test_split_with_int_should_work =
+  //Given
+  let lst : int list = [1; 2; 3; 4] in
+  let i : nat = 1n in
+  let intended_result1 : int list = [1] in
+  let intended_result2 : int list = [2; 3; 4] in
+  //when
+  let result = Bigarray.split i lst in
+  //Then
+  let () = assert (result = (intended_result1, intended_result2)) in "OK"
+
+
+(**
+ *  Rotate
+ *)
+let test_rotate_with_int_should_work =
+  //Given
+  let lst1 : int list = [1; 2; 3; 4] in
+  let i : nat = 1n in
+  let intended_result : int list = [2; 3; 4; 1] in
+  //when
+  let result = Bigarray.rotate i lst1 in
+  //Then
+  let () = assert (result = intended_result) in "OK"
+
+
+// (**
+//  *  Remove
+//  *)
+// let test_remove_with_int_should_work =
+//   //Given
+//   let lst1 : int list = [1; 2; 3; 2] in
+//   let elem : int = 2 in
+//   let intended_result : int list = [1; 3] in
+//   //when
+//   let result = Bigarray.remove elem lst1 in
+//   //Then
+//   let () = assert (result = intended_result) in "OK"
 
 
 //  let () = Test.log ("result : ", result) in 

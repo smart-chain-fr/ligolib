@@ -13,7 +13,6 @@ let last (type kind) (lst1 : kind list) : kind =
   in
   last (lst1)
 
-
 (**
  * Reversing
  *)
@@ -124,3 +123,70 @@ let slice (type kind) (i : nat) (k : nat) (lst : kind list) : kind list =
       | hd1 :: tl1 -> slice (abs(i-1n), k, tl1) in
   slice (i, k, lst)
   
+(**
+ * Split
+ *)
+[@inline]
+let split (type kind) (i : nat) (lst : kind list) : kind list * kind list =
+  let rec split (type kind) ((i, lst1, lst2): nat * kind list * kind list) : kind list * kind list =
+    if (i = 0n ) then let lstr = reverse lst2 in (lstr, lst1)
+    else match lst1 with
+      | []         -> let lstr = reverse lst2 in (lstr, lst1)
+      | hd1 :: tl1 -> split (abs(i-1n), tl1, hd1 :: lst2) in
+  split (i, lst, ([] : kind list))
+
+(**
+ * Rotate to the left
+ *)
+[@inline]
+let rotate (type kind) (i : nat) (lst : kind list) : kind list =
+  let rec rotate (type kind) ((i, lst, res) : nat * kind list * kind list) : kind list =
+    if (i = 0n ) then 
+      let lstr = reverse res in
+      concat lst lstr
+    else match lst with
+      | []         -> reverse res
+      | hd1 :: tl1 -> rotate (abs(i-1n), tl1, hd1 :: res) in
+  rotate (i, lst, ([] : kind list))
+
+
+
+// (**
+//  * compare (not working )
+//  *)
+// [@inline]
+// let compare (type kind) (element1 : kind) (element2 : kind) : bool =
+//   if element1 = element2 then true
+//   else false
+
+
+// (**
+//  * Remove (not working )
+//  *)
+// [@inline]
+// let remove (type kind) (element : kind) (lst : kind list) : kind list =
+//   let rec remove (type kind) ((element, lst, res) : kind * kind list * kind list) : kind list =
+//     match lst with
+//       | []         -> reverse res
+//       | hd1 :: tl1 -> 
+//         let a : kind = hd1 in
+//         let b : kind = element in 
+//         if a = b then remove (element, tl1, res)
+//         else remove (element, tl1, hd1 :: res) 
+//     in
+//   remove (element, lst, ([] : kind list))
+
+
+
+
+// example of type origination
+
+//  type ('p,'s) originated = ('p,'s) typed_address * 'p contract
+
+// let originate_from_file (type s p) (file_path: string) (mainName : string) (views: string list) (storage: s) : (p,s) originated =
+//     let storage_value = Test.compile_value storage in
+//     let (address_contract, code_contract, _) = Test.originate_from_file file_path mainName storage_value 0tez in
+//     let taddress_contract = (Test.cast_address address_contract : (p, s) typed_address) in
+//     taddress_contract, Test.to_contract taddress_contract
+// and then you can call this function.
+// let (typed_address_multi,_) : (Parameter.Types.t, Storage.Types.t) originated = originate_from_file "..." "n" ([]: string list) initial_storage_multisig in ...
