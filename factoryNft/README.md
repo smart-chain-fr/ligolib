@@ -1,17 +1,19 @@
 ## Contract factory NFT
 
-### Compile factory contract 
-- generates michelson code
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile contract src/cameligo/main.mligo -e main --protocol hangzhou > src/cameligo/compiled/factory.tz
-```
+This contract is a template of factory NFT. The factory contract uses the FA2 ligo library (packaged with ligo)
 
-- generates michelson code in JSON format
-```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next compile contract src/cameligo/main.mligo --michelson-format json -e main --protocol hangzhou > src/cameligo/compiled/factory.json
-```
+### Usage
 
-- run tests
+A makefile is provided to compile the "Factory" smart contract, and to launch tests.
 ```
-docker run --rm -v "$PWD":"$PWD" -w "$PWD" ligolang/ligo:next run test src/cameligo/test.mligo  --protocol hangzhou
+make compile
+make test
+```
+### Deployment
+
+A typescript script for deployment is provided to originate the smart contrat. This deployment script relies on .env file which provides the RPC node url and the deployer public and private key.
+
+```
+tsc deploy.ts --resolveJsonModule -esModuleInterop
+node deploy.js
 ```

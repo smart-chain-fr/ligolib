@@ -118,5 +118,4 @@ let test =
         let () = assert(collection2_metas_tok3.token_info = (Map.literal[ ("QRcode", 0xab3442eff132);] : (string, bytes) map)) in
         Test.log(collection2_metas_tok3.token_info)
     in
-
     ()
