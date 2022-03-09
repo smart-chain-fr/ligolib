@@ -15,7 +15,6 @@ make test
 A typescript script for deployment is provided to originate the smart contrat. This deployment script relies on .env file which provides the RPC node url and the deployer public and private key.
 
 ```
-cd src/cameligo/deploy
-tsc deploy.ts --resolveJsonModule -esModuleInterop
-node deploy.js
+cd src/cameligo
+make deploy
 ```
