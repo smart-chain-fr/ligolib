@@ -150,43 +150,33 @@ let rotate (type kind) (i : nat) (lst : kind list) : kind list =
   rotate (i, lst, ([] : kind list))
 
 
-
 // (**
-//  * compare (not working )
-//  *)
+// * equal (michelson version / not working for composed types)
+// *)
 // [@inline]
-// let compare (type kind) (element1 : kind) (element2 : kind) : bool =
-//   if element1 = element2 then true
-//   else false
+// let equalm (type a) (val_a : a) (val_b : a) : bool =
+//   [%Michelson ({|{ UNPAIR; COMPARE; EQ }|} : a * a -> bool)] (val_a, val_b)
 
 
-// (**
-//  * Remove (not working )
-//  *)
-// [@inline]
-// let remove (type kind) (element : kind) (lst : kind list) : kind list =
-//   let rec remove (type kind) ((element, lst, res) : kind * kind list * kind list) : kind list =
-//     match lst with
-//       | []         -> reverse res
-//       | hd1 :: tl1 -> 
-//         let a : kind = hd1 in
-//         let b : kind = element in 
-//         if a = b then remove (element, tl1, res)
-//         else remove (element, tl1, hd1 :: res) 
-//     in
-//   remove (element, lst, ([] : kind list))
+(**
+* equal (bytes version)
+*)
+[@inline]
+let equal (type a) (val_a: a) (val_b: a): bool =
+    (Bytes.pack val_a) = (Bytes.pack val_b)
 
+(**
+ * Remove
+ *)
+[@inline]
+let remove (type kind) (element : kind) (lst : kind list) : kind list =
+  let rec remove (type kind) ((element, lst, res) : kind * kind list * kind list) : kind list =
+    match lst with
+      | []         -> reverse res
+      | hd1 :: tl1 -> 
+        let is_equal = equal hd1 element in
+        if is_equal then remove (element, tl1, res)
+        else remove (element, tl1, hd1 :: res) 
+    in
+  remove (element, lst, ([] : kind list))
 
-
-
-// example of type origination
-
-//  type ('p,'s) originated = ('p,'s) typed_address * 'p contract
-
-// let originate_from_file (type s p) (file_path: string) (mainName : string) (views: string list) (storage: s) : (p,s) originated =
-//     let storage_value = Test.compile_value storage in
-//     let (address_contract, code_contract, _) = Test.originate_from_file file_path mainName storage_value 0tez in
-//     let taddress_contract = (Test.cast_address address_contract : (p, s) typed_address) in
-//     taddress_contract, Test.to_contract taddress_contract
-// and then you can call this function.
-// let (typed_address_multi,_) : (Parameter.Types.t, Storage.Types.t) originated = originate_from_file "..." "n" ([]: string list) initial_storage_multisig in ...

@@ -5,6 +5,7 @@
 let main (_action, store : bytes * bytes) : operation list * bytes = ([] : operation list), store
 
 
+
 (**
  *  Get the last element
  *)
@@ -197,7 +198,6 @@ let test_split_with_int_should_work =
   //Then
   let () = assert (result = (intended_result1, intended_result2)) in "OK"
 
-
 (**
  *  Rotate
  *)
@@ -211,19 +211,21 @@ let test_rotate_with_int_should_work =
   //Then
   let () = assert (result = intended_result) in "OK"
 
+(**
+ *  Remove
+ *)
+let test_remove_with_int_should_work =
+  //Given
+  let lst1 : int list = [1; 2; 3; 2] in
+  let elem : int = 2 in
+  let intended_result : int list = [1; 3] in
+  //when
+  let result = Bigarray.remove elem lst1 in
+  //Then
+  let () = assert (result = intended_result) in "OK"
 
-// (**
-//  *  Remove
-//  *)
-// let test_remove_with_int_should_work =
-//   //Given
-//   let lst1 : int list = [1; 2; 3; 2] in
-//   let elem : int = 2 in
-//   let intended_result : int list = [1; 3] in
-//   //when
-//   let result = Bigarray.remove elem lst1 in
-//   //Then
-//   let () = assert (result = intended_result) in "OK"
+let lst : int list option = [1; 2; None; 4]
 
 
-//  let () = Test.log ("result : ", result) in 
+
+// //  let () = Test.log ("result : ", result) in 
