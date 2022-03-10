@@ -224,8 +224,6 @@ let test_remove_with_int_should_work =
   //Then
   let () = assert (result = intended_result) in "OK"
 
-let lst : int list option = [1; 2; None; 4]
-
 
 
 // //  let () = Test.log ("result : ", result) in 
