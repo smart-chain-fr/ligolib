@@ -133,6 +133,11 @@ module TokenUsage = struct
       | None -> (failwith("This token is not initialized in usage map") : t)
       | Some old -> Big_map.update token_id (Some (old + 1n)) usage 
 
+   let get_token_usage (token_id : nat) (tu : t) =
+      match Big_map.find_opt token_id tu with
+        Some data -> data
+      | None -> failwith Errors.undefined_token
+
 end
 
 module Storage = struct
@@ -325,3 +330,7 @@ let main ((p,s):(parameter * storage)) = match p with
 [@view] let token_metadata : (nat * storage) -> TokenMetadata.data = 
    fun ((p, s) : (nat * storage)) -> 
       TokenMetadata.get_token_metadata p s.token_metadata
+
+[@view] let token_usage : (nat * storage) -> nat = 
+   fun ((p, s) : (nat * storage)) -> 
+      TokenUsage.get_token_usage p s.token_usage
