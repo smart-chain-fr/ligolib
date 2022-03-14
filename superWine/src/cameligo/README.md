@@ -14,7 +14,7 @@ A collection of bottles is represented by a FA2 contract. The implementation of 
 - a admin address on the storage which represents the creator of the FA2 contract 
 - a *Mint* entrypoint that allows the creator of the FA2 to create new tokens inside the NFT contract
 - a *token_usage* map that count the number of transfer of a bottle
-- a *token_usage* view for retrieving the number of transfer of bottles 
+- a *token_usage* view for retrieving the number of transfer of a bottle (for a given token_id) 
 
 ![](wine_factory.png)
 
