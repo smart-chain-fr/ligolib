@@ -1,0 +1,47 @@
+#import "../contracts/bytes_utils.jsligo" "Convert"
+
+
+let test = () : unit => {
+
+    let _test_convert_bytes_to_nat = () : unit => {
+    
+        let payload : bytes = 0x00;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (0 as nat));
+
+        payload = 0x0a;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (10 as nat));
+
+        payload = 0x0A;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (10 as nat));
+
+        payload = 0x2c;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (44 as nat));
+
+        payload = 0x2C;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (44 as nat));
+
+        payload = 0xFF;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (255 as nat));
+
+        payload = 0x1234;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (4660 as nat));
+
+        payload = 0x001234;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (4660 as nat));
+
+        payload = 0x123400;
+        let value : nat = Convert.Utils.bytes_to_nat(payload);
+        let _ = assert(value == (4660 as nat) * (256 as nat));
+
+
+        Test.log("Test finished")
+    };
+};

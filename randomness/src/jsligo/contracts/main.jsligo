@@ -1,0 +1,108 @@
+#import "storage.jsligo" "Storage"
+#import "parameter.jsligo" "Parameter"
+#import "errors.jsligo" "Errors"
+
+
+export type storage = Storage.Types.t;
+export type parameter = Parameter.Types.t;
+export type return_ = [list<operation>, storage];
+
+
+// Sender commits its chest
+let commit = ([p, st] : [Parameter.Types.commit_param, storage]) : [list<operation>, storage] => {
+    let _check_authorized : unit = assert_with_error(Set.mem(Tezos.sender, st.participants), Errors.not_authorized);
+    let _check_amount : unit = assert_with_error( (Tezos.amount >= (10 as mutez)), Errors.commit_expects_10_mutez_lock);
+    let new_secrets = match (Map.find_opt(Tezos.sender, st.secrets), {
+        None: () => Map.add(Tezos.sender, p.secret_action, st.secrets),
+        Some: (_x: chest) => (failwith(Errors.chest_already_committed) as map<address, chest>)
+    });
+    let new_locked : map<address, tez> = match (Map.find_opt(Tezos.sender, st.locked_tez), {
+        None: () => Map.add(Tezos.sender, Tezos.amount, st.locked_tez),
+        Some: (val: tez) => Map.update(Tezos.sender, (Some(val + Tezos.amount)), st.locked_tez)
+    });
+    return [(list([]) as list<operation>), { ...st, secrets:new_secrets, locked_tez:new_locked }];
+};
+        
+// Sender reveals its chest content
+let reveal = ([p, s] : [Parameter.Types.reveal_param, storage]) : [list<operation>, storage] => {
+    let sender_address : address = Tezos.sender;
+    let _check_amount : unit = assert_with_error( (Tezos.amount == (0 as mutez)), Errors.reveal_expects_0_mutez_lock);
+    let _check_authorized : unit = assert_with_error( (Set.mem(sender_address, s.participants)), Errors.not_authorized);
+    // check all chest has been received
+    let committed = ([acc, elt] : [bool, address]) : bool => { 
+        match (Map.find_opt(elt, s.secrets), {
+            None: () => acc && false,
+            Some: (_x: chest) => acc && true
+        });
+    };
+    let _all_chests_committed = Set.fold(committed, s.participants, true);
+    let _check_all_chests : unit = assert_with_error( (_all_chests_committed == true), Errors.missing_chest);
+
+    let ck = p[0];
+    let secret = p[1];
+    let sender_chest : chest = match (Map.find_opt(sender_address, s.secrets), {
+        None: () => failwith(Errors.missing_chest),
+        Some: (ch: chest) => ch
+    });
+
+    // open chest and stores the chest content
+    let decoded_payload =
+        match (Tezos.open_chest(ck, sender_chest, secret), {
+            Ok_opening: (b: bytes) => b,
+            Fail_timelock: () => (failwith(Errors.fail_open_chest_timelock) as bytes),
+            Fail_decrypt: () => (failwith(Errors.fail_open_chest_decrypt) as bytes)
+        });
+    const new_decoded_payloads = match (Map.find_opt(sender_address, s.decoded_payloads), {
+        None: () => Map.add(Tezos.sender, decoded_payload, s.decoded_payloads),
+        Some: (_elt: bytes) => (failwith(Errors.chest_already_revealed) as map<address, bytes>)
+    });
+
+    // check all chest has been revealed
+    let revealed = ([acc, elt] : [bool, address]) : bool => { 
+        match (Map.find_opt(elt, new_decoded_payloads), {
+            None: () => acc && false,
+            Some: (_x: bytes) => acc && true
+        });
+    };
+    let new_locked : map<address, tez> = match (Map.find_opt(Tezos.sender, s.locked_tez), {
+        None: () => failwith(Errors.wrong_user_balance),
+        Some: (val: tez) => Map.update(Tezos.sender, (Some(val - (10 as mutez))), s.locked_tez)
+    });
+    let dest_opt : option<contract<unit>> = Tezos.get_contract_opt(Tezos.sender);
+    let destination : contract<unit> = match (dest_opt, {
+        None: () => failwith(Errors.unknown_user_account),
+        Some: (ct: contract<unit>) => ct
+    });
+    let op : operation = Tezos.transaction(unit, 10 as mutez, destination); 
+
+    let all_chests_revealed = Set.fold(revealed, s.participants, true);
+    if (all_chests_revealed == true) {
+        let rand = Storage.Utils.build_random_nat(new_decoded_payloads, s.min, s.max, s.last_seed);
+        let seed = rand[0];
+        let value = rand[1];
+        return [(list([op]) as list<operation>) , { ...s, decoded_payloads:new_decoded_payloads, locked_tez:new_locked, result_nat:(Some(value)), last_seed:seed }]
+    } else {
+        return [(list([op]) as list<operation>), { ...s, decoded_payloads:new_decoded_payloads, locked_tez:new_locked }]
+    }
+    return [(list([]) as list<operation>), s];
+};
+    
+let reset = ([param, store] : [Parameter.Types.reset_param, storage]) : [list<operation>, storage] => {
+    // clean secrets_chest and decoded_payloads
+    let _check_amount : unit = assert_with_error( (Tezos.amount == (0 as mutez)), Errors.reset_expects_0_mutez_lock);
+    return [(list([]) as list<operation>), { ...store,  
+        decoded_payloads: (Map.empty as map<address, bytes>),
+        secrets: (Map.empty as map<address, chest>),
+        result_nat: (None() as option<nat>),
+        min: param.min,
+        max: param.max 
+    }];
+};
+
+const main = ([ep, store] : [parameter, storage]) : return_ => {
+    return match (ep, { 
+    Commit: (p : Parameter.Types.commit_param) => commit(p, store),
+    Reveal: (p: Parameter.Types.reveal_param) => reveal(p, store),
+    Reset: (p: Parameter.Types.reset_param) => reset(p, store)
+    });
+};

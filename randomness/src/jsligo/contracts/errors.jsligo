@@ -1,0 +1,12 @@
+const not_authorized : string = "Not authorized";
+const missing_chest : string = "Missing some chest";
+const commit_expects_10_mutez_lock : string = "You must lock 10mutez";
+const reveal_expects_0_mutez_lock : string = "You must not send tez (reveal entrypoint)";
+const reset_expects_0_mutez_lock : string = "You must not send tez (reset entrypoint)";
+
+const fail_open_chest_timelock : string = "Could not open chest: Fail_timelock";
+const fail_open_chest_decrypt : string = "Could not open chest: Fail_decrypt";
+const chest_already_revealed : string = "Chest already revealed";
+const unknown_user_account : string = "Unknown user account";
+const wrong_user_balance : string = "User shold have locked some tez during commit chest phase";
+const chest_already_committed : string = "Sender has already committed its chest";
