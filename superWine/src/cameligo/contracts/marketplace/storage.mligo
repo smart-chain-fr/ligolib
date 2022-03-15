@@ -7,6 +7,7 @@ type sell_proposal = {
     collectionContract : collectionContract;
     active : bool;
     price : tez;
+    hasard_level : nat;
 } 
 
 type t = {

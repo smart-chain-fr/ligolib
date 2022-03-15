@@ -14,18 +14,23 @@ let create_sell_proposal(param, store : Parameter.sell_proposal_param * Storage.
     | None -> (failwith(Errors.unknownView) : nat)
     | Some (v) -> v
     in
+    let usageOpt : nat option = Tezos.call_view "token_usage" param.token_id param.collectionContract in
+    let usageVal : nat = match usageOpt with
+    | None -> (failwith(Errors.unknownView) : nat)
+    | Some (v) -> v
+    in
     let _check_owner : unit = assert_with_error (balanceVal = 1n) Errors.not_owner in
     // Add new proposal
-    let new_proposals = Big_map.add store.next_sell_id { owner=Tezos.sender; token_id=param.token_id; collectionContract=param.collectionContract; active=true; price=param.price} store.sell_proposals in
+    let new_proposals = Big_map.add store.next_sell_id { owner=Tezos.sender; token_id=param.token_id; collectionContract=param.collectionContract; active=true; price=param.price; hasard_level=usageVal } store.sell_proposals in
     let new_next_sell_id : nat = store.next_sell_id + 1n in 
     let new_active_proposals : nat set = Set.add store.next_sell_id store.active_proposals in 
 
     // approve this contract as operator
-    let collection_approve_dest_opt : NFT_FA2.update_operators contract option = Tezos.get_entrypoint_opt "%update_operators" param.collectionContract in
-    let collection_approve_dest : NFT_FA2.update_operators contract = match collection_approve_dest_opt with
-    | None -> (failwith(Errors.unknown_fa2_contract): NFT_FA2.update_operators contract) 
-    | Some ct -> ct
-    in
+    //let collection_approve_dest_opt : NFT_FA2.update_operators contract option = Tezos.get_entrypoint_opt "%update_operators" param.collectionContract in
+    //let collection_approve_dest : NFT_FA2.update_operators contract = match collection_approve_dest_opt with
+    //| None -> (failwith(Errors.unknown_fa2_contract): NFT_FA2.update_operators contract) 
+    //| Some ct -> ct
+    //in
     //let update_op : NFT_FA2.update_operators = [Add_operator({owner=Tezos.sender; operator=Tezos.self_address; token_id=param.token_id})] in
     //let op : operation = Tezos.transaction update_op 0mutez collection_approve_dest in
 
@@ -79,3 +84,13 @@ let main(ep, store : parameter * storage) : return =
     | Sell p -> create_sell_proposal(p, store)
     | Buy p -> accept_proposal(p, store)
 
+[@view] let get_proposal : (nat * storage) -> Storage.sell_proposal = 
+   fun ((p, s) : (nat * storage)) -> 
+      match Big_map.find_opt p s.sell_proposals with 
+      | None -> (failwith("") : Storage.sell_proposal)
+      | Some prop -> prop 
+
+[@view] let active_proposals : (unit * storage) -> nat list = 
+    fun ((_p, s) : (unit * storage)) -> 
+        Set.fold (fun(acc, i : nat list * nat) -> i :: acc) s.active_proposals ([] : nat list)
+          

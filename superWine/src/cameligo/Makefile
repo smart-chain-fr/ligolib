@@ -46,7 +46,7 @@ clean_fa2:
 	@echo "Removing FA2 Michelson file"
 	@rm contracts/fa2/compiled/*.tz
 
-test: test_ligo
+test: test_ligo test_marketplace
 
 test_ligo: test/test.mligo 
 	@echo "Running integration tests"

@@ -6,14 +6,16 @@
           (big_map %sell_proposals
              nat
              (pair (pair (pair (bool %active) (address %collectionContract))
-                         (pair (address %owner) (mutez %price)))
-                   (nat %token_id)))) ;
-  code { PUSH string "Unknown FA2 contract" ;
+                         (pair (nat %hasard_level) (address %owner)))
+                   (pair (mutez %price) (nat %token_id))))) ;
+  code { PUSH string "unknown view" ;
          PUSH string "Already sold" ;
          DIG 2 ;
          UNPAIR ;
          IF_LEFT
-           { DUP 3 ;
+           { DIG 3 ;
+             DROP ;
+             DUP 3 ;
              DUP 3 ;
              CAR ;
              CAR ;
@@ -40,16 +42,15 @@
              PUSH string "You did not transfer enough tez for this nft" ;
              AMOUNT ;
              DUP 3 ;
+             CDR ;
              CAR ;
-             CDR ;
-             CDR ;
              COMPARE ;
              EQ ;
              IF { DROP } { FAILWITH } ;
              DUP ;
              CAR ;
              CDR ;
-             CAR ;
+             CDR ;
              CONTRACT unit ;
              IF_NONE { PUSH string "Unknwon owner" ; FAILWITH } {} ;
              AMOUNT ;
@@ -63,10 +64,11 @@
              CDR ;
              CONTRACT %transfer
                (list (pair (address %from_) (list %tx (pair (address %to_) (nat %token_id))))) ;
-             IF_NONE { DIG 4 ; FAILWITH } { DIG 5 ; DROP } ;
+             IF_NONE { PUSH string "Unknown FA2 contract" ; FAILWITH } {} ;
              NIL (pair address (list (pair address nat))) ;
              NIL (pair address nat) ;
              DUP 5 ;
+             CDR ;
              CDR ;
              SENDER ;
              PAIR ;
@@ -74,7 +76,7 @@
              DUP 5 ;
              CAR ;
              CDR ;
-             CAR ;
+             CDR ;
              PAIR ;
              CONS ;
              SWAP ;
@@ -129,34 +131,41 @@
              SENDER ;
              PAIR ;
              VIEW "get_balance" nat ;
-             IF_NONE { PUSH string "unknown view" ; FAILWITH } {} ;
+             IF_NONE { DUP 3 ; FAILWITH } {} ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CAR ;
+             DUP 3 ;
+             CDR ;
+             VIEW "token_usage" nat ;
+             IF_NONE { DIG 3 ; FAILWITH } { DIG 4 ; DROP } ;
              PUSH string "Not owner of this token" ;
              PUSH nat 1 ;
-             DIG 2 ;
+             DIG 3 ;
              COMPARE ;
              EQ ;
              IF { DROP } { FAILWITH } ;
-             SWAP ;
-             DUP ;
-             DUG 2 ;
-             CDR ;
-             SWAP ;
-             DUP ;
-             DUG 2 ;
+             DUP 3 ;
              CDR ;
              DUP 3 ;
+             CDR ;
+             DUP 4 ;
              CAR ;
              CDR ;
-             SENDER ;
              PAIR ;
-             DUP 4 ;
+             SENDER ;
+             DIG 3 ;
+             PAIR ;
+             DIG 3 ;
              CAR ;
              CAR ;
              PUSH bool True ;
              PAIR ;
              PAIR ;
              PAIR ;
-             DUP 4 ;
+             DUP 3 ;
              CAR ;
              CDR ;
              SWAP ;
@@ -164,17 +173,10 @@
              SWAP ;
              UPDATE ;
              PUSH nat 1 ;
-             DUP 4 ;
+             DUP 3 ;
              CAR ;
              CDR ;
              ADD ;
-             DIG 2 ;
-             CAR ;
-             CAR ;
-             CONTRACT %update_operators
-               (list (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
-                         (pair %remove_operator (address %owner) (address %operator) (nat %token_id)))) ;
-             IF_NONE { DIG 3 ; FAILWITH } { DIG 4 ; DROP 2 } ;
              DUP 3 ;
              CAR ;
              CAR ;
@@ -192,5 +194,20 @@
              PAIR ;
              PAIR ;
              NIL operation ;
-             PAIR } } }
+             PAIR } } ;
+  view "active_proposals"
+       unit
+       (list nat)
+       { CDR ; NIL nat ; SWAP ; CAR ; CAR ; ITER { CONS } } ;
+  view "get_proposal"
+       nat
+       (pair (pair (pair (bool %active) (address %collectionContract))
+                   (pair (nat %hasard_level) (address %owner)))
+             (pair (mutez %price) (nat %token_id)))
+       { UNPAIR ;
+         SWAP ;
+         CDR ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH string "" ; FAILWITH } {} } }
 
