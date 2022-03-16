@@ -1,0 +1,63 @@
+#import "errors.jsligo" "Errors"
+#import "parameter.jsligo" "Parameter"
+#import "bytes_utils.jsligo" "Convert"
+
+export namespace Types {
+    export type t = {
+        participants : set<address>,
+        locked_tez : map<address, tez>,
+        secrets : map<address, chest>,
+        decoded_payloads: map<address, bytes>,
+        result_nat : option<nat>,
+        last_seed : nat,
+        max : nat,
+        min: nat
+    };
+};
+
+export namespace Utils {
+
+    // Apply Mersenne twister algorithm to get a random number between min an max
+    let random_range = ([state0, state1, min, max]: [nat, nat, nat, nat]) : [nat, nat] => {
+        let random = ([state0, state1]: [nat, nat]) : nat => {
+            let s0 = state0;
+            let s1 = state1;
+            let s1_ = Bitwise.xor(s1, Bitwise.shift_left(s1, 23 as nat)) ;
+            let s1__ =  Bitwise.xor(s1_, Bitwise.shift_left(s1_, 17 as nat));
+            let s1___ =  Bitwise.xor(s1__, s0);
+            let s1____ =  Bitwise.xor(s1___, Bitwise.shift_left(s0, 26 as nat));
+            return s0 + s1____
+        } 
+        let ns = random (state0, state1);
+        return [ns, ns % (max + (1 as nat) - min) + min]
+    };
+    
+    // Once everybody has commit & reveal we can compute bytes seed
+    let build_seed_bytes = (payloads : map<address, bytes>) : option<bytes> => {
+        // hash all decoded payloads
+        let hash_payload = ([acc, elt]: [list<bytes>,  [address, bytes]]) : list<bytes> => { list([ Crypto.keccak(elt[1]), ...acc]); };
+        let pl : list<bytes> = Map.fold(hash_payload, payloads, list([]) as list<bytes>);
+        // combine all hashes (concat and hash again)
+        let hashthemall = ([acc, elt]: [option<bytes>, bytes]) : option<bytes> => { 
+            return match(acc, {
+                None: () => Some(elt),
+                Some: (pred: bytes) => Some(Crypto.keccak(Bytes.concat(elt, pred)))
+            })
+        };
+        List.fold(hashthemall, pl, (None() as option<bytes>))
+    };
+
+    // Compute a seed based on decoded chest payloads
+    export let build_random_nat = ([payloads, min, max, last_seed] : [map<address, bytes>, nat, nat, nat]) : [nat, nat] => {
+        // Compute a seed based on decoded chest payloads
+        let seed_bytes = build_seed_bytes(payloads);
+        // convert hash seed into nat seed
+        let seed : nat = match (seed_bytes, { 
+            None: () => (failwith("could not construct a hash") as nat),
+            Some: (hsh: bytes) => Convert.Utils.bytes_to_nat(hsh)
+        });
+        // generate a random nat (between range) based on the computed nat seed
+        return random_range(last_seed, seed, min, max)
+    };
+
+}

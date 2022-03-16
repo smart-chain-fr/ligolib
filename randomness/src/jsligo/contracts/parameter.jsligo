@@ -1,0 +1,14 @@
+export namespace Types {
+    export type commit_param = {
+        secret_action : chest
+    };
+
+    export type reveal_param = [chest_key, nat];
+
+    export type reset_param = {
+        min : nat,
+        max : nat
+    };
+
+    export type t = ["Commit", commit_param] | ["Reveal", reveal_param] | ["Reset", reset_param];
+} 
