@@ -1,7 +1,7 @@
 #import "../contracts/main.jsligo" "Random"
 
 
-let test = () : unit => {
+let test_one_complete_cycle = () : unit => {
     const alice: address = Test.nth_bootstrap_account(0);
     const bob: address = Test.nth_bootstrap_account(1);
 
@@ -21,7 +21,7 @@ let test = () : unit => {
     let s_init = Test.get_storage(addr);
     let _ = Test.log(s_init);
 
-    let _test_should_works = () : unit => {
+    let _test_full_cycle_commit_reveal_should_works = () : unit => {
     
         let payload : bytes = 0x0a;
         let time_secret : nat = (10 as nat); 
@@ -87,9 +87,11 @@ let test = () : unit => {
         let _ = assert (s2.result_nat != (None() as option<nat>));
         Test.log("test finished")
     };
+    // execution
+    const _test = _test_full_cycle_commit_reveal_should_works();
 };
 
-let test2 = () : unit => {
+let test_roll_dices = () : unit => {
     const alice: address = Test.nth_bootstrap_account(0);
     const bob: address = Test.nth_bootstrap_account(1);
     let init_seed : nat = (3268854739249 as nat);
@@ -328,4 +330,13 @@ let test2 = () : unit => {
         Test.log("test finished")
     };
     
+    // execution
+    const _test_dice_1 = _test_rollD1000();
+    const _test_dice_2 = _test_rollD20();
+    const _test_dice_3 = _test_rollD20_again();
+    const _test_dice_4 = _test_rollD20_again_again();
+
 };
+
+const test_1 = test_one_complete_cycle();
+const test_2 = test_roll_dices();

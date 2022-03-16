@@ -38,8 +38,7 @@ let reveal = ([p, s] : [Parameter.Types.reveal_param, storage]) : [list<operatio
     let _all_chests_committed = Set.fold(committed, s.participants, true);
     let _check_all_chests : unit = assert_with_error( (_all_chests_committed == true), Errors.missing_chest);
 
-    let ck = p[0];
-    let secret = p[1];
+    let [ck, secret] = p;
     let sender_chest : chest = match (Map.find_opt(sender_address, s.secrets), {
         None: () => failwith(Errors.missing_chest),
         Some: (ch: chest) => ch
