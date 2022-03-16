@@ -3,7 +3,7 @@
 
 let test = () : unit => {
 
-    let _test_convert_bytes_to_nat = () : unit => {
+    let _simple_convert_bytes_to_nat = () : unit => {
     
         let payload : bytes = 0x00;
         let value : nat = Convert.Utils.bytes_to_nat(payload);
@@ -33,7 +33,11 @@ let test = () : unit => {
         let value : nat = Convert.Utils.bytes_to_nat(payload);
         let _ = assert(value == (4660 as nat));
 
-        payload = 0x001234;
+        Test.log("Test _simple_convert_bytes_to_nat finished")
+    };
+
+    let _complex_convert_bytes_to_nat = () : unit => {
+        let payload = 0x001234;
         let value : nat = Convert.Utils.bytes_to_nat(payload);
         let _ = assert(value == (4660 as nat));
 
@@ -42,6 +46,11 @@ let test = () : unit => {
         let _ = assert(value == (4660 as nat) * (256 as nat));
 
 
-        Test.log("Test finished")
+        Test.log("Test _complex_convert_bytes_to_nat finished")
     };
+
+    const test_1 = _simple_convert_bytes_to_nat();
+    const test_2 = _complex_convert_bytes_to_nat();
 };
+
+const all_test = test();
