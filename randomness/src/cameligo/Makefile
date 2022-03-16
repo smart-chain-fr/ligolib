@@ -1,5 +1,5 @@
-# ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
-ligo_compiler=../../../ligo
+ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
+# ligo_compiler=../../../ligo
 PROTOCOL_OPT=--protocol hangzhou
 JSON_OPT=--michelson-format json
 
@@ -31,15 +31,15 @@ clean:
 	@echo "Removing Michelson files"
 	@rm compiled/*.tz compiled/*.json
 
-test: test_ligo
+test: test_ligo test_ligo_bytes
 
 test_ligo: test/test.mligo 
 	@echo "Running integration tests"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
-# test_ligo_2: test/test2.mligo 
-# 	@echo "Running integration tests (fail)"
-# 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
+test_ligo_bytes: test/test_bytes.mligo 
+	@echo "Running integration tests (bytes conversion)"
+	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
 deploy: node_modules deploy.js
 	@echo "Deploying contract"

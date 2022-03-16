@@ -4,20 +4,19 @@
 let test =
     let alice: address = Test.nth_bootstrap_account 0 in
     let bob: address = Test.nth_bootstrap_account 1 in
-    //let now : timestamp = ("2022-02-26t20:15:00Z" : timestamp) in
-    //let epoch : int = now - (0:timestamp) in
+
     let init_seed : nat = 3268854739249n in
     let init_storage : Random.Storage.Types.t = { 
         participants= Set.add alice (Set.add bob (Set.empty : address set));
         locked_tez=(Map.empty : (address, tez) map);
         secrets=(Map.empty: (address, chest) map); 
         decoded_payloads=(Map.empty: (address, bytes) map); 
-        result=(None : bytes option);
         result_nat=(None : nat option);
         last_seed=init_seed;
         max=1000n;
         min=100n
     } in
+    // originate Random smart contract
     let (addr,_,_) = Test.originate Random.main init_storage 0tez in
     let s_init = Test.get_storage addr in
     let () = Test.log(s_init) in
@@ -85,30 +84,26 @@ let test =
         let () = Test.log("check storage") in
         let s2 : Random.storage = Test.get_storage addr in
         let () = Test.log(s2) in
-        let () = assert (s2.result <> (None : bytes option)) in
+        let () = assert (s2.result_nat <> (None : nat option)) in
         Test.log("test finished")
     in
     ()
 
-
-
 let test2 =
     let alice: address = Test.nth_bootstrap_account 0 in
     let bob: address = Test.nth_bootstrap_account 1 in
-    //let now : timestamp = ("2022-02-26t20:15:00Z" : timestamp) in
-    //let epoch : int = now - (0:timestamp) in
     let init_seed : nat = 3268854739249n in
     let init_storage : Random.Storage.Types.t = { 
         participants= Set.add alice (Set.add bob (Set.empty : address set));
         locked_tez=(Map.empty : (address, tez) map);
         secrets=(Map.empty: (address, chest) map); 
         decoded_payloads=(Map.empty: (address, bytes) map); 
-        result=(None : bytes option);
         result_nat=(None : nat option);
         last_seed=init_seed;
         max=1000n;
         min=1n
     } in
+    // originate Random smart contract
     let (addr,_,_) = Test.originate Random.main init_storage 0tez in
     let s_init = Test.get_storage addr in
     let () = Test.log(s_init) in
@@ -155,7 +150,7 @@ let test2 =
         let () = Test.log("check storage") in
         let s2 : Random.storage = Test.get_storage addr in
         let () = Test.log(s2) in
-        let () = assert (s2.result <> (None : bytes option)) in
+        let () = assert (s2.result_nat <> (None : nat option)) in
         Test.log("test finished")
     in
     let _test_rollD20 = 
@@ -209,7 +204,6 @@ let test2 =
         let () = Test.log("check storage") in
         let s2 : Random.storage = Test.get_storage addr in
         let () = Test.log(s2.result_nat) in
-        let () = assert (s2.result <> (None : bytes option)) in
         let () = assert (s2.result_nat <> (None : nat option)) in
         let result : nat = Option.unopt s2.result_nat in 
         let () = assert (result <= s2.max) in
@@ -268,7 +262,6 @@ let test2 =
         let () = Test.log("check storage") in
         let s2 : Random.storage = Test.get_storage addr in
         let () = Test.log(s2.result_nat) in
-        let () = assert (s2.result <> (None : bytes option)) in
         let () = assert (s2.result_nat <> (None : nat option)) in
         let result : nat = Option.unopt s2.result_nat in 
         let () = assert (result <= s2.max) in
@@ -326,7 +319,6 @@ let test2 =
         let () = Test.log("check storage") in
         let s2 : Random.storage = Test.get_storage addr in
         let () = Test.log(s2.result_nat) in
-        let () = assert (s2.result <> (None : bytes option)) in
         let () = assert (s2.result_nat <> (None : nat option)) in
         let result : nat = Option.unopt s2.result_nat in 
         let () = assert (result <= s2.max) in
