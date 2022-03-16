@@ -5,11 +5,7 @@ module Utils = struct
         multiply(1n, x, y)
 
     let hexa_to_nat(hexa : bytes) : nat =
-        let _check_size : unit = assert_with_error (Bytes.length hexa = 1n) "Should be a single hexa" in
-        //match hexa with
-        //| "0x00" -> 0n
-        //| 0x01 -> 1n
-        //| _ -> (failwith("Wrong hexa") : nat)        
+        let _check_size : unit = assert_with_error (Bytes.length hexa = 1n) "Can only convert 1 byte" in    
         if hexa = 0x00 then 0n
         else if hexa = 0x01 then 1n
         else if hexa = 0x02 then 2n
