@@ -14,6 +14,7 @@ Tezos.setProvider({ signer: signer })
 const admin = process.env.ADMIN_ADDRESS;
 let random_address = process.env.RANDOM_CONTRACT_ADDRESS || undefined;
 const result = undefined
+const init_seed = 3268854739249
 const participants: Array<string> = [
     'tz1KeYsjjSCLEELMuiq1oXzVZmuJrZ15W4mv',
     'tz1MBWU1WkszFfkEER2pgn4ATKXE9ng7x1sR',
@@ -27,9 +28,13 @@ async function orig() {
 
     let random_store = {
         'participants' : participants,
+        'locked_tez' : new MichelsonMap(),
         'secrets' : new MichelsonMap(),
         'decoded_payloads': new MichelsonMap(),
-        'result' : result 
+        'result_nat' : result,
+        'last_seed' : init_seed,
+        'max' : 20,
+        'min' : 1
     }
 
     try {
