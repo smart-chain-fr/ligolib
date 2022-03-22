@@ -16,8 +16,6 @@ type 'a t = {
    operators : Operators.t;
    token_ids : token_id list;
    extension : 'a;
-   // admin : Address.t;
-   // token_usage : TokenUsage.t;
 }
 
 let is_owner_of (type a) (s:a t) (owner : Address.t) (token_id : token_id) : bool = 
