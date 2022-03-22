@@ -1,6 +1,6 @@
 #import "storage.mligo" "Storage"
 #import "parameter.mligo" "Parameter"
-#import "fa2/nft/NFT.mligo" "NFT_FA2"
+#import "generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
 //#import "views.mligo" "Views"
 //#import "errors.mligo" "Errors"
 //#import "conditions.mligo" "Conditions"
@@ -12,24 +12,26 @@ type return = operation list * storage
 let generateCollection(param, store : Parameter.generate_collection_param * Storage.t) : return = 
     // create new collection
     let token_ids = param.token_ids in
-    let ledger = (Big_map.empty : NFT_FA2.Ledger.t) in
-    let myfunc(acc, elt : NFT_FA2.Ledger.t * nat) : NFT_FA2.Ledger.t = Big_map.add elt Tezos.sender acc in
-    let new_ledger : NFT_FA2.Ledger.t = List.fold myfunc token_ids ledger in
+    let ledger = (Big_map.empty : NFT_FA2.Storage.Ledger.t) in
+    let myfunc(acc, elt : NFT_FA2.Storage.Ledger.t * nat) : NFT_FA2.Storage.Ledger.t = Big_map.add elt Tezos.sender acc in
+    let new_ledger : NFT_FA2.Storage.Ledger.t = List.fold myfunc token_ids ledger in
 
     let token_usage = (Big_map.empty : NFT_FA2.TokenUsage.t) in
     let initial_usage(acc, elt : NFT_FA2.TokenUsage.t * nat) : NFT_FA2.TokenUsage.t = Big_map.add elt 0n acc in
     let new_token_usage = List.fold initial_usage token_ids token_usage in
 
     let token_metadata = param.token_metas in
-    let operators = (Big_map.empty : NFT_FA2.Operators.t) in
+    let operators = (Big_map.empty : NFT_FA2.Storage.Operators.t) in
     
-    let initial_storage : NFT_FA2.Storage.t = {
+    let initial_storage : NFT_FA2.extension NFT_FA2.Storage.t = {
         ledger=new_ledger;
         operators=operators;
         token_ids=token_ids;
         token_metadata=token_metadata;
-        admin=Tezos.sender;
-        token_usage=new_token_usage;
+        extension = {
+          admin=Tezos.sender;
+          token_usage=new_token_usage;
+        }
     }  in 
 
     let initial_delegate : key_hash option = (None: key_hash option) in
@@ -39,7 +41,7 @@ let generateCollection(param, store : Parameter.generate_collection_param * Stor
             UNPAIR ;
             UNPAIR ;
             CREATE_CONTRACT {
-#include "fa2/compiled/fa2_nft.tz"  
+#include "generic_fa2/compiled/fa2_nft.tz"  
               } ;
             PAIR } |}
               : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address))]
