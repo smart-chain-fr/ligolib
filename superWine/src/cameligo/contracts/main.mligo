@@ -9,6 +9,10 @@ type storage = Storage.t
 type parameter = Parameter.t
 type return = operation list * storage
 
+type store = NFT_FA2.Storage.t
+type ext = NFT_FA2.extension
+type ext_storage = ext store
+
 let generateCollection(param, store : Parameter.generate_collection_param * Storage.t) : return = 
     // create new collection
     let token_ids = param.token_ids in
@@ -23,7 +27,8 @@ let generateCollection(param, store : Parameter.generate_collection_param * Stor
     let token_metadata = param.token_metas in
     let operators = (Big_map.empty : NFT_FA2.Storage.Operators.t) in
     
-    let initial_storage : NFT_FA2.extension NFT_FA2.Storage.t = {
+
+    let initial_storage : ext_storage = {
         ledger=new_ledger;
         operators=operators;
         token_ids=token_ids;
@@ -36,7 +41,7 @@ let generateCollection(param, store : Parameter.generate_collection_param * Stor
 
     let initial_delegate : key_hash option = (None: key_hash option) in
     let initial_amount : tez = 1tez in
-    let create_my_contract : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address) =
+    let create_my_contract : (key_hash option * tez * ext_storage) -> (operation * address) =
       [%Michelson ( {| { 
             UNPAIR ;
             UNPAIR ;
@@ -44,7 +49,7 @@ let generateCollection(param, store : Parameter.generate_collection_param * Stor
 #include "generic_fa2/compiled/fa2_nft.tz"  
               } ;
             PAIR } |}
-              : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address))]
+              : (key_hash option * tez * ext_storage) -> (operation * address))]
     in
 
     let originate : operation * address = create_my_contract(initial_delegate, initial_amount, initial_storage) in

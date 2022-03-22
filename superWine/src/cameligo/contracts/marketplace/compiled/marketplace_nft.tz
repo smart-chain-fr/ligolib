@@ -128,7 +128,7 @@
              SENDER ;
              PAIR ;
              VIEW "get_balance" nat ;
-             IF_NONE { PUSH string "unknown view get_balance" ; FAILWITH } {} ;
+             IF_NONE { PUSH string "unknown view get_balance." ; FAILWITH } {} ;
              SWAP ;
              DUP ;
              DUG 2 ;
@@ -137,7 +137,7 @@
              DUP 3 ;
              CDR ;
              VIEW "token_usage" nat ;
-             IF_NONE { PUSH string "unknown view token_usage" ; FAILWITH } {} ;
+             IF_NONE { PUSH string "unknown view token_usage." ; FAILWITH } {} ;
              PUSH string "Not owner of this token" ;
              PUSH nat 1 ;
              DIG 3 ;

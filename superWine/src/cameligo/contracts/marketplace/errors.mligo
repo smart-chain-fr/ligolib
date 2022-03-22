@@ -1,5 +1,5 @@
-let unknownViewGetBalance : string = "unknown view get_balance"
-let unknownViewTokenUsage : string = "unknown view token_usage"
+let unknownViewGetBalance : string = "unknown view get_balance."
+let unknownViewTokenUsage : string = "unknown view token_usage."
 let not_owner : string = "Not owner of this token"
 let unknown_fa2_contract : string = "Unknown FA2 contract"
 let unknown_proposal : string = "Unknown proposal"
