@@ -20,7 +20,7 @@ const assert_error = ([res, expected_error]: [test_exec_result, string]): unit =
         Success: (n : nat) => failwith("Expected to fail but passed")
     });
 };
-const _: unit = Test.log("here");
+const _temp: unit = Test.log("here");
 const x = Test.reset_state (6 as nat, list([]) as list <tez>);
 const alice: address = Test.nth_bootstrap_account(0);
 const bob: address = Test.nth_bootstrap_account(1);
