@@ -2,7 +2,7 @@ ligo=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
 protocol=--protocol hangzhou
 json=--michelson-format json
 
-all: compile test originate
+all: clean compile test
 
 help:
 	@echo  'Usage:'
@@ -13,7 +13,7 @@ help:
 	@echo  '  originate       - Deploy multisig smart contract (typescript using Taquito)'
 	
 
-compile: cameligo/contract.mligo jsligo/contract.jsligo clean
+compile: cameligo/contract.mligo jsligo/contract.jsligo
 	@echo "Compiling to Michelson"
 	@$(ligo) compile contract cameligo/contract.mligo $(protocol) > compiled/Multisig_mligo.tz
 	@$(ligo) compile contract jsligo/contract.jsligo $(protocol) > compiled/Multisig_jsligo.tz
@@ -21,13 +21,13 @@ compile: cameligo/contract.mligo jsligo/contract.jsligo clean
 	@$(ligo) compile contract cameligo/contract.mligo $(json) $(protocol) > compiled/Multisig_mligo.json
 	@$(ligo) compile contract jsligo/contract.jsligo $(json) $(protocol) > compiled/Multisig_jsligo.json
 
-compile_ml: cameligo/contract.mligo clean
+compile_ml: cameligo/contract.mligo
 	@echo "Compiling to Michelson"
 	@$(ligo) compile contract cameligo/contract.mligo $(protocol) > compiled/Multisig_mligo.tz
 	@echo "Compiling to Michelson in JSON format"
 	@$(ligo) compile contract cameligo/contract.mligo $(json) $(protocol) > compiled/Multisig_mligo.json
 
-compile_js: jsligo/contract.jsligo clean
+compile_js: jsligo/contract.jsligo
 	@echo "Compiling to Michelson"
 	@$(ligo) compile contract jsligo/contract.jsligo $(protocol) > compiled/Multisig_jsligo.tz
 	@echo "Compiling to Michelson in JSON format"
