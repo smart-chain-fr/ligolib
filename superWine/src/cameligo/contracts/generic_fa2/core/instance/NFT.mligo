@@ -70,3 +70,21 @@ match p with
 
 [@view] let token_usage ((p, s) : (nat * extension storage)): nat =
       TokenUsage.get_token_usage p s.extension.token_usage
+
+[@view] let get_balance (p, s : (Address.t * nat) * extension storage) : nat = 
+      let (owner, token_id) = p in
+      let balance_ = NFT.Storage.get_balance s owner token_id in
+      balance_
+
+[@view] let total_supply ((token_id, s) : (nat * extension storage)):  nat =
+      let () = NFT.Storage.assert_token_exist s token_id in
+      1n
+
+[@view] let all_tokens ((_, s) : (unit * extension storage)): nat list =
+   s.token_ids
+   
+[@view] let is_operator ((op, s) : (NFT.operator * extension storage)): bool =
+      NFT.Operators.is_operator (s.operators, op.owner, op.operator, op.token_id)
+
+[@view] let token_metadata ((p, s) : (nat * extension storage)): NFT.TokenMetadata.data = 
+      NFT.TokenMetadata.get_token_metadata p s.token_metadata
