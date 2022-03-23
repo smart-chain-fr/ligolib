@@ -1,7 +1,9 @@
 #import "../fa2/fa2.mligo" "FA2"
 
+//#import "../jsligo/contract.jsligo" "Main"
+
 #import "../cameligo/contract.mligo" "Main"
-//#import "../cameligo/main.mligo" "Main"
+
 
 export type func_main = (p: Main.Parameter.Types.t, s: Main.Storage.Types.t) =>  Main.result;
 export type func_mainfa2 = (p: FA2.parameter, s: FA2.storage) =>  [list<operation>, FA2.storage];
