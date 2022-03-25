@@ -15,25 +15,29 @@ help:
 
 all: test
 
-# compile: random
+# compile: bigarray
 
-# random: random.tz random.json
+# bigarray: bigarray.tz bigarray.json
 
-# random.tz: contracts/main.mligo
+# bigarray.tz: cameligo/contract.mligo
 # 	@echo "Compiling smart contract to Michelson"
-# 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) > compiled/$@
+# 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) > compiled/bigarray.tz
 
-# random.json: contracts/main.mligo
+# bigarray.json: cameligo/contract.mligo
 # 	@echo "Compiling smart contract to Michelson in JSON format"
-# 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) > compiled/$@
+# 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) > compiled/bigarray.json
 
 # clean:
 # 	@echo "Removing Michelson files"
 # 	@rm compiled/*.tz compiled/*.json
 
-test: test_ligo_ml test_js_ligo_ml test_js_ligo_js
+test: test_ml_ligo_ml test_ml_ligo_js test_js_ligo_ml test_js_ligo_js
 
-test_ligo_ml: test/bigarray.test.mligo 
+test_ml_ligo_ml: test/bigarray.test.forml.mligo 
+	@echo "Running integration tests"
+	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
+
+test_ml_ligo_js: test/bigarray.test.forjs.mligo 
 	@echo "Running integration tests"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 

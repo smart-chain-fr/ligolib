@@ -1,4 +1,3 @@
-//#import "../cameligo/contract.mligo" "Bigarray"
 #import "../jsligo/contract.jsligo" "Bigarray"
 
 type big_array<a> = list<a>;
