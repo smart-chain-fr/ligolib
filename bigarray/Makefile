@@ -31,12 +31,16 @@ all: test
 # 	@echo "Removing Michelson files"
 # 	@rm compiled/*.tz compiled/*.json
 
-test: test_ligo_ml
+test: test_ligo_ml test_js_ligo_ml test_js_ligo_js
 
 test_ligo_ml: test/bigarray.test.mligo 
 	@echo "Running integration tests"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
-test_ligo_js: test/bigarray.test.jsligo 
+test_js_ligo_ml: test/bigarray.test.forml.jsligo 
+	@echo "Running integration tests"
+	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
+
+test_js_ligo_js: test/bigarray.test.forjs.jsligo 
 	@echo "Running integration tests"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
