@@ -1,0 +1,242 @@
+//
+// Definition
+//
+
+type big_array<a> = list<a>;
+
+//
+// Empty constructor 
+//
+export let construct : ((p: [nat, _kind]) => big_array<option<_kind>>) = ([size, wanted_type] : [nat, _kind]) : big_array<option<_kind>> => {
+  let construct_rec : ((pp: [nat, _kind, big_array<option<_kind>>]) => big_array<option<_kind>>) = ([size, wanted_type, res] : [nat, _kind, big_array<option<_kind>>]) : big_array<option<_kind>> => {
+    if (size == (0 as nat)) { 
+      return res;
+    } else {
+      return construct_rec( [(abs(size - (1 as nat))), wanted_type, (list([(None() as option<_kind>), ...res]))] )
+    };
+  };
+  return construct_rec( [size, wanted_type, (list([]) as big_array<option<_kind>>)] );
+};
+
+//
+// Last 
+//
+export let last : ((p: big_array<_kind>) => _kind) = (lst1 : big_array<_kind>) : _kind => {
+  let last_rec : ((pp: big_array<_kind>) => _kind) = (lst1 : big_array<_kind>) : _kind => {
+    match(lst1, list([ 
+    ( [] : big_array<_kind>) => failwith("The big_array is empty"),
+    ( [hd1, ...tl1] : big_array<_kind>) => { 
+        return match(tl1, list([
+        ( [] : big_array<_kind>) => hd1,
+        ( [_hd2, ..._tl2] : big_array<_kind>) => last_rec (tl1)
+        ]));
+    }
+    ])); 
+  };
+  return last_rec (lst1);
+};
+
+//
+// Reversing
+//
+export let reverse : ((p: big_array<_kind>) => big_array<_kind>) = (lst1 : big_array<_kind>) : big_array<_kind> => {
+  let reverse_rec : ((pp: [big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([lst1, res] : [big_array<_kind>, big_array<_kind>]) : big_array<_kind> =>
+    match(lst1, list([
+    ( [] : big_array<_kind>) => res,
+    ( [hd1, ...tl1] : big_array<_kind>) => reverse_rec([tl1, list([hd1, ...res])]) 
+    ]));
+  return reverse_rec([lst1, (list([]) as big_array<_kind>)]);
+};
+
+//
+// Concatenation
+//
+export let concat : ((p: [big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([lst1, lst2] : [big_array<_kind>, big_array<_kind>]) : big_array<_kind> => {
+  let concat_rec : ((pp: [big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([lst1r, lst2] : [big_array<_kind>, big_array<_kind>]) : big_array<_kind> =>
+    match(lst1r, list([
+    ( [] : big_array<_kind>) => lst2,
+    ( [hd1, ...tl1] : big_array<_kind>) => concat_rec([tl1, list([hd1, ...lst2])])
+    ]));
+  let lst1r : big_array<_kind> = reverse(lst1);
+  return concat_rec( [(lst1r as big_array<_kind>), lst2] );
+};
+
+//
+// Get an element by his number position
+//
+export let find : ((p: [nat, big_array<_kind>]) => _kind) = ([position, lst1] : [nat, big_array<_kind>]) : _kind => {
+  let get : ((p: [nat, big_array<_kind>]) => _kind) = ([position, lst1] : [nat, big_array<_kind>]) : _kind => {
+    match(lst1, list([
+    ( [] : big_array<_kind>) => failwith("Position is highter than big_array length"),
+    ( [hd1, ...tl1] : big_array<_kind>) => {
+      if (position == (0 as nat)) { return hd1 } 
+      else { return get ( [abs(position - (1 as nat)), tl1 ] ) }
+    }
+    ]));
+  };
+  return get ([position, lst1])
+};
+
+//
+// Set an element by his number position
+//
+export let set : ((p: [_kind, nat, big_array<_kind>]) => big_array<_kind>) = ([element, position, lst1] : [_kind, nat, big_array<_kind>]) : big_array<_kind> => {
+  let set_ : ((p: [_kind, nat, big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([element, position, lst1, res] : [_kind, nat, big_array<_kind>, big_array<_kind>]) : big_array<_kind> =>
+    match(lst1, list([
+    ( [] : big_array<_kind>) => failwith("Position is highter than big_array length"),
+    ( [hd1, ...tl1] : big_array<_kind>) => {
+        if (position == (0 as nat)) { 
+          let lst2 : big_array<_kind> = reverse( list([element, ...res]) );
+          return concat((lst2 as big_array<_kind>), tl1);
+        }
+        else { 
+          return set_ ([element, abs(position - (1 as nat)), tl1, list([hd1, ...res])]) 
+        } 
+      }
+    ]));
+  return set_ ([element, position, lst1, (list([]) as big_array<_kind>)]);
+};
+
+//
+// Insertion
+//
+export let insert :  ((p: [_kind, nat, big_array<_kind>]) => big_array<_kind>) = ([element, position, lst1] : [_kind, nat, big_array<_kind>]) : big_array<_kind> => {
+  let insert_rec : ((p: [_kind, nat, big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([element, position, lst1, lst2] : [_kind, nat, big_array<_kind>, big_array<_kind>]) : big_array<_kind> =>
+    match(lst1, list([ 
+    ( [] : big_array<_kind>) => failwith("Position is highter than big_array length"),
+    ( [hd1, ...tl1] : big_array<_kind>) => {
+      if (position == (0 as nat)) {
+        let lst3 : big_array<_kind> = list([element, ...lst2]);
+        let lst4 : big_array<_kind> = reverse((lst3 as big_array<_kind>));
+        return concat((lst4 as big_array<_kind>), lst1);
+      }
+      else {
+        return insert_rec( [element, abs(position - (1 as nat)), tl1, list([hd1, ...lst2])] );
+      }
+    }
+    ]));
+  return insert_rec( [element, position, lst1, (list([]) as big_array<_kind>)] );
+};
+
+//
+// Drop
+//
+export let drop : ((p: [nat, big_array<_kind>]) => big_array<_kind>) = ([position, lst1] : [nat, big_array<_kind>]) : big_array<_kind> => {
+  let drop_rec : ((p: [nat, big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([position, lst1, lst2] : [nat, big_array<_kind>, big_array<_kind>]) : big_array<_kind> =>
+    match(lst1, list([ 
+    ( [] : big_array<_kind>) => failwith("Position is highter than big_array length"),
+    ( [hd1, ...tl1] : big_array<_kind>) => { 
+        if (position == (0 as nat)) {
+          let lst3 : big_array<_kind> = reverse(lst2); 
+          return concat((lst3 as big_array<_kind>), tl1);
+        } else {
+          return drop_rec( [abs(position - (1 as nat)), tl1, list([hd1, ...lst2])] );
+        }
+      }
+    ]));
+  return drop_rec ([position, lst1, (list([]) as big_array<_kind>)]);
+};
+
+//
+// take
+//
+export let take : ((p: [nat, big_array<_kind>]) => big_array<_kind>) = ([i, lst] : [nat, big_array<_kind>]) : big_array<_kind> => {
+  let take_rec : ((p: [nat, big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([i, lst, res] : [nat, big_array<_kind>, big_array<_kind>]) : big_array<_kind> => {
+    if (i == (0 as nat) ) {
+      return reverse(res);
+    } else {
+      return match(lst, list([
+        ( [] : big_array<_kind>) => { reverse(res) },
+        ( [hd1, ...tl1] : big_array<_kind>) => { take_rec( [abs(i-(1 as nat)), tl1, list([hd1, ...res]) ] ) }
+      ]));
+    };
+  };
+  return take_rec( [i, lst, (list([]) as big_array<_kind>)] );
+};
+
+//
+// Slice
+//
+export let slice : ((p: [nat, nat, big_array<_kind>]) => big_array<_kind>) = ([i, k, lst] : [nat, nat, big_array<_kind>]) : big_array<_kind> => {
+  let slice_rec : ((pp: [nat, nat, big_array<_kind>]) => big_array<_kind>) = ([i, k, lst] : [nat, nat, big_array<_kind>]) : big_array<_kind> => {
+    if (i == (0 as nat) ) { 
+      let extract : nat = abs(k-i);
+      return take( [extract, lst] );
+    } else {
+      return match(lst, list([
+      ( [] : big_array<_kind>) => list([]),
+      ( [hd1, ...tl1] : big_array<_kind>) => slice_rec( [abs(i-(1 as nat)), k, tl1])
+      ]));
+    }
+  };
+  return slice_rec( [i, k, lst] );
+};
+
+//
+// Split
+//
+export let split : ((p: [nat, big_array<_kind>]) => [big_array<_kind>, big_array<_kind>]) = ([i, lst] : [nat, big_array<_kind>]) : [big_array<_kind>, big_array<_kind>] => {
+  let split_rec : ((p: [nat, big_array<_kind>, big_array<_kind>]) => [big_array<_kind>, big_array<_kind>]) = ([i, lst1, lst2]: [nat, big_array<_kind>, big_array<_kind>]) : [big_array<_kind>, big_array<_kind>] => {
+    if (i == (0 as nat) ) { 
+      let lstr = reverse(lst2);
+      return [lstr, lst1];
+    } else {
+      return match(lst1, list([
+        ( [] : big_array<_kind>) => {
+          let lstr = reverse(lst2);
+          return [lstr, lst1];
+        },
+        ( [hd1, ...tl1] : big_array<_kind>) => {
+          return split_rec( [abs(i-(1 as nat)), tl1, list([hd1, ...lst2]) ] );
+        }
+      ]));
+    }
+  };
+  return split_rec ( [i, lst, (list([]) as big_array<_kind>)] );
+};
+
+//
+// Rotate to the left
+//
+export let rotate : ((p: [nat, big_array<_kind>]) => big_array<_kind>) = ([i, lst] : [nat, big_array<_kind>]) : big_array<_kind> => {
+  let rotate_rec : ((pp: [nat, big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([i, lst, res] : [nat, big_array<_kind>, big_array<_kind>]) : big_array<_kind> => {
+    if (i == (0 as nat) ) { 
+      let lstr = reverse(res);
+      return concat(lst, lstr);
+    } else { 
+      return match(lst, list([
+      ( [] : big_array<_kind>) => { return reverse(res) },
+      ( [hd1, ...tl1] : big_array<_kind>) => { return rotate_rec( [ abs(i- (1 as nat)), tl1, list([hd1, ...res]) ] ) }
+      ]));
+    }
+  };
+  return rotate_rec (i, lst, (list([]) as big_array<_kind>))
+};
+
+// equal (bytes version)
+// WARNING : Two lambda can be packed equal whereas they are different
+//
+export let equal : ((p: [_kind, _kind]) => bool) = ([val_a, val_b]: [_kind, _kind]) : bool => {
+    (Bytes.pack(val_a)) == (Bytes.pack(val_b))
+};
+
+//
+// Remove
+//
+export let remove : ((p: [_kind, big_array<_kind>]) => big_array<_kind>) = ([element, lst] : [_kind, big_array<_kind>]) : big_array<_kind> => {
+  let remove_rec : ((pp: [_kind, big_array<_kind>, big_array<_kind>]) => big_array<_kind>) = ([element, lst, res] : [_kind, big_array<_kind>, big_array<_kind>]) : big_array<_kind> => {
+    return match(lst, list([
+      ( [] : big_array<_kind>) => { return reverse(res) },
+      ( [hd1, ...tl1] : big_array<_kind>) => {
+        let is_equal = equal(hd1, element);
+        if (is_equal) { 
+          return remove_rec([element, tl1, res]);
+        } else {
+          return remove_rec([element, tl1, list([hd1, ...res])]) 
+        }
+      }
+    ]));
+  };
+  return remove_rec( [element, lst, (list([]) as big_array<_kind>)] );
+};
+

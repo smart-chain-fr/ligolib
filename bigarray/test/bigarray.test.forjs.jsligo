@@ -1,0 +1,275 @@
+#import "../jsligo/contract.jsligo" "Bigarray"
+
+type big_array<a> = list<a>;
+
+// We need to create a generic entrypoint main that do nothing for compilation purpose
+let main = ([_action, store] : [bytes, bytes]) : [big_array<operation>, bytes] => { return [(list([]) as big_array<operation>), store]; };
+
+
+//
+//  Basic Constructor
+//
+let _test_construct_basic_array_should_work = () : string => {
+  //Given
+  let size : nat = 3 as nat;
+  let intended_result : list<option<nat>> = list([(None() as option<nat>) , (None() as option<nat>) , (None() as option<nat>) ]);
+  //when
+  let result = Bigarray.construct(size,(0 as nat));
+  //Then
+  let _ = Test.log(result); return "OK"
+};
+
+//
+//  Get the last element
+//
+let _test_last_element_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "two", "three", "four"]);
+  let intended_result : string = "four";
+  //when
+  let result = Bigarray.last(lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Reverse
+//
+let _test_reversing_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3]);
+  let intended_result : big_array<int> = list([3, 2, 1]);
+  //when
+  let result = Bigarray.reverse(lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+let _test_reversing_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "two", "three"]);
+  let intended_result : big_array<string> = list(["three", "two", "one"]);
+  //when
+  let result = Bigarray.reverse(lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+//
+//  Concatenation
+//
+let _test_concatenation_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3]);
+  let lst2 : big_array<int> = list([4, 5]);
+  let intended_result : big_array<int> = list([1 , 2 , 3 , 4 , 5]);
+  //when
+  let result = Bigarray.concat(lst1, lst2);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+let _test_concatenation_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "two", "three"]);
+  let lst2 : big_array<string> = list(["four", "five"]);
+  let intended_result : big_array<string> = list(["one", "two", "three", "four", "five"]);
+  //when
+  let result = Bigarray.concat(lst1, lst2);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Get one element
+//
+let _test_get_element_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3, 4]);
+  let position : nat = 1 as nat;
+  let intended_result : int = 2;
+  //when
+  let result = Bigarray.find(position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+let _test_get_element_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "two", "three", "four"]);
+  let position : nat = 1 as nat;
+  let intended_result : string = "two";
+  //when
+  let result = Bigarray.find(position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Set one element
+//
+let _test_set_element_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3, 4, 5]);
+  let element : int = 7;
+  let position : nat = 2 as nat;
+  let intended_result : big_array<int> = list([1, 2, 7, 4, 5]);
+  //when
+  let result = Bigarray.set(element, position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+let _test_set_element_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "two", "three", "four", "five"]);
+  let element : string = "seven";
+  let position : nat = 1 as nat;
+  let intended_result : big_array<string> = list(["one", "seven", "three", "four", "five"]);
+  //when
+  let result = Bigarray.set(element, position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Insert one element
+//
+let _test_insertion_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 3, 4]);
+  let element : int = 2;
+  let position : nat = 1 as nat;
+  let intended_result : big_array<int> = list([1 , 2 , 3 , 4]);
+  //when
+  let result = Bigarray.insert(element, position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+let _test_insertion_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "three", "four"]);
+  let element : string = "two";
+  let position : nat = 1 as nat;
+  let intended_result : big_array<string> = list(["one", "two", "three", "four"]);
+  //when
+  let result = Bigarray.insert(element, position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Drop one element
+//
+let _test_drop_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3, 4]);
+  let position : nat = 2 as nat;
+  let intended_result : big_array<int> = list([1 , 2 , 4]);
+  //when
+  let result = Bigarray.drop(position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+let _test_drop_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "two", "three", "four"]);
+  let position : nat = 3 as nat;
+  let intended_result : big_array<string> = list(["one", "two", "three"]);
+  //when
+  let result = Bigarray.drop(position, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Slice
+//
+let _test_slice_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3, 4]);
+  let i : nat = 1 as nat;
+  let j : nat = 2 as nat;
+  let intended_result : big_array<int> = list([2 , 3]);
+  //when
+  let result = Bigarray.slice(i, j, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+let _test_slice_with_string_should_work = () : string => {
+  //Given
+  let lst1 : big_array<string> = list(["one", "two", "three", "four"]);
+  let i : nat = 0 as nat;
+  let j : nat = 6 as nat;
+  let intended_result : big_array<string> = list(["one", "two", "three", "four"]);
+  //when
+  let result = Bigarray.slice(i, j, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Split
+//
+let _test_split_with_int_should_work = () : string => {
+  //Given
+  let lst : big_array<int> = list([1, 2, 3, 4]);
+  let i : nat = 1 as nat;
+  let intended_result1 : big_array<int> = list([1]);
+  let intended_result2 : big_array<int> = list([2, 3, 4]);
+  //when
+  let result = Bigarray.split(i, lst);
+  //Then
+  let _ = assert (result == [intended_result1, intended_result2]); "OK"
+};
+
+//
+//  Rotate
+//
+let _test_rotate_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3, 4]);
+  let i : nat = 1 as nat;
+  let intended_result : big_array<int> = list([2, 3, 4, 1]);
+  //when
+  let result = Bigarray.rotate(i, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+//
+//  Remove
+//
+let _test_remove_with_int_should_work = () : string => {
+  //Given
+  let lst1 : big_array<int> = list([1, 2, 3, 2]);
+  let elem : int = 2;
+  let intended_result : big_array<int> = list([1, 3]);
+  //when
+  let result = Bigarray.remove(elem, lst1);
+  //Then
+  let _ = assert (result == intended_result); "OK"
+};
+
+
+const test_construct_basic_array_should_work = _test_construct_basic_array_should_work();
+const test_last_element_with_string_should_work = _test_last_element_with_string_should_work();
+const test_reversing_with_int_should_work = _test_reversing_with_int_should_work();
+const test_reversing_with_string_should_work = _test_reversing_with_string_should_work();
+const test_concatenation_with_int_should_work = _test_concatenation_with_int_should_work();
+const test_concatenation_with_string_should_work = _test_concatenation_with_string_should_work();
+const test_get_element_with_int_should_work = _test_get_element_with_int_should_work();
+const test_get_element_with_string_should_work = _test_get_element_with_string_should_work();
+const test_set_element_with_int_should_work = _test_set_element_with_int_should_work();
+const test_set_element_with_string_should_work = _test_set_element_with_string_should_work();
+const test_insertion_with_int_should_work = _test_insertion_with_int_should_work();
+const test_insertion_with_string_should_work = _test_insertion_with_string_should_work();
+const test_drop_with_int_should_work = _test_drop_with_int_should_work();
+const test_drop_with_string_should_work = _test_drop_with_string_should_work();
+const test_slice_with_int_should_work = _test_slice_with_int_should_work();
+const test_slice_with_string_should_work = _test_slice_with_string_should_work();
+const test_split_with_int_should_work = _test_split_with_int_should_work();
+const test_rotate_with_int_should_work = _test_rotate_with_int_should_work();
+const test_remove_with_int_should_work = _test_remove_with_int_should_work();

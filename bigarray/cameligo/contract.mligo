@@ -85,15 +85,15 @@ let set (type kind) (element : kind) (position : nat) (lst1 : kind big_array) : 
 [@inline]
 let insert (type kind) (element : kind) (position : nat) (lst1 : kind big_array) : kind big_array =
   let rec insert (type kind) ((element, position, lst1, lst2) : kind * nat * kind big_array * kind big_array) : kind big_array =
-    match lst1, position with 
-    | []        , pos -> failwith "Position is highter than big_array length"
-    | hd1 :: tl1, pos -> 
-      if (pos = 0n) then
+    match lst1 with 
+    | []         -> failwith "Position is highter than big_array length"
+    | hd1 :: tl1 -> 
+      if (position = 0n) then
         let lst3 : kind big_array = element::lst2 in
         let lst4 : kind big_array = reverse lst3 in 
         concat lst4 lst1
       else
-        insert (element, abs(pos - 1n), tl1, hd1 :: lst2) in
+        insert (element, abs(position - 1n), tl1, hd1 :: lst2) in
   insert (element, position, lst1, ([] : kind big_array))
 
 (**
