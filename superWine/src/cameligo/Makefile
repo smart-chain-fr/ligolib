@@ -1,4 +1,4 @@
-ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
+ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:0.38.0
 # ligo_compiler=../../../ligo
 PROJECTROOT_OPT=--project-root .
 PROTOCOL_OPT=--protocol hangzhou

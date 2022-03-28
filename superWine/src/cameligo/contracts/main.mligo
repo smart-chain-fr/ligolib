@@ -45,9 +45,9 @@ let generateCollection(param, store : Parameter.generate_collection_param * Stor
       [%Michelson ( {| { 
             UNPAIR ;
             UNPAIR ;
-            CREATE_CONTRACT {
+            CREATE_CONTRACT 
 #include "generic_fa2/compiled/fa2_nft.tz"  
-              } ;
+               ;
             PAIR } |}
               : (key_hash option * tez * ext_storage) -> (operation * address))]
     in
