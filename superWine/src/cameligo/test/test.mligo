@@ -1,6 +1,10 @@
 
 #import "../contracts/main.mligo" "Factory"
 
+type fa2_storage = Factory.NFT_FA2.Storage.t
+type ext = Factory.NFT_FA2.extension
+type ext_fa2_storage = ext fa2_storage
+
 let assert_string_failure (res : test_exec_result) (expected : string) : unit =
   let expected = Test.eval expected in
   match res with
@@ -34,8 +38,8 @@ let test =
             ("QRcode", 0x623d82eff132);
         ] : (string, bytes) map) in
         let token_metadata = (Big_map.literal [
-            (1n, ({token_id=1n;token_info=token_info_1;} : Factory.NFT_FA2.TokenMetadata.data));
-        ] : Factory.NFT_FA2.TokenMetadata.t) in
+            (1n, ({token_id=1n;token_info=token_info_1;} : Factory.NFT_FA2.NFT.TokenMetadata.data));
+        ] : Factory.NFT_FA2.NFT.TokenMetadata.t) in
 
         // call GenerateCollection entrypoint
         let () = Test.set_source alice in
@@ -74,14 +78,14 @@ let test =
 
         // call MINT
         let () = Test.set_source alice in
-        let taddr1 = (Test.cast_address address1 : (Factory.NFT_FA2.parameter, Factory.NFT_FA2.Storage.t) typed_address) in
+        let taddr1 = (Test.cast_address address1 : (Factory.NFT_FA2.parameter, ext_fa2_storage) typed_address) in
         let fa2_1 : Factory.NFT_FA2.parameter contract = Test.to_contract taddr1 in
-        let mint_args : Factory.NFT_FA2.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
+        let mint_args : Factory.NFT_FA2.NFT.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
         let _ = Test.transfer_to_contract_exn fa2_1 (Mint(mint_args)) 0mutez in
 
         // verify token2 is created and owned by alice
         //let () = Test.log("check new token 2") in
-        let fa2_1_s : Factory.NFT_FA2.Storage.t = Test.get_storage taddr1 in
+        let fa2_1_s : ext_fa2_storage = Test.get_storage taddr1 in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_1_s alice 2n) in
         "OK"
     in
@@ -109,9 +113,9 @@ let test =
 
         // call MINT
         let () = Test.set_source bob in
-        let taddr1 = (Test.cast_address address1 : (Factory.NFT_FA2.parameter, Factory.NFT_FA2.Storage.t) typed_address) in
+        let taddr1 = (Test.cast_address address1 : (Factory.NFT_FA2.parameter, ext_fa2_storage) typed_address) in
         let fa2_1 : Factory.NFT_FA2.parameter contract = Test.to_contract taddr1 in
-        let mint_args : Factory.NFT_FA2.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
+        let mint_args : Factory.NFT_FA2.NFT.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
         let fail_mint_token3 = Test.transfer_to_contract fa2_1 (Mint(mint_args)) 0mutez in
         assert_string_failure fail_mint_token3 Factory.NFT_FA2.Errors.only_admin
     in
@@ -142,17 +146,17 @@ let test =
         let token_info_5 = (Map.literal[ ("QRcode", 0xdeadbeefbeef); ] : (string, bytes) map) in
 
         let token_metadata = (Big_map.literal [
-            (1n, ({token_id=1n;token_info=token_info_1;} : Factory.NFT_FA2.TokenMetadata.data));
-            (2n, ({token_id=2n;token_info=token_info_2;} : Factory.NFT_FA2.TokenMetadata.data));
-            (3n, ({token_id=3n;token_info=token_info_3;} : Factory.NFT_FA2.TokenMetadata.data));
-            (4n, ({token_id=4n;token_info=token_info_4;} : Factory.NFT_FA2.TokenMetadata.data));
-            (5n, ({token_id=5n;token_info=token_info_5;} : Factory.NFT_FA2.TokenMetadata.data));
-        ] : Factory.NFT_FA2.TokenMetadata.t) in
+            (1n, ({token_id=1n;token_info=token_info_1;} : Factory.NFT_FA2.NFT.TokenMetadata.data));
+            (2n, ({token_id=2n;token_info=token_info_2;} : Factory.NFT_FA2.NFT.TokenMetadata.data));
+            (3n, ({token_id=3n;token_info=token_info_3;} : Factory.NFT_FA2.NFT.TokenMetadata.data));
+            (4n, ({token_id=4n;token_info=token_info_4;} : Factory.NFT_FA2.NFT.TokenMetadata.data));
+            (5n, ({token_id=5n;token_info=token_info_5;} : Factory.NFT_FA2.NFT.TokenMetadata.data));
+        ] : Factory.NFT_FA2.NFT.TokenMetadata.t) in
 
         // add global metadatas to all tokens
         let collection_name_bytes : bytes = Bytes.pack "Pietrus 2022" in
         let global_metadatas : (string, bytes) map = (Map.literal[ ("collection", collection_name_bytes)] : (string, bytes) map) in 
-        let new_token_metadata = Factory.NFT_FA2.TokenMetadata.add_global_metadata token_ids token_metadata global_metadatas in
+        let new_token_metadata = Factory.NFT_FA2.NFT.TokenMetadata.add_global_metadata token_ids token_metadata global_metadatas in
 
         // generate collection
         let gencol_args : Factory.Parameter.generate_collection_param = {name="alice_collection_1"; token_ids=token_ids; token_metas=new_token_metadata} in
@@ -168,12 +172,12 @@ let test =
         let owned_coll_size = List.fold (fun(acc, elt : nat * address) : nat -> acc + 1n) colls 0n in
         let () = assert (owned_coll_size = 2n) in
 
-        let parse_metas(acc, elt : (address, (nat list * Factory.NFT_FA2.TokenMetadata.t))big_map * address) : (address, (nat list * Factory.NFT_FA2.TokenMetadata.t))big_map = 
-            let taddr = (Test.cast_address elt : (Factory.NFT_FA2.parameter, Factory.NFT_FA2.Storage.t) typed_address) in
-            let fa2_store : Factory.NFT_FA2.Storage.t = Test.get_storage taddr in
+        let parse_metas(acc, elt : (address, (nat list * Factory.NFT_FA2.NFT.TokenMetadata.t))big_map * address) : (address, (nat list * Factory.NFT_FA2.NFT.TokenMetadata.t))big_map = 
+            let taddr = (Test.cast_address elt : (Factory.NFT_FA2.parameter, ext_fa2_storage) typed_address) in
+            let fa2_store : ext_fa2_storage = Test.get_storage taddr in
             Big_map.add elt (fa2_store.token_ids, fa2_store.token_metadata) acc
         in
-        let all_tokens : (address, (nat list * Factory.NFT_FA2.TokenMetadata.t))big_map = List.fold parse_metas colls (Big_map.empty : (address, (nat list * Factory.NFT_FA2.TokenMetadata.t) )big_map) in 
+        let all_tokens : (address, (nat list * Factory.NFT_FA2.NFT.TokenMetadata.t))big_map = List.fold parse_metas colls (Big_map.empty : (address, (nat list * Factory.NFT_FA2.NFT.TokenMetadata.t) )big_map) in 
         
         // Retrieve collection 2 address
         //let colls_list : address list = Set.fold (fun(acc, i : address list * address) -> i :: acc) colls ([] : address list) in
@@ -190,28 +194,28 @@ let test =
         let address2 : address = get_next_address(colls, colls_before) in
 
         // verify token_ids of collection 1
-        let collection1_info : nat list * Factory.NFT_FA2.TokenMetadata.t = match Big_map.find_opt address1 all_tokens with
-        | None -> (failwith("No metadata for collection 1") : nat list * Factory.NFT_FA2.TokenMetadata.t)
+        let collection1_info : nat list * Factory.NFT_FA2.NFT.TokenMetadata.t = match Big_map.find_opt address1 all_tokens with
+        | None -> (failwith("No metadata for collection 1") : nat list * Factory.NFT_FA2.NFT.TokenMetadata.t)
         | Some info -> info
         in
         //let () = Test.log(collection1_info.0) in
         let () = assert(collection1_info.0 = [2n; 1n]) in
         // verify token_ids of collection 2 
-        let collection2_info : nat list * Factory.NFT_FA2.TokenMetadata.t = match Big_map.find_opt address2 all_tokens with
-        | None -> (failwith("No metadata for collection 2") : nat list * Factory.NFT_FA2.TokenMetadata.t)
+        let collection2_info : nat list * Factory.NFT_FA2.NFT.TokenMetadata.t = match Big_map.find_opt address2 all_tokens with
+        | None -> (failwith("No metadata for collection 2") : nat list * Factory.NFT_FA2.NFT.TokenMetadata.t)
         | Some info -> info
         in
         let () = assert(collection2_info.0 = [1n; 2n; 3n; 4n; 5n]) in 
         // verify metadata of token 3 of collection 2
-        let collection2_metas : Factory.NFT_FA2.TokenMetadata.t = collection2_info.1 in
-        let collection2_metas_tok3 : Factory.NFT_FA2.TokenMetadata.data = match Big_map.find_opt 3n collection2_metas with
-        | None -> (failwith("No token 3 in this collection") : Factory.NFT_FA2.TokenMetadata.data)
+        let collection2_metas : Factory.NFT_FA2.NFT.TokenMetadata.t = collection2_info.1 in
+        let collection2_metas_tok3 : Factory.NFT_FA2.NFT.TokenMetadata.data = match Big_map.find_opt 3n collection2_metas with
+        | None -> (failwith("No token 3 in this collection") : Factory.NFT_FA2.NFT.TokenMetadata.data)
         | Some info -> info
         in
         let () = assert(collection2_metas_tok3.token_info = (Map.literal[ ("QRcode", 0xab3442eff132); ("collection", collection_name_bytes)] : (string, bytes) map)) in
         // verify metadata of token 4 of collection 2
-        let collection2_metas_tok4 : Factory.NFT_FA2.TokenMetadata.data = match Big_map.find_opt 4n collection2_metas with
-        | None -> (failwith("No token 4 in this collection") : Factory.NFT_FA2.TokenMetadata.data)
+        let collection2_metas_tok4 : Factory.NFT_FA2.NFT.TokenMetadata.data = match Big_map.find_opt 4n collection2_metas with
+        | None -> (failwith("No token 4 in this collection") : Factory.NFT_FA2.NFT.TokenMetadata.data)
         | Some info -> info
         in
         let () = assert(collection2_metas_tok4.token_info = (Map.literal[ ("QRcode", 0xdeadbeefdead); ("collection", collection_name_bytes)] : (string, bytes) map)) in
@@ -229,32 +233,32 @@ let test =
 
         let () = Test.log("alice transfer tok 1 to bob") in 
         let () = Test.set_source alice in
-        let taddr2 = (Test.cast_address address2 : (Factory.NFT_FA2.parameter, Factory.NFT_FA2.Storage.t) typed_address) in
+        let taddr2 = (Test.cast_address address2 : (Factory.NFT_FA2.parameter, ext_fa2_storage) typed_address) in
         let fa2_2 : Factory.NFT_FA2.parameter contract = Test.to_contract taddr2 in
-        let transfer1_args : Factory.NFT_FA2.transfer = [{ from_=alice; tx=[{to_=bob;token_id=1n}] }] in
+        let transfer1_args : Factory.NFT_FA2.NFT.transfer = [{ from_=alice; tx=[{to_=bob;token_id=1n}] }] in
         let _ = Test.transfer_to_contract_exn fa2_2 (Transfer(transfer1_args)) 0mutez in
 
-        let fa2_2_s : Factory.NFT_FA2.Storage.t = Test.get_storage taddr2 in
+        let fa2_2_s : ext_fa2_storage = Test.get_storage taddr2 in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_2_s bob 1n) in
-        let () = assert(Factory.NFT_FA2.Storage.get_usage_of fa2_2_s 1n = 1n) in
+        let () = assert(Factory.NFT_FA2.get_usage_of fa2_2_s 1n = 1n) in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_2_s alice 2n) in 
-        let () = assert(Factory.NFT_FA2.Storage.get_usage_of fa2_2_s 2n = 0n) in
+        let () = assert(Factory.NFT_FA2.get_usage_of fa2_2_s 2n = 0n) in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_2_s alice 3n) in
-        let () = assert(Factory.NFT_FA2.Storage.get_usage_of fa2_2_s 3n = 0n) in
+        let () = assert(Factory.NFT_FA2.get_usage_of fa2_2_s 3n = 0n) in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_2_s alice 4n) in
-        let () = assert(Factory.NFT_FA2.Storage.get_usage_of fa2_2_s 4n = 0n) in
+        let () = assert(Factory.NFT_FA2.get_usage_of fa2_2_s 4n = 0n) in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_2_s alice 5n) in
-        let () = assert(Factory.NFT_FA2.Storage.get_usage_of fa2_2_s 5n = 0n) in
+        let () = assert(Factory.NFT_FA2.get_usage_of fa2_2_s 5n = 0n) in
 
         let () = Test.log("bob transfer tok 1 to steven") in 
         let () = Test.set_source bob in
         let fa2_2 : Factory.NFT_FA2.parameter contract = Test.to_contract taddr2 in
-        let transfer1_args : Factory.NFT_FA2.transfer = [{ from_=bob; tx=[{to_=steven;token_id=1n}] }] in
+        let transfer1_args : Factory.NFT_FA2.NFT.transfer = [{ from_=bob; tx=[{to_=steven;token_id=1n}] }] in
         let _ = Test.transfer_to_contract_exn fa2_2 (Transfer(transfer1_args)) 0mutez in
 
-        let fa2_2_s : Factory.NFT_FA2.Storage.t = Test.get_storage taddr2 in
+        let fa2_2_s : ext_fa2_storage = Test.get_storage taddr2 in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_2_s steven 1n) in
-        let () = assert(Factory.NFT_FA2.Storage.get_usage_of fa2_2_s 1n = 2n) in
+        let () = assert(Factory.NFT_FA2.get_usage_of fa2_2_s 1n = 2n) in
         "OK" 
     in
     ()

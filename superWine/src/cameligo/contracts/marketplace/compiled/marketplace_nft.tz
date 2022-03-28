@@ -8,14 +8,11 @@
              (pair (pair (pair (bool %active) (address %collectionContract))
                          (pair (nat %hasard_level) (address %owner)))
                    (pair (mutez %price) (nat %token_id))))) ;
-  code { PUSH string "unknown view" ;
-         PUSH string "Already sold" ;
-         DIG 2 ;
+  code { PUSH string "Already sold" ;
+         SWAP ;
          UNPAIR ;
          IF_LEFT
-           { DIG 3 ;
-             DROP ;
-             DUP 3 ;
+           { DUP 3 ;
              DUP 3 ;
              CAR ;
              CAR ;
@@ -131,7 +128,7 @@
              SENDER ;
              PAIR ;
              VIEW "get_balance" nat ;
-             IF_NONE { DUP 3 ; FAILWITH } {} ;
+             IF_NONE { PUSH string "unknown view get_balance." ; FAILWITH } {} ;
              SWAP ;
              DUP ;
              DUG 2 ;
@@ -140,7 +137,7 @@
              DUP 3 ;
              CDR ;
              VIEW "token_usage" nat ;
-             IF_NONE { DIG 3 ; FAILWITH } { DIG 4 ; DROP } ;
+             IF_NONE { PUSH string "unknown view token_usage." ; FAILWITH } {} ;
              PUSH string "Not owner of this token" ;
              PUSH nat 1 ;
              DIG 3 ;

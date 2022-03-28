@@ -11,12 +11,12 @@ let create_sell_proposal(param, store : Parameter.sell_proposal_param * Storage.
     // check if sender is the owner of the nft token
     let balanceOpt : nat option = Tezos.call_view "get_balance" (Tezos.sender, param.token_id) param.collectionContract in
     let balanceVal : nat = match balanceOpt with
-    | None -> (failwith(Errors.unknownView) : nat)
+    | None -> (failwith(Errors.unknownViewGetBalance) : nat)
     | Some (v) -> v
     in
     let usageOpt : nat option = Tezos.call_view "token_usage" param.token_id param.collectionContract in
     let usageVal : nat = match usageOpt with
-    | None -> (failwith(Errors.unknownView) : nat)
+    | None -> (failwith(Errors.unknownViewTokenUsage) : nat)
     | Some (v) -> v
     in
     let _check_owner : unit = assert_with_error (balanceVal = 1n) Errors.not_owner in

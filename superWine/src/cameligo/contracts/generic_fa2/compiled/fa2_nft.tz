@@ -10,12 +10,28 @@
                        (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))
                 (pair %mint (list %ids nat) (big_map %metas nat (map string bytes)))))) ;
   storage
-    (pair (pair (pair (address %admin) (big_map %ledger nat address))
+    (pair (pair (pair (pair %extension (address %admin) (big_map %token_usage nat nat))
+                      (big_map %ledger nat address))
                 (pair (big_map %operators (pair address address) (set nat)) (list %token_ids nat)))
-          (pair (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
-                (big_map %token_usage nat nat))) ;
+          (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))) ;
   code { LAMBDA (pair address address) bool { UNPAIR ; COMPARE ; EQ } ;
          DUP ;
+         LAMBDA
+           (pair (lambda (pair address address) bool) (pair (big_map nat address) nat address))
+           bool
+           { UNPAIR ;
+             SWAP ;
+             UNPAIR 3 ;
+             SWAP ;
+             GET ;
+             IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
+             PAIR ;
+             EXEC } ;
+         SWAP ;
+         APPLY ;
+         SWAP ;
+         DUP ;
+         DUG 2 ;
          LAMBDA
            (pair (lambda (pair address address) bool) address)
            unit
@@ -31,33 +47,16 @@
              IF { DROP ; UNIT } { FAILWITH } } ;
          SWAP ;
          APPLY ;
-         SWAP ;
-         DUP ;
-         DUG 2 ;
          LAMBDA
-           (pair (lambda (pair address address) bool) (pair (big_map nat address) nat address))
-           bool
-           { UNPAIR ;
-             SWAP ;
-             UNPAIR 3 ;
-             SWAP ;
-             GET ;
-             IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
-             PAIR ;
-             EXEC } ;
-         SWAP ;
-         APPLY ;
-         LAMBDA
-           (pair (pair (pair (pair address (big_map nat address))
+           (pair (pair (pair (pair (pair address (big_map nat nat)) (big_map nat address))
                              (pair (big_map (pair address address) (set nat)) (list nat)))
-                       (pair (big_map nat (pair nat (map string bytes))) (big_map nat nat)))
+                       (big_map nat (pair nat (map string bytes))))
                  nat)
            unit
            { UNPAIR ;
              PUSH string "FA2_TOKEN_UNDEFINED" ;
              SWAP ;
              CDR ;
-             CAR ;
              DIG 2 ;
              GET ;
              IF_NONE { FAILWITH } { DROP 2 } ;
@@ -65,7 +64,7 @@
          DIG 4 ;
          UNPAIR ;
          IF_LEFT
-           { DIG 4 ;
+           { DIG 3 ;
              DROP ;
              SWAP ;
              DUP ;
@@ -144,10 +143,15 @@
              PAIR ;
              PAIR ;
              PAIR ;
+             NIL operation ;
+             SWAP ;
              DUP ;
+             DUG 2 ;
+             CAR ;
+             CAR ;
+             CAR ;
              CDR ;
-             CDR ;
-             DIG 2 ;
+             DIG 3 ;
              ITER { CDR ;
                     ITER { CDR ;
                            SWAP ;
@@ -162,21 +166,33 @@
                                PUSH string "This token is not initialized in usage map" ;
                                FAILWITH }
                              { DIG 2 ; PUSH nat 1 ; DIG 2 ; ADD ; SOME ; DIG 2 ; UPDATE } } } ;
-             SWAP ;
-             DUP ;
-             DUG 2 ;
+             DUP 3 ;
              CDR ;
+             DUP 4 ;
+             CAR ;
+             CDR ;
+             DUP 5 ;
+             CAR ;
+             CAR ;
+             CDR ;
+             DIG 3 ;
+             DIG 5 ;
+             CAR ;
+             CAR ;
+             CAR ;
              CAR ;
              PAIR ;
-             SWAP ;
-             CAR ;
+             PAIR ;
+             PAIR ;
              PAIR ;
              NIL operation ;
+             DIG 2 ;
+             ITER { CONS } ;
              PAIR }
            { DIG 5 ;
              DROP ;
              IF_LEFT
-               { DIG 4 ;
+               { DIG 3 ;
                  DROP ;
                  UNPAIR ;
                  MAP { DUP ;
@@ -215,7 +231,7 @@
                  CONS ;
                  PAIR }
                { DIG 2 ;
-                 DIG 3 ;
+                 DIG 4 ;
                  DROP 2 ;
                  IF_LEFT
                    { SWAP ;
@@ -322,6 +338,7 @@
                      CAR ;
                      CAR ;
                      CAR ;
+                     CAR ;
                      SENDER ;
                      COMPARE ;
                      EQ ;
@@ -348,7 +365,6 @@
                      CDR ;
                      DUP 5 ;
                      CDR ;
-                     CAR ;
                      PAIR ;
                      DIG 3 ;
                      CAR ;
@@ -402,93 +418,20 @@
                      PAIR ;
                      PAIR ;
                      PAIR ;
-                     DUP ;
-                     CDR ;
-                     CDR ;
-                     DIG 2 ;
-                     PAIR ;
-                     SWAP ;
                      CAR ;
                      PAIR ;
                      NIL operation ;
                      PAIR } } } } ;
-  view "token_metadata"
-       nat
-       (pair (nat %token_id) (map %token_info string bytes))
-       { UNPAIR ;
-         SWAP ;
-         CDR ;
-         CAR ;
-         SWAP ;
-         GET ;
-         IF_NONE { PUSH string "FA2_TOKEN_UNDEFINED" ; FAILWITH } {} } ;
-  view "is_operator"
-       (pair (address %owner) (address %operator) (nat %token_id))
-       bool
-       { UNPAIR ;
-         DUP ;
-         GET 4 ;
-         SWAP ;
-         DUP ;
-         DUG 2 ;
-         GET 3 ;
-         PAIR ;
-         SWAP ;
-         CAR ;
-         DIG 2 ;
-         CAR ;
-         CDR ;
-         CAR ;
-         DIG 2 ;
-         UNPAIR ;
-         DIG 2 ;
-         SWAP ;
-         DUP ;
-         DUG 2 ;
-         DUP 5 ;
-         PAIR ;
-         GET ;
-         IF_NONE { EMPTY_SET nat } {} ;
-         DIG 2 ;
-         MEM ;
-         SWAP ;
-         DIG 2 ;
-         COMPARE ;
-         EQ ;
-         OR } ;
-  view "all_tokens" unit (list nat) { CDR ; CAR ; CDR ; CDR } ;
-  view "total_supply"
+  view "token_usage"
        nat
        nat
        { UNPAIR ;
-         PUSH string "FA2_TOKEN_UNDEFINED" ;
-         DIG 2 ;
-         CDR ;
+         SWAP ;
          CAR ;
-         DIG 2 ;
-         GET ;
-         IF_NONE { FAILWITH } { DROP 2 } ;
-         PUSH nat 1 } ;
-  view "get_balance"
-       (pair address nat)
-       nat
-       { UNPAIR ;
-         UNPAIR ;
-         PUSH string "FA2_TOKEN_UNDEFINED" ;
-         DUP 4 ;
-         CDR ;
-         CAR ;
-         DUP 4 ;
-         GET ;
-         IF_NONE { FAILWITH } { DROP 2 } ;
-         DIG 2 ;
          CAR ;
          CAR ;
          CDR ;
-         DIG 2 ;
+         SWAP ;
          GET ;
-         IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
-         COMPARE ;
-         EQ ;
-         IF { PUSH nat 1 } { PUSH nat 0 } } }
+         IF_NONE { PUSH string "FA2_TOKEN_UNDEFINED" ; FAILWITH } {} } }
 

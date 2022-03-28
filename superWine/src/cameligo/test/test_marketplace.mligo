@@ -2,6 +2,9 @@
 #import "../contracts/main.mligo" "Factory"
 #import "../contracts/marketplace/main.mligo" "Marketplace"
 
+type fa2_storage = Factory.NFT_FA2.Storage.t
+type ext = Factory.NFT_FA2.extension
+type ext_fa2_storage = ext fa2_storage
 
 let assert_string_failure (res : test_exec_result) (expected : string) : unit =
   let expected = Test.eval expected in
@@ -45,8 +48,8 @@ let test =
             ("QRcode", 0x623d82eff132);
         ] : (string, bytes) map) in
         let token_metadata = (Big_map.literal [
-            (1n, ({token_id=1n;token_info=token_info_1;} : Factory.NFT_FA2.TokenMetadata.data));
-        ] : Factory.NFT_FA2.TokenMetadata.t) in
+            (1n, ({token_id=1n;token_info=token_info_1;} : Factory.NFT_FA2.Storage.TokenMetadata.data));
+        ] : Factory.NFT_FA2.Storage.TokenMetadata.t) in
 
         // call GenerateCollection entrypoint
         let () = Test.set_source alice in
@@ -72,8 +75,8 @@ let test =
         | Some x -> x
         in
         let fa2_address : address = Option.unopt (List.head_opt colls_before) in
-        let taddr_fa2_address = (Test.cast_address fa2_address : (Factory.NFT_FA2.parameter, Factory.NFT_FA2.Storage.t) typed_address) in
-        let fa2_store : Factory.NFT_FA2.Storage.t = Test.get_storage taddr_fa2_address in
+        let taddr_fa2_address = (Test.cast_address fa2_address : (Factory.NFT_FA2.parameter, ext_fa2_storage) typed_address) in
+        let fa2_store : ext_fa2_storage = Test.get_storage taddr_fa2_address in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_store alice 1n) in
         let () = Test.log(fa2_store) in
 
@@ -83,7 +86,7 @@ let test =
         let marketplace_addr  = Tezos.address marketplace_contract in 
         let () = Test.log(marketplace_addr) in
         let fa2_contract : Factory.NFT_FA2.parameter contract = Test.to_contract taddr_fa2_address in
-        let update_op : Factory.NFT_FA2.update_operators = [Add_operator({owner=alice; operator=marketplace_addr; token_id=1n})] in
+        let update_op : Factory.NFT_FA2.NFT.update_operators = [Add_operator({owner=alice; operator=marketplace_addr; token_id=1n})] in
         let _ = Test.transfer_to_contract_exn fa2_contract (Update_operators(update_op)) 0mutez in
 
         // alice Sell token1
@@ -102,7 +105,7 @@ let test =
         let () = Test.set_source bob in
         let _ = Test.transfer_to_contract_exn marketplace_contract (Buy(buy_args)) 1000000mutez in
 
-        let fa2_store_after : Factory.NFT_FA2.Storage.t = Test.get_storage taddr_fa2_address in
+        let fa2_store_after : ext_fa2_storage = Test.get_storage taddr_fa2_address in
         let () = assert(Factory.NFT_FA2.Storage.is_owner_of fa2_store_after bob 1n) in
         let () = Test.log(fa2_store_after) in
         "OK"
