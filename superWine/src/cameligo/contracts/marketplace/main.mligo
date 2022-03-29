@@ -1,7 +1,7 @@
 #import "storage.mligo" "Storage"
 #import "errors.mligo" "Errors"
 #import "parameter.mligo" "Parameter"
-#import "../fa2/nft/NFT.mligo" "NFT_FA2"
+#import "../generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
 
 type storage = Storage.t
 type parameter = Parameter.t
@@ -69,12 +69,12 @@ let accept_proposal(param, store : Parameter.buy_param * Storage.t) : return =
 
 
     // transfer Nft to new_owner
-    let collection_transfer_dest_opt : NFT_FA2.transfer contract option = Tezos.get_entrypoint_opt "%transfer" propal.collectionContract in
-    let collection_transfer_dest : NFT_FA2.transfer contract = match collection_transfer_dest_opt with
-    | None -> (failwith(Errors.unknown_fa2_contract): NFT_FA2.transfer contract) 
+    let collection_transfer_dest_opt : NFT_FA2.NFT.transfer contract option = Tezos.get_entrypoint_opt "%transfer" propal.collectionContract in
+    let collection_transfer_dest : NFT_FA2.NFT.transfer contract = match collection_transfer_dest_opt with
+    | None -> (failwith(Errors.unknown_fa2_contract): NFT_FA2.NFT.transfer contract) 
     | Some ct -> ct
     in
-    let nft_transfer : NFT_FA2.transfer = [{from_=propal.owner; tx=[{to_=Tezos.sender; token_id=propal.token_id}]}] in
+    let nft_transfer : NFT_FA2.NFT.transfer = [{from_=propal.owner; tx=[{to_=Tezos.sender; token_id=propal.token_id}]}] in
     let op2 : operation = Tezos.transaction nft_transfer 0mutez collection_transfer_dest in
     
     ([op; op2;], { store with sell_proposals=new_proposals; active_proposals=new_active_proposals })
