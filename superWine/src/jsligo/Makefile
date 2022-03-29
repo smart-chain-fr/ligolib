@@ -10,7 +10,6 @@ help:
 	@echo  '  clean           - Remove generated Michelson files'
 	@echo  '  compile         - Compiles smart contract Factory'
 	@echo  '  test            - Run integration tests (written in Ligo)'
-	@echo  '  dry-run         - Simulate execution of entrypoints (with the Ligo compiler)'
 	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
 	@echo  ''
 
@@ -28,10 +27,6 @@ factory.json: contracts/main.jsligo
 	@echo "Compiling smart contract to Michelson in JSON format"
 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > compiled/$@
 
-# fa2_nft.tz: contracts/fa2/nft/NFT.mligo
-# 	@echo "Compiling smart contract FA2 to Michelson"
-# 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/fa2/compiled/$@
-
 fa2_nft.tz: contracts/generic_fa2/core/instance/NFT.mligo
 	@echo "Compiling smart contract FA2 to Michelson"
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/generic_fa2/compiled/$@
@@ -44,19 +39,15 @@ clean: clean_contracts clean_fa2 clean_marketplace
 
 clean_contracts:
 	@echo "Removing Michelson files"
-	@rm compiled/*.tz compiled/*.json
-
-# clean_fa2:
-# 	@echo "Removing FA2 Michelson file"
-# 	@rm contracts/fa2/compiled/*.tz
+	@rm -f compiled/*.tz compiled/*.json
 
 clean_fa2:
 	@echo "Removing FA2 Michelson file"
-	@rm contracts/generic_fa2/compiled/*.tz
+	@rm -f contracts/generic_fa2/compiled/*.tz
 
 clean_marketplace:
 	@echo "Removing Marketplace Michelson file"
-	@rm contracts/marketplace/compiled/*.tz
+	@rm -f contracts/marketplace/compiled/*.tz
 
 
 test: test_ligo test_marketplace
