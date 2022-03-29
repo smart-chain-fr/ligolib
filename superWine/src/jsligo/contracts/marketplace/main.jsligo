@@ -4,7 +4,7 @@
 #import "../generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
 
 type storage = Storage.t;
-type parameter = Parameter.t;
+export type parameter = Parameter.t;
 type return_ = [list<operation>, storage];
 
 let create_sell_proposal = ([param, store] : [Parameter.sell_proposal_param, Storage.t]) : return_ => {
@@ -81,7 +81,7 @@ let accept_proposal = ([param, store] : [Parameter.buy_param, Storage.t]) : retu
     return [list([op, op2]), { ...store,  sell_proposals:new_proposals, active_proposals:new_active_proposals }]
 };
 
-let main = ([ep, store] : [parameter, storage]) : return_ => {
+export let main = ([ep, store] : [parameter, storage]) : return_ => {
     match(ep, { 
         Sell: (p: sell_proposal_param) => create_sell_proposal(p, store),
         Buy: (p: buy_param) => accept_proposal(p, store)

@@ -63,7 +63,7 @@ let generateCollection = ([param, store] : [Parameter.generate_collection_param,
     return [list([originate[0]]), { ...store, all_collections:new_all_collections, owned_collections:new_owned_collections}];
 };
 
-let main = ([ep, store] : [parameter, storage]) : return_ => {
+export let main = ([ep, store] : [parameter, storage]) : return_ => {
     match(ep, { 
       GenerateCollection: (p: Parameter.generate_collection_param) => generateCollection(p, store),
       Nothing: () => [(list([]) as list<operation>), store]
