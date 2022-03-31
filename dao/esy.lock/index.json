@@ -1,0 +1,29 @@
+{
+  "checksum": "0368ea2d83170996ad9738325570fe1a",
+  "root": "dao@link-dev:./esy.json",
+  "node": {
+    "tezos-ligo-fa2@1.0.1@d41d8cd9": {
+      "id": "tezos-ligo-fa2@1.0.1@d41d8cd9",
+      "name": "tezos-ligo-fa2",
+      "version": "1.0.1",
+      "source": {
+        "type": "install",
+        "source": [
+          "archive:https://registry.npmjs.org/tezos-ligo-fa2/-/tezos-ligo-fa2-1.0.1.tgz#sha1:81d1ff74dc457290fcd974e1251c15521e407149"
+        ]
+      },
+      "overrides": [],
+      "dependencies": [],
+      "devDependencies": []
+    },
+    "dao@link-dev:./esy.json": {
+      "id": "dao@link-dev:./esy.json",
+      "name": "dao",
+      "version": "link-dev:./esy.json",
+      "source": { "type": "link-dev", "path": ".", "manifest": "esy.json" },
+      "overrides": [],
+      "dependencies": [ "tezos-ligo-fa2@1.0.1@d41d8cd9" ],
+      "devDependencies": []
+    }
+  }
+}

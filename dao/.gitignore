@@ -1,0 +1,4 @@
+compiled/
+.ligo/
+_esy/
+.env
