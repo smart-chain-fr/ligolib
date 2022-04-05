@@ -1,11 +1,5 @@
-(**
- * Definition
- *)
 type 'a big_array = 'a list
 
-(**
- * Empty constructor 
- *)
 [@inline]
 let construct (type kind) (size : nat) (wanted_type : kind) : kind option big_array =
   let rec construct (type kind) (size : nat) (wanted_type : kind) (res : kind option big_array) : kind option big_array =
@@ -13,24 +7,20 @@ let construct (type kind) (size : nat) (wanted_type : kind) : kind option big_ar
     else construct (abs(size-1n)) wanted_type ((None: kind option) :: res) in
   construct size  wanted_type ([] : kind option big_array)
 
-(**
- * Last 
- *)
 [@inline]
-let last (type kind) (lst1 : kind big_array) : kind =
+let last (type kind) (lst1 : kind big_array) : kind = 
   let rec last (type kind) (lst1 : kind big_array) : kind =
     match lst1 with 
-    | []         -> failwith "The big_array is empty"
-    | hd1 :: tl1 -> (
-      match tl1 with
-      | []         -> hd1
-      | hd2 :: tl2 -> last (tl1) ) 
+    | []        -> failwith "The big_array is empty"
+    | [ head ]  -> head
+    | _ :: tail -> last tail
   in
   last (lst1)
 
-(**
- * Reversing
- *)
+
+
+
+
 [@inline]
 let reverse (type kind) (lst1 : kind big_array) : kind big_array =
   let rec reverse (type kind) ((lst1, res) : kind big_array * kind big_array) : kind big_array =
@@ -39,9 +29,6 @@ let reverse (type kind) (lst1 : kind big_array) : kind big_array =
     | hd1 :: tl1 -> reverse (tl1, (hd1 :: res)) in
   reverse (lst1, ([] : kind big_array))
 
-(**
- * Concatenation
- *)
 [@inline]
 let concat (type kind) (lst1 : kind big_array) (lst2 : kind big_array) : kind big_array =
   let rec concat (type kind) ((lst1r, lst2) : kind big_array * kind big_array) : kind big_array =
@@ -51,9 +38,6 @@ let concat (type kind) (lst1 : kind big_array) (lst2 : kind big_array) : kind bi
   let lst1r : kind big_array = reverse lst1 in
   concat (lst1r, lst2)
 
-(**
- * Get an element by his number position
- *)
 [@inline]
 let find (type kind) (position : nat) (lst1 : kind big_array) : kind =
   let rec get (type kind) ((position, lst1) : nat * kind big_array) : kind =
@@ -64,9 +48,6 @@ let find (type kind) (position : nat) (lst1 : kind big_array) : kind =
       else get (abs(position - 1n), tl1) in
   get (position, lst1)
 
-(**
- * Set an element by his number position
- *)
 [@inline]
 let set (type kind) (element : kind) (position : nat) (lst1 : kind big_array) : kind big_array =
   let rec set (type kind) ((element, position, lst1, res) : kind * nat * kind big_array * kind big_array) : kind big_array =
@@ -79,9 +60,6 @@ let set (type kind) (element : kind) (position : nat) (lst1 : kind big_array) : 
       else set (element, abs(position - 1n), tl1, hd1 :: res) in
   set (element, position, lst1, ([] : kind big_array))
 
-(**
- * Insertion
- *)
 [@inline]
 let insert (type kind) (element : kind) (position : nat) (lst1 : kind big_array) : kind big_array =
   let rec insert (type kind) ((element, position, lst1, lst2) : kind * nat * kind big_array * kind big_array) : kind big_array =
@@ -96,9 +74,6 @@ let insert (type kind) (element : kind) (position : nat) (lst1 : kind big_array)
         insert (element, abs(position - 1n), tl1, hd1 :: lst2) in
   insert (element, position, lst1, ([] : kind big_array))
 
-(**
- * Drop
- *)
 [@inline]
 let drop (type kind) (position : nat) (lst1 : kind big_array) : kind big_array =
   let rec drop (type kind) ((position, lst1, lst2) : nat * kind big_array * kind big_array) : kind big_array =
@@ -112,9 +87,6 @@ let drop (type kind) (position : nat) (lst1 : kind big_array) : kind big_array =
         drop (abs(position - 1n), tl1, hd1 :: lst2) in
   drop (position, lst1, ([] : kind big_array))
 
-(**
- * take
- *)
 [@inline]
 let take (type kind) (i : nat) (lst : kind big_array) : kind big_array =
   let rec take (type kind) ((i, lst, res) : nat * kind big_array * kind big_array) : kind big_array =
@@ -123,10 +95,7 @@ let take (type kind) (i : nat) (lst : kind big_array) : kind big_array =
       | []         -> reverse res
       | hd1 :: tl1 -> take (abs(i-1n), tl1, hd1 :: res) in
   take (i, lst, ([] : kind big_array))
-  
-(**
- * Slice
- *)
+
 [@inline]
 let slice (type kind) (i : nat) (k : nat) (lst : kind big_array) : kind big_array =
   let rec slice (type kind) ((i, k, lst) : nat * nat * kind big_array) : kind big_array =
@@ -137,10 +106,7 @@ let slice (type kind) (i : nat) (k : nat) (lst : kind big_array) : kind big_arra
       | []         -> []
       | hd1 :: tl1 -> slice (abs(i-1n), k, tl1) in
   slice (i, k, lst)
-  
-(**
- * Split
- *)
+
 [@inline]
 let split (type kind) (i : nat) (lst : kind big_array) : kind big_array * kind big_array =
   let rec split (type kind) ((i, lst1, lst2): nat * kind big_array * kind big_array) : kind big_array * kind big_array =
@@ -150,9 +116,6 @@ let split (type kind) (i : nat) (lst : kind big_array) : kind big_array * kind b
       | hd1 :: tl1 -> split (abs(i-1n), tl1, hd1 :: lst2) in
   split (i, lst, ([] : kind big_array))
 
-(**
- * Rotate to the left
- *)
 [@inline]
 let rotate (type kind) (i : nat) (lst : kind big_array) : kind big_array =
   let rec rotate (type kind) ((i, lst, res) : nat * kind big_array * kind big_array) : kind big_array =
@@ -164,15 +127,6 @@ let rotate (type kind) (i : nat) (lst : kind big_array) : kind big_array =
       | hd1 :: tl1 -> rotate (abs(i-1n), tl1, hd1 :: res) in
   rotate (i, lst, ([] : kind big_array))
 
-
-// (**
-// * equal (michelson version / not working for composed types)
-// *)
-// [@inline]
-// let equalm (type a) (val_a : a) (val_b : a) : bool =
-//   [%Michelson ({|{ UNPAIR; COMPARE; EQ }|} : a * a -> bool)] (val_a, val_b)
-
-
 (**
 * equal (bytes version)
 * WARNING : Two lambda can be packed equal whereas they are different
@@ -181,9 +135,6 @@ let rotate (type kind) (i : nat) (lst : kind big_array) : kind big_array =
 let equal (type a) (val_a: a) (val_b: a): bool =
     (Bytes.pack val_a) = (Bytes.pack val_b)
 
-(**
- * Remove
- *)
 [@inline]
 let remove (type kind) (element : kind) (lst : kind big_array) : kind big_array =
   let rec remove (type kind) ((element, lst, res) : kind * kind big_array * kind big_array) : kind big_array =

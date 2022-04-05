@@ -1,4 +1,4 @@
-#import "../cameligo/contract.mligo" "Bigarray"
+#import "../cameligo/big_array.mligo" "Bigarray"
 
 type 'a big_array = 'a list
 

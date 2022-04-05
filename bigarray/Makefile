@@ -19,11 +19,11 @@ all: test
 
 # bigarray: bigarray.tz bigarray.json
 
-# bigarray.tz: cameligo/contract.mligo
+# bigarray.tz: cameligo/big_array.mligo
 # 	@echo "Compiling smart contract to Michelson"
 # 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) > compiled/bigarray.tz
 
-# bigarray.json: cameligo/contract.mligo
+# bigarray.json: cameligo/big_array.mligo
 # 	@echo "Compiling smart contract to Michelson in JSON format"
 # 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) > compiled/bigarray.json
 
