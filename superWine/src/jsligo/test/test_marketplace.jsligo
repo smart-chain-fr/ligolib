@@ -1,0 +1,122 @@
+
+#import "../contracts/main.jsligo" "Factory"
+#import "../contracts/marketplace/main.jsligo" "Marketplace"
+
+type fa2_storage = Factory.NFT_FA2.Storage.t;
+type ext = Factory.NFT_FA2.extension;
+type ext_fa2_storage = fa2_storage<ext>;
+
+let assert_string_failure = ([res, expected] : [test_exec_result, string]) : unit => {
+  let expected_ = Test.eval(expected);
+  match(res, {
+    Fail: (err: test_exec_error) => match(err, {
+        Rejected: (p: [prg, _addr]) => assert (Test.michelson_equal(p[0], expected_)),
+        Other: () => failwith("contract failed for an unknown reason")
+    }),
+    Success: (_gas: nat) => failwith("contract did not failed but was expected to fail")
+  });
+};
+
+let test = () : unit => {
+    // setup 4 accounts 
+    let _ = Test.reset_state(4 as nat, (list([]) as list<tez>));
+    const alice: address = Test.nth_bootstrap_account(0);
+    const bob: address = Test.nth_bootstrap_account(1);
+    const steven: address = Test.nth_bootstrap_account(2);
+    const frank: address = Test.nth_bootstrap_account(3);
+
+   // originate Factory smart contract
+    let init_storage : Factory.Storage.t = { 
+        all_collections:(Big_map.empty as big_map<Factory.Storage.collectionContract, Factory.Storage.collectionOwner>),
+        owned_collections:(Big_map.empty as big_map<Factory.Storage.collectionOwner, list<Factory.Storage.collectionContract>> )
+    };
+    const [addr,_,_] = Test.originate(Factory.main, init_storage, 0 as tez);
+
+    // originate Marketplace smart contract
+    let marketplace_init_storage : Marketplace.Storage.t = { 
+        next_sell_id: 0 as nat,
+        active_proposals:(Set.empty as set<nat>),
+        sell_proposals:(Big_map.empty as big_map<nat, Marketplace.Storage.sell_proposal>)
+    };
+    const [marketplace_taddr,_,_] = Test.originate(Marketplace.main, marketplace_init_storage, 0 as tez);
+
+
+    let _generates_collection_1_should_works = () : string => { 
+        let _print = Test.log("_generates_collection_1_should_works");
+
+        let x : contract<Factory.parameter> = Test.to_contract(addr);
+
+        // prepare arguments for generating a new collection
+        let token_ids : list<nat> = list([ 1 as nat]);
+        let token_info_1 : map<string, bytes> = Map.literal( list([
+            ["QRcode", 0x623d82eff132]
+        ])); 
+        let token_info_1_data : Factory.NFT_FA2.Storage.TokenMetadata.data = { token_id:(1 as nat), token_info:token_info_1 };
+        let token_metadata : Factory.NFT_FA2.Storage.TokenMetadata.t = Big_map.literal( list([
+            [1 as nat, token_info_1_data]
+        ])); 
+
+        // call GenerateCollection entrypoint
+        let _src = Test.set_source(alice);
+        let gencol_args : Factory.Parameter.generate_collection_param = { name:"alice_collection_1", token_ids:token_ids, token_metas:token_metadata };
+        let _exec = Test.transfer_to_contract_exn(x, (GenerateCollection(gencol_args)), (1000000 as mutez));
+
+        // verify FA2 has been created
+        let s : Factory.storage = Test.get_storage(addr);
+        let colls : list<address> = match(Big_map.find_opt(alice, s.owned_collections), {
+            None: () => (list([]) as list<address>),
+            Some: (x: list<address>) => x
+        });
+        let owned_coll_size = List.fold( ( ([acc, elt] : [nat, address]) : nat => acc + (1 as nat)), colls, (0 as nat));
+        //let owned_coll_size : nat = Set.size colls in 
+        let _tst = assert (owned_coll_size == (1 as nat));
+
+
+        _print = Test.log("_marketplace_sell_token1_should_works");
+        // retrieve address collection
+        let s_before : Factory.storage = Test.get_storage(addr);
+        let colls_before : list<address> = match(Big_map.find_opt(alice, s_before.owned_collections), {
+            None: () => (list([]) as list<address>),
+            Some: (x: list<address>) => x
+        });
+        let fa2_address : address = Option.unopt (List.head_opt(colls_before));
+        let taddr_fa2_address = (Test.cast_address(fa2_address) as typed_address<Factory.NFT_FA2.parameter, ext_fa2_storage>);
+        let fa2_store : ext_fa2_storage = Test.get_storage (taddr_fa2_address);
+        _tst = assert( ((Factory.NFT_FA2.Storage.is_owner_of(fa2_store))(alice))(1 as nat) );
+        _print = Test.log(fa2_store);
+
+        // APPROVE marketplace to transfer token 1
+        _src = Test.set_source (alice);
+        let marketplace_contract : contract<Marketplace.parameter> = Test.to_contract (marketplace_taddr);
+        let marketplace_addr  = Tezos.address (marketplace_contract);
+        _print = Test.log(marketplace_addr);
+        let fa2_contract : contract<Factory.NFT_FA2.parameter> = Test.to_contract (taddr_fa2_address);
+        let update_op : Factory.NFT_FA2.NFT.update_operators = list([Add_operator({owner:alice, operator:marketplace_addr, token_id:(1 as nat)})]);
+        _exec = Test.transfer_to_contract_exn(fa2_contract, (Update_operators(update_op)), 0 as mutez);
+
+        // alice Sell token1
+        let sell_args : Marketplace.Parameter.sell_proposal_param = { 
+            token_id:1 as nat,
+            collectionContract:fa2_address,
+            price:1 as tez
+        };
+        _src = Test.set_source (alice);
+        _exec = Test.transfer_to_contract_exn(marketplace_contract, (Sell(sell_args)), 0 as mutez);
+
+        // bob Buy token1
+        let buy_args : Marketplace.Parameter.buy_param = { 
+            proposal_id:0 as nat
+        };
+        let _src = Test.set_source (bob);
+        _exec = Test.transfer_to_contract_exn(marketplace_contract, (Buy(buy_args)), 1000000 as mutez);
+
+        let fa2_store_after : ext_fa2_storage = Test.get_storage (taddr_fa2_address);
+        _tst = assert( ((Factory.NFT_FA2.Storage.is_owner_of(fa2_store_after))(bob))(1 as nat) );
+        _print = Test.log(fa2_store_after);
+        "OK"
+    };
+
+    const _exec = _generates_collection_1_should_works();
+};
+
+const _test = test();

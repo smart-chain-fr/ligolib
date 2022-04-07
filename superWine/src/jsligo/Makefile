@@ -19,11 +19,11 @@ compile: fa2_nft.tz factory marketplace_nft.tz
 
 factory: factory.tz factory.json
 
-factory.tz: contracts/main.mligo
+factory.tz: contracts/main.jsligo
 	@echo "Compiling smart contract to Michelson"
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > compiled/$@
 
-factory.json: contracts/main.mligo
+factory.json: contracts/main.jsligo
 	@echo "Compiling smart contract to Michelson in JSON format"
 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > compiled/$@
 
@@ -31,7 +31,7 @@ fa2_nft.tz: contracts/generic_fa2/core/instance/NFT.mligo
 	@echo "Compiling smart contract FA2 to Michelson"
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/generic_fa2/compiled/$@
 
-marketplace_nft.tz: contracts/marketplace/main.mligo
+marketplace_nft.tz: contracts/marketplace/main.jsligo
 	@echo "Compiling smart contract Marketplace to Michelson"
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/marketplace/compiled/$@
 
@@ -52,11 +52,11 @@ clean_marketplace:
 
 test: test_ligo test_marketplace
 
-test_ligo: test/test.mligo 
+test_ligo: test/test.jsligo 
 	@echo "Running integration tests"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT) $(PROJECTROOT_OPT)
 
-test_marketplace: test/test_marketplace.mligo
+test_marketplace: test/test_marketplace.jsligo
 	@echo "Running integration tests (marketplace)"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT) $(PROJECTROOT_OPT)
 

@@ -1,0 +1,12 @@
+
+export type sell_proposal_param = {
+    token_id : nat,
+    collectionContract : address,
+    price : tez,
+};
+
+export type buy_param = {
+    proposal_id : nat
+};
+
+export type t = ["Sell", sell_proposal_param] | ["Buy", buy_param];

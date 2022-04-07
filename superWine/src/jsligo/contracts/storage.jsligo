@@ -1,0 +1,8 @@
+export type collectionContract = address;
+export type collectionOwner = address;
+
+export type t = {
+    all_collections : big_map<collectionContract, collectionOwner>,
+    owned_collections : big_map<collectionOwner, list<collectionContract> >
+};
+
