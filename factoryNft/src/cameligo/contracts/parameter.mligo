@@ -1,4 +1,4 @@
-#import "tezos-ligo/lib/fa2/nft/NFT.mligo" "NFT_FA2"
+#import "tezos-ligo-fa2/lib/fa2/nft/NFT.mligo" "NFT_FA2"
 
 
 

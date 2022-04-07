@@ -1,6 +1,6 @@
 #import "storage.mligo" "Storage"
 #import "parameter.mligo" "Parameter"
-#import "tezos-ligo/lib/fa2/nft/NFT.mligo" "NFT_FA2"
+#import "tezos-ligo-fa2/lib/fa2/nft/NFT.mligo" "NFT_FA2"
 //#import "views.mligo" "Views"
 //#import "errors.mligo" "Errors"
 //#import "conditions.mligo" "Conditions"
@@ -32,9 +32,10 @@ let generateCollection(param, store : Parameter.generate_collection_param * Stor
             UNPAIR ;
             UNPAIR ;
             CREATE_CONTRACT {
-#include "tezos-ligo/compiled/fa2/nft/NFT_mligo.tz"  
+#include "tezos-ligo-fa2/compiled/fa2/nft/NFT_mligo.tz"  
               } ;
-            PAIR } |}
+            PAIR 
+            } |}
               : (key_hash option * tez * NFT_FA2.Storage.t) -> (operation * address))]
     in
 
