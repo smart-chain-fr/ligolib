@@ -14,6 +14,7 @@ type ext = NFT_FA2.extension
 type ext_storage = ext store
 
 type lambda_create_contract = (key_hash option * tez * ext_storage) -> (operation * address) 
+type fa2_main = (NFT_FA2.parameter * ext_storage) -> (operation list * ext_storage)
 
 let generateCollection(param, store : Parameter.generate_collection_param * Storage.t) : return = 
     // create new collection
@@ -43,10 +44,11 @@ let generateCollection(param, store : Parameter.generate_collection_param * Stor
 
     let initial_delegate : key_hash option = (None: key_hash option) in
     let initial_amount : tez = 1tez in
-    //let create_my_contract : (lambda_create_contract * key_hash option * tez * ext_storage) -> (operation * address) =
-        //(fun (cp: lambda_create_contract * key_hash option * tez * ext_storage) -> Tezos.create_contract cp) 
-    //in
-    //let originate : operation * address = create_my_contract(NFT_FA2.main, initial_delegate, initial_amount, initial_storage) in
+    // let create_my_contract (cp: key_hash option * tez * ext_storage) : (operation * address) = 
+    //   let func : fa2_main = (fun((p, s): NFT_FA2.parameter * ext_storage) -> (NFT_FA2.main : fa2_main)(p, s)) in
+    //   Tezos.create_contract func cp.0 cp.1 cp.2
+    // in
+    // let originate : operation * address = create_my_contract(initial_delegate, initial_amount, initial_storage) in
     let create_my_contract : lambda_create_contract =
       [%Michelson ( {| { 
             UNPAIR ;
