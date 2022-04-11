@@ -86,7 +86,7 @@ let test = () : unit => {
         let _src = Test.set_source(alice);
         let taddr1 = (Test.cast_address(address1) as typed_address<Factory.NFT_FA2.parameter, extFa2Storage> );
         let fa21 : contract<Factory.NFT_FA2.parameter> = Test.to_contract(taddr1);
-        let mintArgs : Factory.NFT_FA2.NFT.mint_param = { ids:extraTokenIds, metas:extraTokenMetadata };
+        let mintArgs : Factory.NFT_FA2.mint_param = { ids:extraTokenIds, metas:extraTokenMetadata };
         let _ = Test.transfer_to_contract_exn(fa21, (Mint(mintArgs)), (0 as mutez));
 
         // verify token2 is created and owned by alice
@@ -121,7 +121,7 @@ let test = () : unit => {
         let _src = Test.set_source(bob);
         let taddr1 = (Test.cast_address(address1) as typed_address<Factory.NFT_FA2.parameter, extFa2Storage>);
         let fa21 : contract<Factory.NFT_FA2.parameter> = Test.to_contract(taddr1);
-        let mintArgs : Factory.NFT_FA2.NFT.mint_param = { ids:extraTokenIds, metas:extraTokenMetadata };
+        let mintArgs : Factory.NFT_FA2.mint_param = { ids:extraTokenIds, metas:extraTokenMetadata };
         let failMintToken3 = Test.transfer_to_contract(fa21, (Mint(mintArgs)), 0 as mutez);
         assertStringFailure( failMintToken3, Factory.NFT_FA2.Errors.only_admin);
     };
