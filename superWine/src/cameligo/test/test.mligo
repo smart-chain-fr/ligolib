@@ -80,7 +80,7 @@ let test =
         let () = Test.set_source alice in
         let taddr1 = (Test.cast_address address1 : (Factory.NFT_FA2.parameter, ext_fa2_storage) typed_address) in
         let fa2_1 : Factory.NFT_FA2.parameter contract = Test.to_contract taddr1 in
-        let mint_args : Factory.NFT_FA2.NFT.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
+        let mint_args : Factory.NFT_FA2.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
         let _ = Test.transfer_to_contract_exn fa2_1 (Mint(mint_args)) 0mutez in
 
         // verify token2 is created and owned by alice
@@ -115,7 +115,7 @@ let test =
         let () = Test.set_source bob in
         let taddr1 = (Test.cast_address address1 : (Factory.NFT_FA2.parameter, ext_fa2_storage) typed_address) in
         let fa2_1 : Factory.NFT_FA2.parameter contract = Test.to_contract taddr1 in
-        let mint_args : Factory.NFT_FA2.NFT.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
+        let mint_args : Factory.NFT_FA2.mint_param = { ids=extra_token_ids; metas=extra_token_metadata } in
         let fail_mint_token3 = Test.transfer_to_contract fa2_1 (Mint(mint_args)) 0mutez in
         assert_string_failure fail_mint_token3 Factory.NFT_FA2.Errors.only_admin
     in
