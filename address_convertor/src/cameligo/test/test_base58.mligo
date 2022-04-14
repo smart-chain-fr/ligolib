@@ -1,54 +1,21 @@
-#import "../contracts/base58_convertor.mligo" "Convert"
+#import "../contracts/utils.mligo" "Convert"
 
 
 let test =
 
     let _test_is_implicit = 
-        //0x050a00000016 0000430d6ec166d9c623104776aaad3bb50615c6791f
+        //0x050a00000016 00 00430d6ec166d9c623104776aaad3bb50615c6791f
 
-        // IS_IMPLICIT
         // let is_implicit(elt: address) : bool = 
         //     let pack_elt : bytes = Bytes.pack elt in
         //     let () = Test.log((elt, pack_elt)) in
-        //     let two_first : bytes = Bytes.sub 6n 1n pack_elt in 
-        //     (two_first = 0x00)
+        //     let size : nat = Bytes.length pack_elt in
+        //     let is_imp : bytes = Bytes.sub 6n 1n pack_elt in
+        //     let addr_bin : bytes = Bytes.sub 7n (abs(size - 7n)) pack_elt in
+        //     let value : nat = Convert.Utils.bytes_to_nat(addr_bin) in
+        //     let () = Test.log(value) in
+        //     ( is_imp = 0x00 )
         // in
-
-        let is_implicit(elt: address) : bool = 
-            let pack_elt : bytes = Bytes.pack elt in
-            let () = Test.log((elt, pack_elt)) in
-            let size : nat = Bytes.length pack_elt in
-            let is_imp : bytes = Bytes.sub 6n 1n pack_elt in
-            let addr_bin : bytes = Bytes.sub 7n (abs(size - 7n)) pack_elt in
-            let value : nat = Convert.Utils.bytes_to_nat(addr_bin) in
-            let () = Test.log(value) in
-            ( is_imp = 0x00 )
-        in
-
-        // helpers
-        let concate ((acc, elt): bytes * bytes) : bytes = Bytes.concat acc elt in
-        let rec split_bytes_rec(acc, payload : bytes list * bytes) : bytes list =
-            let size : nat = (Bytes.length payload) in
-            if size = 1n then
-                payload :: acc
-            else
-                let one_last_bytes = Bytes.sub (abs(size - 1n)) 1n payload in
-                let left_bytes = Bytes.sub 0n (abs(size - 1n)) payload in 
-                split_bytes_rec(one_last_bytes :: acc, left_bytes)
-        in
-        let bytes_to_list (ch: bytes) : bytes list = split_bytes_rec(([]: bytes list), ch) in
-        let bytes_from_list (lst: bytes list) : bytes = List.fold concate lst 0x in
-
-        let read_nb_bytes (nb : nat) (payload_param: bytes) : bytes * bytes =
-            let size : nat = (Bytes.length payload_param) in 
-            let left_bytes : bytes = Bytes.sub 0n nb payload_param in
-            let right_bytes = Bytes.sub nb (abs(size - nb)) payload_param in 
-            (left_bytes, right_bytes)
-        in
-        //let (b1, to_read) = read_nb_bytes 1n pack_ref in
-        //let (b2, to_read) = read_nb_bytes 1n to_read in
-        //let (b3_b6, to_read) = read_nb_bytes 4n to_read in
-        //let trspil_test : bytes = bytes_from_list(bytes_to_list(b3_b6)) in
 
         // TEST
         let test_addr_implicit : address list = [
@@ -84,8 +51,14 @@ let test =
             ("KT1MCJsFdhpgKJaJ8t8o99tDuyB2DdjdpRUe" : address);
         ] in
         let all_tests : (address * bool) list = ([] : (address * bool) list) in
-        let fill_expectation_true ((acc, elt) : (address * bool) list * address) : (address * bool) list = (elt, true) :: acc in
-        let fill_expectation_false ((acc, elt) : (address * bool) list * address) : (address * bool) list = (elt, false) :: acc in
+        let add_negative_tests_from_inputs (inputs: address list) (tests: (address * bool) list) : (address * bool) list = 
+            let fill_expectation_false ((acc, elt) : (address * bool) list * address) : (address * bool) list = (elt, false) :: acc in
+            List.fold fill_expectation_false inputs tests 
+        in
+        let add_positive_tests_from_inputs (inputs: address list) (tests: (address * bool) list) : (address * bool) list = 
+            let fill_expectation_true ((acc, elt) : (address * bool) list * address) : (address * bool) list = (elt, true) :: acc in
+            List.fold fill_expectation_true inputs tests 
+        in        
         let run_tests (all_tests : (address * bool) list) (f: (address) -> bool) : unit =
             let run_test (elt : (address * bool)) : unit = 
                 let calculated : bool = f(elt.0) in
@@ -94,12 +67,13 @@ let test =
             in 
             List.iter run_test all_tests
         in
+
         // for KT1... is_implicit() should answer false
-        let all_tests = List.fold fill_expectation_false test_addr_non_implicit all_tests in
+        let all_tests = add_negative_tests_from_inputs test_addr_non_implicit all_tests in
         // for tz1... is_implicit() should answer false
-        let all_tests = List.fold fill_expectation_true test_addr_implicit all_tests in
-        // Run test
-        let () = run_tests all_tests is_implicit in
+        let all_tests = add_positive_tests_from_inputs test_addr_implicit all_tests in
+        // Run tests
+        let () = run_tests all_tests Convert.Utils.is_implicit in
 
         Test.log("Test finished")
     in

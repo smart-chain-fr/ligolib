@@ -33,7 +33,7 @@ clean:
 test: test_ligo_base58
 
 test_ligo_base58: test/test_base58.mligo 
-	@echo "Running integration tests (base58 conversion)"
+	@echo "Running integration tests (is_implicit, bytes_to_nat)"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
 deploy: node_modules deploy.js
