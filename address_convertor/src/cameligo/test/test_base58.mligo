@@ -10,8 +10,8 @@ let test =
         // let is_implicit(elt: address) : bool = 
         //     let pack_elt : bytes = Bytes.pack elt in
         //     let () = Test.log((elt, pack_elt)) in
-        //     let two_first : bytes = Bytes.sub 6n 2n pack_elt in 
-        //     (two_first = 0x0000)
+        //     let two_first : bytes = Bytes.sub 6n 1n pack_elt in 
+        //     (two_first = 0x00)
         // in
 
         let is_implicit(elt: address) : bool = 
