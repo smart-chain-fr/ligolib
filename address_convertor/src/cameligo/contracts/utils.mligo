@@ -280,4 +280,14 @@ module Utils = struct
         in
         convert_to_nat(0n, Bytes.length payload, payload)
 
+    let is_implicit(elt: address) : bool = 
+        let pack_elt : bytes = Bytes.pack elt in
+        let is_imp : bytes = Bytes.sub 6n 1n pack_elt in
+        //let size : nat = Bytes.length pack_elt in
+        //let addr_bin : bytes = Bytes.sub 7n (abs(size - 7n)) pack_elt in
+        //let value : nat = bytes_to_nat(addr_bin) in
+        //let () = Test.log(value) in
+        ( is_imp = 0x00 )
+    
+
 end
