@@ -10,18 +10,19 @@ let test =
         // let is_implicit(elt: address) : bool = 
         //     let pack_elt : bytes = Bytes.pack elt in
         //     let () = Test.log((elt, pack_elt)) in
-        //     let two_first : bytes = Bytes.sub 6n 2n pack_elt in 
-        //     (two_first = 0x0000)
+        //     let two_first : bytes = Bytes.sub 6n 1n pack_elt in 
+        //     (two_first = 0x00)
         // in
 
         let is_implicit(elt: address) : bool = 
             let pack_elt : bytes = Bytes.pack elt in
-            //let () = Test.log((elt, pack_elt)) in
+            let () = Test.log((elt, pack_elt)) in
             let size : nat = Bytes.length pack_elt in
-            let addr_bin : bytes = Bytes.sub 6n (abs(size - 6n)) pack_elt in
+            let is_imp : bytes = Bytes.sub 6n 1n pack_elt in
+            let addr_bin : bytes = Bytes.sub 7n (abs(size - 7n)) pack_elt in
             let value : nat = Convert.Utils.bytes_to_nat(addr_bin) in
             let () = Test.log(value) in
-            (value < Convert.Utils.power(256n, abs(size - 7n)) )
+            ( is_imp = 0x00 )
         in
 
         // helpers
