@@ -1,8 +1,45 @@
-module Utils = struct 
+module Address = struct 
 
-    let power (x, y : nat * nat) : nat = 
-        let rec multiply(acc, elt, last: nat * nat * nat ) : nat = if last = 0n then acc else multiply(acc * elt, elt, abs(last - 1n)) in
-        multiply(1n, x, y)
+    let is_implicit(elt: address) : bool = 
+        let pack_elt : bytes = Bytes.pack elt in
+        let is_imp : bytes = Bytes.sub 6n 1n pack_elt in
+        //let size : nat = Bytes.length pack_elt in
+        //let addr_bin : bytes = Bytes.sub 7n (abs(size - 7n)) pack_elt in
+        //let value : nat = bytes_to_nat(addr_bin) in
+        //let () = Test.log(value) in
+        ( is_imp = 0x00 )
+
+end
+
+module Bytes = struct 
+
+    module Helpers = struct 
+
+        // helpers
+        let bytes_to_list (ch: bytes) : bytes list = 
+            let rec split_bytes_rec(acc, payload : bytes list * bytes) : bytes list =
+                let size : nat = (Bytes.length payload) in
+                if size = 1n then
+                    payload :: acc
+                else
+                    let one_last_bytes = Bytes.sub (abs(size - 1n)) 1n payload in
+                    let left_bytes = Bytes.sub 0n (abs(size - 1n)) payload in 
+                    split_bytes_rec(one_last_bytes :: acc, left_bytes)
+            in
+            split_bytes_rec(([]: bytes list), ch) 
+        
+        let bytes_from_list (lst: bytes list) : bytes = 
+            let concatenate ((acc, elt): bytes * bytes) : bytes = Bytes.concat acc elt in
+            List.fold concatenate lst 0x 
+
+        let read_nb_bytes (nb : nat) (payload_param: bytes) : bytes * bytes =
+            let size : nat = (Bytes.length payload_param) in 
+            let left_bytes : bytes = Bytes.sub 0n nb payload_param in
+            let right_bytes = Bytes.sub nb (abs(size - nb)) payload_param in 
+            (left_bytes, right_bytes)
+
+    end
+
 
     let hexa_to_nat(hexa : bytes) : nat =
         let _check_size : unit = assert_with_error (Bytes.length hexa = 1n) "Can only convert 1 byte" in    
@@ -265,9 +302,11 @@ module Utils = struct
         else
             (failwith("Wrong hexa") : nat)
 
-
-
     let bytes_to_nat(payload : bytes) : nat =
+        let power (x, y : nat * nat) : nat = 
+            let rec multiply(acc, elt, last: nat * nat * nat ) : nat = if last = 0n then acc else multiply(acc * elt, elt, abs(last - 1n)) in
+            multiply(1n, x, y)
+        in
         let rec convert_to_nat(acc, indice, payload : nat * nat * bytes) : nat =
             if indice = 1n then
                 acc + hexa_to_nat(payload)
@@ -279,15 +318,5 @@ module Utils = struct
                 convert_to_nat(acc + one_left_nat, abs(indice - 1n), right_bytes)
         in
         convert_to_nat(0n, Bytes.length payload, payload)
-
-    let is_implicit(elt: address) : bool = 
-        let pack_elt : bytes = Bytes.pack elt in
-        let is_imp : bytes = Bytes.sub 6n 1n pack_elt in
-        //let size : nat = Bytes.length pack_elt in
-        //let addr_bin : bytes = Bytes.sub 7n (abs(size - 7n)) pack_elt in
-        //let value : nat = bytes_to_nat(addr_bin) in
-        //let () = Test.log(value) in
-        ( is_imp = 0x00 )
-    
 
 end
