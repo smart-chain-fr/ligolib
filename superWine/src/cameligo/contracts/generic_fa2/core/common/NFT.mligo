@@ -88,32 +88,6 @@ let update_ops (type a) (updates: update_operators) (s: a storage) : operation l
    let s = Storage.set_operators s operators in
    ([]: operation list),s
 
-type mint_param = [@layout:comb] {
-   ids : Storage.token_id list;
-   metas : (Storage.token_id, (string, bytes) map) big_map
-}
-
-let mint (type a) (param: mint_param) (s: a storage) : operation list * a storage =
-   // update token_ids
-   let add_id(acc, id : nat list * nat) : nat list = id :: acc in
-   let new_token_ids : nat list = List.fold add_id param.ids s.token_ids in
-   
-   // update ledger
-   let set_token_owner (acc, elt : Ledger.t * Storage.token_id) : Ledger.t = Big_map.add elt Tezos.sender acc in
-   let new_ledger : Ledger.t = List.fold set_token_owner param.ids s.ledger in
-   
-   // update token_metadata
-   let add_token (acc, elt : (TokenMetadata.t * (Storage.token_id, (string, bytes) map) big_map) * Storage.token_id) : (TokenMetadata.t * (Storage.token_id, (string, bytes) map) big_map) =
-      let current_token_info : (string, bytes) map = match Big_map.find_opt elt acc.1 with
-      | None -> (failwith("Missing token_info") :(string, bytes) map)
-      | Some ti -> ti
-      in
-      let current_metadata : TokenMetadata.data = { token_id=elt; token_info=current_token_info } in
-      (Big_map.add elt current_metadata acc.0, acc.1)
-   in
-   let new_token_metadata, _ = List.fold add_token param.ids (s.token_metadata, param.metas) in
-   ([]: operation list), { s with token_ids=new_token_ids; ledger=new_ledger; token_metadata=new_token_metadata }
-
 [@view] let get_balance (type a) (p, s : (Address.t * nat) * a storage) : nat = 
       let (owner, token_id) = p in
       let balance_ = Storage.get_balance s owner token_id in
