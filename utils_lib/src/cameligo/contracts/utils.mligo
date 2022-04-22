@@ -13,6 +13,22 @@ end
 
 module Bytes = struct 
 
+    module Packed = struct 
+
+        let is_internal_address(pack_elt: bytes) : bool = 
+            ((Bytes.sub 0n 1n pack_elt) = 0x05) && 
+            ((Bytes.sub 1n 1n pack_elt) = 0x0a) && 
+            ((Bytes.sub 2n 4n pack_elt) = 0x00000016) && 
+            ((Bytes.length (Bytes.sub 6n 22n pack_elt)) = 22n)
+
+        let is_internal_address_implicit(candidat: bytes) : bool option = 
+            if (is_internal_address(candidat)) then
+                Some ( (Bytes.sub 6n 1n candidat) = 0x00 )
+            else
+                (None : bool option)
+
+    end
+
     module Helpers = struct 
 
         // helpers

@@ -79,6 +79,31 @@ let test =
     in
 
 
+    let _test_bytes_is_adddress = (* chest key/payload and time matches -> OK *)
+    
+        let payload : bytes = 0x050a000000160000430d6ec166d9c623104776aaad3bb50615c6791f in
+        let value : bool option = Utils.Bytes.Packed.is_internal_address_implicit(payload) in
+        let () = match value with
+        | None -> failwith("a boolean true was expected")
+        | Some b -> assert(b = true) 
+        in
+
+        let payload : bytes = 0x050a0000001601f4186c23ee65145a1038193686882c29a1f2009e00 in
+        let value : bool option = Utils.Bytes.Packed.is_internal_address_implicit(payload) in
+        let () = match value with
+        | None -> failwith("a boolean false was expected")
+        | Some b -> assert(b = false) 
+        in
+        let payload : bytes = 0x07020000001601f4186c23ee65145a1038193686882c29a1f2009e00 in
+        let value : bool option = Utils.Bytes.Packed.is_internal_address_implicit(payload) in
+        let () = match value with
+        | None -> assert(true)
+        | Some b -> failwith("a None was expected")
+        in
+
+
+        Test.log("Test finished")
+    in
     let _test_convert_bytes_to_nat = (* chest key/payload and time matches -> OK *)
     
         let payload : bytes = 0x00 in
