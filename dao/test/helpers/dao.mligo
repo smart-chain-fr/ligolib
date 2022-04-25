@@ -12,14 +12,12 @@ type originated = {
 }
 
 (* Some dummy values intended to be used as placeholders *)
-let dummy_pack = Bytes.pack (fun() -> ([] :operation list)) 
+let dummy_pack = Bytes.pack (fun() -> ([] :operation list))
 let dummy_hash = Crypto.sha256 dummy_pack
 let dummy_proposal = {
-        description_link = "ipfs://QmbKq7QriWWU74NSq35sDSgUf24bYWTgpBq3Lea7A3d7jU"; 
-        lambda = Some({
-            hash = 0x01;
-            kind = ParameterChange;
-        }) }
+    description_link = "ipfs://QmbKq7QriWWU74NSq35sDSgUf24bYWTgpBq3Lea7A3d7jU";
+    lambda = Some((0x01, ParameterChange))
+}
 
 (* Some default values *)
 let default_votes = (Map.empty : DAO.Vote.votes)
@@ -60,19 +58,19 @@ let call (p, contr : DAO.parameter * contr) =
 (* Entry points call helpers *)
 let cancel (outcome_key_opt, contr : nat option * contr) = call(Cancel(outcome_key_opt), contr)
 
-let end_vote (contr : contr) = call(End_vote, contr) 
+let end_vote (contr : contr) = call(End_vote, contr)
 
 let execute (k, packed, contr : nat * bytes * contr) =
     call(Execute({ outcome_key = k; packed = packed; }), contr)
 
 let lock (amount_, contr: nat * contr) = call(Lock(amount_), contr)
 
-let propose (proposal, contr : DAO.Proposal.make_params * contr) = 
+let propose (proposal, contr : DAO.Proposal.make_params * contr) =
     call(Propose(proposal), contr)
 
 let release (amount_, contr: nat * contr) = call(Release(amount_), contr)
 
-let vote (choice, contr: bool * contr) = call(Vote(choice), contr) 
+let vote (choice, contr: bool * contr) = call(Vote(choice), contr)
 
 (* Asserter helper for successful entry point calls *)
 let cancel_success (outcome_key_opt, contr : nat option * contr) =
@@ -84,13 +82,13 @@ let end_vote_success (contr : contr) =
 let execute_success (k, packed, contr : nat * bytes * contr) =
     Assert.tx_success (execute(k, packed, contr))
 
-let lock_success (amount_, contr: nat * contr) = 
+let lock_success (amount_, contr: nat * contr) =
     Assert.tx_success (lock(amount_, contr))
 
 let propose_success (proposal, contr : DAO.Proposal.make_params * contr) =
     Assert.tx_success (propose(proposal, contr))
 
-let release_success (amount_, contr: nat * contr) = 
+let release_success (amount_, contr: nat * contr) =
     Assert.tx_success (release(amount_, contr))
 
 let vote_success (choice, contr: DAO.Vote.choice * contr) =
@@ -99,7 +97,7 @@ let vote_success (choice, contr: DAO.Vote.choice * contr) =
 
 (* Batch call of lock entry point, WARNING: changes Test framework source *)
 let batch_lock (addr_lst, amount_, contr : address list * nat * contr) =
-    let lock = fun (addr : address) -> 
+    let lock = fun (addr : address) ->
         let () = Test.set_source addr in lock_success(amount_, contr)
     in List.iter lock addr_lst
 
@@ -125,7 +123,7 @@ let assert_voted (taddr, voter, choice, amount_ : taddr * address * bool * nat) 
         | None -> failwith("Map key should not be missing")
 
 (* Assert DAO contract at [taddr] have an outcome occuring for [n] key in Executed state *)
-let assert_executed (taddr, n : taddr * nat) = 
+let assert_executed (taddr, n : taddr * nat) =
     let s = Test.get_storage taddr in
     match Big_map.find_opt 1n s.outcomes with
         None -> failwith "The outcome should exists"

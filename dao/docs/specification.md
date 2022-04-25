@@ -23,7 +23,7 @@ reached by the end of the vote.
 ### Lock
 
 To convert their tokens to voting power, owners can *lock* them.
-The lock mechanism consists in a transfer from the owner the DAO contract address,
+The lock mechanism consists in a transfer from the owner to the DAO contract address,
 and tracking the balance of locked tokens in the storage.
 Locking can only be done outside voting periods.
 
@@ -52,7 +52,7 @@ The vote result is computed, according to configured ***quorum_threshold***
 and ***super_majority***, either the proposal is ***Accepted***,
 and a timelock is created, or the proposal is **Rejected**.
 When Rejected, The ***deposit_amount*** is either sent back to the proposal
-creator or burned if the ***quorum_threshold** haven't been met.
+creator or burned if the ***quorum_threshold*** haven't been met.
 
 ![end_vote](./images/flow_end_vote.png)
 

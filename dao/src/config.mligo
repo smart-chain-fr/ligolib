@@ -1,10 +1,10 @@
 (*
-    quorum_threshold, refund_threshold and super_majority 
-    are represented with scale = 2, ex. 80 = .80 = 80% 
+    quorum_threshold, refund_threshold and super_majority
+    are represented with scale = 2, ex. 80 = .80 = 80%
 
     x_delay and x_period are represented by time units in seconds
 *)
-type t = 
+type t =
     [@layout:comb]
     {
         deposit_amount: nat;

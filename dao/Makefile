@@ -1,9 +1,9 @@
 SHELL := /bin/bash
 
-LIGO=ligo
-ifeq (, $(shell which ligo))
-	LIGO=docker run -v "$(PWD):$(PWD)" -w "$(PWD)" --rm -i ligolang/ligo:next 
-endif
+# LIGO=ligo
+# ifeq (, $(shell which ligo))
+	LIGO=docker run -v "$(PWD):$(PWD)" -w "$(PWD)" --rm -i ligolang/ligo:0.40.0
+# endif
 # ^ use ligo bin if available, otherwise use docker
 
 project_root=--project-root .
@@ -35,7 +35,7 @@ install: ## install dependencies
 	@$(LIGO) install
 	@npm i
 
-compile-lambda: ## compile a lambda (F=./lambdas/empty_operation_list.mligo make compile-lambda) 
+compile-lambda: ## compile a lambda (F=./lambdas/empty_operation_list.mligo make compile-lambda)
 # ^ helper to compile lambda from a file, used during develpment of lambdas
 ifndef F
 	@echo 'please provide an init file (F=)'

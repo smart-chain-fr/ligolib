@@ -16,7 +16,7 @@ let bootstrap () = Bootstrap.boot(init_tok_amount)
 let empty_nat_option = (None: nat option)
 
 (* Successful cancel of current proposal *)
-let test_success_current_proposal = 
+let test_success_current_proposal =
     let (tok, dao, sender_) = bootstrap() in
 
     let () = DAO_helper.propose_success(DAO_helper.dummy_proposal, dao.contr) in
@@ -30,14 +30,14 @@ let test_success_current_proposal =
     )
 
 (* Succesful cancel of accepted proposal, before timelock is unlocked *)
-let test_success_accepted_proposal = 
+let test_success_accepted_proposal =
     let (tok, dao, sender_) = bootstrap() in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            (* empty operation list *)
-            hash = 0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021;
-            kind = OperationList;
-        })) in
+    (* empty operation list *)
+    let () = Suite_helper.make_proposal_success(tok, dao, Some(
+        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
+        OperationList)
+    )) in
 
     let () = DAO_helper.cancel_success(Some(1n), dao.contr) in
     let dao_storage = Test.get_storage dao.taddr in
@@ -58,7 +58,7 @@ let test_failure_outcome_not_found =
     Assert.string_failure r DAO.Errors.outcome_not_found
 
 (* Failing cancel proposal because not creator *)
-let test_failure_not_creator = 
+let test_failure_not_creator =
     let (tok, dao, sender_) = bootstrap() in
     let () = DAO_helper.propose_success(DAO_helper.dummy_proposal, dao.contr) in
 
@@ -75,11 +75,11 @@ let test_failure_timelock_unlocked =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            (* empty operation list *)
-            hash = 0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021;
-            kind = OperationList;
-        })) in
+    (* empty operation list *)
+    let () = Suite_helper.make_proposal_success(tok, dao, Some(
+        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
+        OperationList)
+    )) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.cancel(Some(1n), dao.contr) in
@@ -90,11 +90,11 @@ let test_failure_already_executed =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            (* empty operation list *)
-            hash = 0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021;
-            kind = OperationList;
-        })) in
+    (* empty operation list *)
+    let () = Suite_helper.make_proposal_success(tok, dao, Some(
+        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
+        OperationList)
+    )) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
     let () = DAO_helper.execute_success(1n, 0x0502000000060320053d036d, dao.contr) in
 

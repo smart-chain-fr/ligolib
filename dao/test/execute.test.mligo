@@ -15,32 +15,31 @@ let init_tok_amount = 33n
 let bootstrap () = Bootstrap.boot(init_tok_amount)
 
 (* Successful timelock execution of an operation list *)
-let test_success = 
+let test_success =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            (* empty operation list *)
-            hash = 0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021;
-            kind = OperationList;
-        })) in
+    (* empty operation list *)
+    let () = Suite_helper.make_proposal_success(tok, dao, Some((
+        0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
+        OperationList
+    ))) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, 0x0502000000060320053d036d, dao.contr) in
     DAO_helper.assert_executed(dao.taddr, 1n)
 
 (* Successful execution of a parameter change *)
-let test_success_parameter_changed = 
+let test_success_parameter_changed =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    let base_config = DAO_helper.base_config in 
+    let base_config = DAO_helper.base_config in
     let packed = Bytes.pack (fun() -> { base_config with quorum_threshold = 51n }) in
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            (* empty operation list *)
-            hash = Crypto.sha256 packed;
-            kind = ParameterChange;
-        })) in
+    (* empty operation list *)
+    let () = Suite_helper.make_proposal_success(tok, dao, Some(
+        (Crypto.sha256 packed, ParameterChange)
+    )) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, packed, dao.contr) in
@@ -51,17 +50,16 @@ let test_success_parameter_changed =
     assert(dao_storage.config.quorum_threshold = 51n)
 
 (* Successful execution of an operation list *)
-let test_success_operation_list = 
+let test_success_operation_list =
     let (tok, dao, sender_) = bootstrap() in
     let owner1 = List_helper.nth_exn 1 tok.owners in
     let owner2 = List_helper.nth_exn 2 tok.owners in
     let dao_storage = Test.get_storage dao.taddr in
 
     let packed = Token_helper.pack_transfer(tok.addr, dao.addr, owner2, 2n) in
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            hash = Crypto.sha256 packed;
-            kind = OperationList;
-        })) in
+    let () = Suite_helper.make_proposal_success(tok, dao, Some(
+        (Crypto.sha256 packed, OperationList)
+    )) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, packed, dao.contr) in
@@ -75,48 +73,42 @@ let test_success_operation_list =
     ()
 
 (* Failing because no outcome *)
-let test_failure_no_outcome = 
+let test_failure_no_outcome =
     let (tok, dao, sender_) = bootstrap() in
 
     let r = DAO_helper.execute(1n, 0x05030b, dao.contr) in
     Assert.string_failure r DAO.Errors.outcome_not_found
 
 (* Failing because timelock delay not elapsed *)
-let test_failure_lambda_wrong_packed_data = 
+let test_failure_lambda_wrong_packed_data =
     let (tok, dao, sender_) = bootstrap() in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            hash = 0x01;
-            kind = ParameterChange;
-        })) in
+    let () = Suite_helper.make_proposal_success(tok, dao, Some((0x01, ParameterChange))) in
 
     let r = DAO_helper.execute(1n, 0x05030b, dao.contr) in
     Assert.string_failure r DAO.Errors.timelock_locked
 
 (* Failing because the packed data is not matching *)
-let test_failure_lambda_wrong_packed_data = 
+let test_failure_lambda_wrong_packed_data =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            hash = 0x01;
-            kind = ParameterChange;
-        })) in
+    let () = Suite_helper.make_proposal_success(tok, dao, Some((0x01, ParameterChange))) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, 0x05030b, dao.contr) in
     Assert.string_failure r DAO.Errors.lambda_wrong_packed_data
 
 (* Failing because the lambda couldn't be unpacked *)
-let test_failure_wrong_lambda_kind = 
+let test_failure_wrong_lambda_kind =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some({
-            (* empty operation list *)
-            hash = 0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021;
-            kind = ParameterChange;
-        })) in
+    (* empty operation list *)
+    let () = Suite_helper.make_proposal_success(tok, dao, Some(
+        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
+        ParameterChange)
+    )) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, 0x0502000000060320053d036d, dao.contr) in

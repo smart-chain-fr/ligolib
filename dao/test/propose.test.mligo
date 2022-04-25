@@ -23,13 +23,13 @@ let test_success =
     let lambda_ = Option.unopt(proposal.lambda) in
     let () = assert(proposal.creator = sender_) in
     let () = assert(proposal.description_link = "ipfs://QmbKq7QriWWU74NSq35sDSgUf24bYWTgpBq3Lea7A3d7jU") in
-    let () = assert(lambda_.hash = 0x01) in
-    let () = assert(lambda_.kind = ParameterChange) in
+    let () = assert(lambda_.0 = 0x01) in
+    let () = assert(lambda_.1 = ParameterChange) in
 
     let () = Token_helper.assert_balance_amount(tok.taddr, dao.addr, dao_storage.config.deposit_amount) in
     Token_helper.assert_balance_amount(
-        tok.taddr, 
-        sender_, 
+        tok.taddr,
+        sender_,
         abs(init_tok_amount - dao_storage.config.deposit_amount)
     )
 
