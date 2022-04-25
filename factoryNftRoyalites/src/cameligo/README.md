@@ -1,22 +1,20 @@
 ## Contract Super Wine
 
-This contract implements a factory of FA2 NFT. Each FA2 contract represents a collection of wine bottles. Wine bottles are represented by tokens inside a FA2 contract.
-When originating a collection of bottle, 
-- the creator must specify a collection name and a QR code for each bottle.
-- the creator owns all bottles of the collection
+This contract implements a factory of FA2 NFT which handles royalties on the FA2 level (on primary market). Each FA2 contract represents a collection of poems. Poems are represented by tokens inside a FA2 contract as non fungible tokens.
+When originating a collection of poems, 
+- the creator must specify a collection name and a QR code for poem (the QR code is the hash of the poem) and an author.
+- the creator owns all minted poems of the collection
 
-The creator of the collection can also add new bottles to his collection anytime (with the *Mint* entrypoint)
+The creator of the collection can also add new poems to his collection anytime (with the *Mint* entrypoint)
 
-A bottle owner can transfer one or more bottle to someone else (with the *Transfer* entrypoint)
+A bottle owner can transfer one or more bottle to someone else (with the *Transfer* entrypoint) and must specify a tez amount for sending royalties to the author. 
 
 
-A collection of bottles is represented by a FA2 contract. The implementation of the FA2 introduces:
+A collection of poems is represented by a FA2 contract. The implementation of the FA2 introduces:
 - a admin address on the storage which represents the creator of the FA2 contract 
 - a *Mint* entrypoint that allows the creator of the FA2 to create new tokens inside the NFT contract
-- a *token_usage* map that count the number of transfer of a bottle
-- a *token_usage* view for retrieving the number of transfer of a bottle (for a given token_id) 
+- a specialized Transfer entrypoint which handles transfer of the Nft and the royalties. 
 
-![](wine_factory.png)
 
 ### Compilation
 
