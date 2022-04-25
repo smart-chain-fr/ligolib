@@ -1,3 +1,0 @@
-*.mligo linguist-language=OCaml
-*.religo linguist-language=OCaml
-*.jsligo linguist-language=TypeScript
