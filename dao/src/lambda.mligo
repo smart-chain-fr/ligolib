@@ -16,7 +16,10 @@ type operation_list = (unit -> operation list)
 let validate (lambda_opt, packed : t option * bytes) : t =
     match lambda_opt with
         None -> failwith Errors.lambda_not_found
-        | Some(lambda_) -> let _check_hash = assert_with_error
-            (lambda_.0 = Crypto.sha256 packed)
-            Errors.lambda_wrong_packed_data
-            in lambda_
+      | Some (lambda_) ->
+          let (hash_, _) = lambda_ in
+          let _check_hash =
+            assert_with_error
+              (hash_ = Crypto.sha256 packed)
+              Errors.lambda_wrong_packed_data in
+          lambda_
