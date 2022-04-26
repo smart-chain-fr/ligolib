@@ -10,3 +10,4 @@ const chest_already_revealed : string = "Chest already revealed";
 const unknown_user_account : string = "Unknown user account";
 const wrong_user_balance : string = "User shold have locked some tez during commit chest phase";
 const chest_already_committed : string = "Sender has already committed its chest";
+const wrong_amount_locked_tez : string = "The locked amount is incorrect";
