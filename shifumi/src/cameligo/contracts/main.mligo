@@ -60,15 +60,12 @@ let play(param, store : Parameter.play_param * Storage.t) : operation list * Sto
     let _check_session_end : unit = Conditions.check_session_end current_session.result Inplay in
     let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) Errors.wrong_current_round in
     // register action
-    let new_rounds = match Map.find_opt current_session.current_round current_session.rounds with 
-    | None -> Map.add current_session.current_round [{player=Tezos.sender; action=param.action}] current_session.rounds
-    | Some (playerActions) ->
-        let _check_player_has_played_this_round = assert_with_error (Session.has_played_round current_session.rounds param.roundId Tezos.sender = false) Errors.user_already_played in
-        Map.update current_session.current_round (Some({player=Tezos.sender; action=param.action} :: playerActions)) current_session.rounds
-    in
+    let new_rounds = Session.add_in_rounds current_session.current_round current_session Tezos.sender param.action in
+
     let new_session : Session.t = Session.update_rounds current_session new_rounds in
     let new_storage : Storage.t = Storage.update_sessions store param.sessionId new_session in 
     (([]: operation list), new_storage)
+
 
 // Once all players have committed their chest, they must reveal the content of their chest
 let reveal (param, store : Parameter.reveal_param * Storage.t) : operation list * Storage.t =
@@ -77,68 +74,27 @@ let reveal (param, store : Parameter.reveal_param * Storage.t) : operation list 
     let _check_players : unit = Conditions.check_player_authorized Tezos.sender current_session.players Errors.user_not_allowed_to_reveal_in_session in
     let _check_session_end : unit = Conditions.check_session_end current_session.result Inplay in
     let _check_round : unit = assert_with_error (current_session.current_round = param.roundId) Errors.wrong_current_round in
-    let current_round_actions : Session.player_actions = match Map.find_opt current_session.current_round current_session.rounds with 
-    | None -> failwith(Errors.missing_all_chests)
-    | Some (round_actions) -> round_actions 
-    in
+
+    let current_round_actions : Session.player_actions = Session.get_round_actions current_session.current_round current_session in
+    
     let numberOfPlayers : nat = Set.size current_session.players in
     let listsize (acc, _elt: nat * Session.player_action) : nat = acc + 1n in 
     let numberOfActions : nat = List.fold listsize current_round_actions 0n in 
     let _check_all_players_have_played : unit = assert_with_error (numberOfPlayers = numberOfActions) Errors.missing_player_chest in
-
-    let rec find_chest(addr, lst_opt : address * Session.player_actions option) : chest option =
-        match lst_opt with
-        | None -> (None : chest option)
-        | Some lst -> (match List.head_opt lst with
-            | None -> (None : chest option) 
-            | Some elt -> if (elt.player = addr) then
-                    (Some(elt.action) : chest option)
-                else
-                    find_chest(addr, (List.tail_opt lst)))
-    in
-    let user_chest : chest = match find_chest(Tezos.sender, (Some(current_round_actions))) with
-    | None -> (failwith(Errors.missing_sender_chest) : chest)
-    | Some ch -> ch
-    in
+    // retrieve user chest (fails if not found)
+    let user_chest : chest = Session.get_chest_exn Tezos.sender (Some(current_round_actions)) in 
     // decode action
-    let decoded_payload =
-        match Tezos.open_chest param.player_key user_chest param.player_secret with
-        | Ok_opening b -> b
-        | Fail_timelock -> (failwith(Errors.failed_to_open_chest) : bytes)
-        | Fail_decrypt -> (failwith(Errors.failed_to_open_chest) : bytes)
-    in
-    let decoded_action : Session.action = match (Bytes.unpack decoded_payload : Session.action option) with
-    | None -> failwith(Errors.failed_to_unpack_payload)
-    | Some x -> x
-    in
-    let new_decoded_rounds = match Map.find_opt current_session.current_round current_session.decoded_rounds with 
-    | None -> Map.add current_session.current_round [{player=Tezos.sender; action=decoded_action}] current_session.decoded_rounds
-    | Some (decodedPlayerActions) ->
-        let _check_player_has_revealed_this_round = assert_with_error (Session.has_played_round current_session.decoded_rounds param.roundId Tezos.sender = false) Errors.user_already_revealed in
-        Map.update current_session.current_round (Some({player=Tezos.sender; action=decoded_action} :: decodedPlayerActions)) current_session.decoded_rounds
-    in
-    let new_current_session : Session.t = { current_session with asleep=Tezos.now + 600; decoded_rounds=new_decoded_rounds } in
+    let decoded_action : Session.action = Session.decode_chest_exn param.player_key user_chest param.player_secret in
+    let new_decoded_rounds = Session.add_in_decoded_rounds current_session.current_round current_session Tezos.sender decoded_action in
+    let new_current_session : Session.t = Session.update_decoded_rounds current_session new_decoded_rounds in 
 
     // compute board if all players have revealed
-    let performed_actions : Session.decoded_player_actions = match Map.find_opt new_current_session.current_round new_current_session.decoded_rounds with
-    | None -> ([] : Session.decoded_player_actions)
-    | Some (pacts) -> pacts
-    in
-    let all_player_have_revealed((acc, pactions), elt : (bool * Session.decoded_player_actions) * Session.player) : (bool * Session.decoded_player_actions) = (acc && Session.has_played pactions elt, pactions) in
-    let (check_all_players_have_revealed, _all_decoded_actions) : (bool * Session.decoded_player_actions) = Set.fold all_player_have_revealed new_current_session.players (true, performed_actions) in
-    // all players have given their actions, now the board can be updated and session goes to next round
-    let modified_new_current_session : Session.t = if (check_all_players_have_revealed = true) then 
-        { new_current_session with current_round=new_current_session.current_round+1n; board=Session.update_board(new_current_session, new_current_session.current_round) }
-        else
-        new_current_session
-    in
+    let modified_new_current_session : Session.t = Session.finalize_current_round new_current_session in
+
     // if session is finished, we can compute the result winner
-    let final_current_session = if modified_new_current_session.current_round > modified_new_current_session.total_rounds then
-            { modified_new_current_session with result=Session.compute_result(modified_new_current_session) }
-        else
-            modified_new_current_session
-    in
-    let new_storage : Storage.t = { store with sessions=Map.update param.sessionId (Some(final_current_session)) store.sessions } in 
+    let final_current_session = Session.finalize_session modified_new_current_session in
+    
+    let new_storage : Storage.t = Storage.update_sessions store param.sessionId final_current_session in
     (([]: operation list), new_storage)
 
 

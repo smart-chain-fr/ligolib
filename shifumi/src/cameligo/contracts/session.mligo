@@ -1,3 +1,5 @@
+#import "errors.mligo" "Errors"
+
 type player = address
 type round = nat
 type action = Stone | Paper | Cisor
@@ -44,8 +46,24 @@ let new (total_rounds: nat) (players: player set): t =
     }  
 
 [@inline]
+let get_round_actions (roundId : nat) (session : t) : player_actions =
+    match Map.find_opt roundId session.rounds with 
+    | None -> failwith(Errors.missing_all_chests)
+    | Some (round_actions) -> round_actions 
+
+[@inline]
+let get_decoded_round_actions (roundId : nat) (session : t) : decoded_player_actions =
+    match Map.find_opt roundId session.decoded_rounds with 
+    | None -> failwith(Errors.missing_all_decoded_chests)
+    | Some (decoded_round_actions) -> decoded_round_actions 
+
+[@inline]
 let update_rounds (session: t) (rounds: (round, player_actions) map): t =
     { session with asleep=Tezos.now + 600; rounds=rounds }    
+
+[@inline]
+let update_decoded_rounds (session: t) (decoded_rounds: (round, decoded_player_actions) map): t =
+    { session with asleep=Tezos.now + 600; decoded_rounds=decoded_rounds }    
 
 [@inline]
 let find_missing (type a) (pactions, all_players : a an_action list * player set) =
@@ -62,6 +80,51 @@ let has_played_round (type a) (rounds: a rounds) (roundId: round) (player: playe
     match Map.find_opt roundId rounds with
     | Some (acts) -> has_played acts player
     | None -> false 
+
+[@inline]
+let add_in_decoded_rounds (roundId : nat) (session : t) (user : address) (decoded_action: action) : action rounds =
+    match Map.find_opt roundId session.decoded_rounds with 
+    | None -> Map.add roundId [{player=user; action=decoded_action}] session.decoded_rounds
+    | Some (decodedPlayerActions) ->
+        let _check_player_has_revealed_this_round = assert_with_error (has_played_round session.decoded_rounds roundId user = false) Errors.user_already_revealed in
+        Map.update roundId (Some({player=user; action=decoded_action} :: decodedPlayerActions)) session.decoded_rounds
+
+[@inline]
+let add_in_rounds (roundId : nat) (session : t) (user : address) (action: chest) : chest rounds =
+    match Map.find_opt roundId session.rounds with 
+    | None -> Map.add roundId [{player=user; action=action}] session.rounds
+    | Some (playerActions) ->
+        let _check_player_has_played_this_round = assert_with_error (has_played_round session.rounds roundId user = false) Errors.user_already_played in
+        Map.update roundId (Some({player=user; action=action} :: playerActions)) session.rounds
+
+[@inline]
+let get_chest_exn (user : address) (actions_opt : player_actions option) : chest =
+    let rec find_chest(addr, lst_opt : address * player_actions option) : chest option =
+        match lst_opt with
+        | None -> (None : chest option)
+        | Some lst -> (match List.head_opt lst with
+            | None -> (None : chest option) 
+            | Some elt -> if (elt.player = addr) then
+                    (Some(elt.action) : chest option)
+                else
+                    find_chest(addr, (List.tail_opt lst)))
+    in
+    match find_chest(user, actions_opt) with
+    | None -> (failwith(Errors.missing_sender_chest) : chest)
+    | Some ch -> ch
+
+[@inline]
+let decode_chest_exn (player_key: chest_key) (user_chest: chest) (player_secret: nat): action = 
+    let decoded_payload =
+        match Tezos.open_chest player_key user_chest player_secret with
+        | Ok_opening b -> b
+        | Fail_timelock -> (failwith(Errors.failed_to_open_chest) : bytes)
+        | Fail_decrypt -> (failwith(Errors.failed_to_open_chest) : bytes)
+    in
+    match (Bytes.unpack decoded_payload : action option) with
+    | None -> failwith(Errors.failed_to_unpack_payload)
+    | Some x -> x
+    
 
 [@inline]
 let resolve(first, second : decoded_player_action * decoded_player_action) : player option = 
@@ -103,6 +166,24 @@ let update_board(sess, current_round: t * round) : board =
     | None -> Map.update current_round (None : player option option) sess.board
     | Some (r) -> Map.update current_round (Some(Some(r))) sess.board
 
+
+[@inline]
+let finalize_current_round (session: t) : t =
+    // retrieve decoded_player_actions of given roundId
+    let performed_actions : decoded_player_actions = match Map.find_opt session.current_round session.decoded_rounds with
+    | None -> ([] : decoded_player_actions)
+    | Some (pacts) -> pacts
+    in
+    // verify all players have revealed
+    let all_player_have_revealed((acc, pactions), elt : (bool * decoded_player_actions) * player) : (bool * decoded_player_actions) = (acc && has_played pactions elt, pactions) in
+    let (check_all_players_have_revealed, _all_decoded_actions) : (bool * decoded_player_actions) = Set.fold all_player_have_revealed session.players (true, performed_actions) in
+    // all players have given their actions, now the board can be updated and session goes to next round
+    if (check_all_players_have_revealed = true) then 
+        { session with current_round=session.current_round+1n; board=update_board(session, session.current_round) }
+    else
+        session
+
+        
 let compute_result(sess: t) : result =
     // parse board and compute who won
     let compute_points(acc, elt : (address, nat) map * (round * player option)) : (address, nat) map = match elt.1 with
@@ -132,3 +213,12 @@ let compute_result(sess: t) : result =
         match final_winner_addr with
         | None -> Draw
         | Some x -> Winner(x)
+
+
+
+[@inline]
+let finalize_session (session: t) : t =
+    if session.current_round > session.total_rounds then
+        { session with result=compute_result(session) }
+    else
+        session
