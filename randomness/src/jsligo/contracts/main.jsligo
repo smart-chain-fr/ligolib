@@ -65,7 +65,7 @@ let reveal = ([p, s] : [Parameter.Types.reveal_param, storage]) : [list<operatio
     };
     let new_locked : map<address, tez> = match (Map.find_opt(Tezos.sender, s.locked_tez), {
         None: () => failwith(Errors.wrong_user_balance),
-        Some: (val: tez) => Map.update(Tezos.sender, (Some(val - (10 as mutez))), s.locked_tez)
+        Some: (val: tez) => Map.update(Tezos.sender, (val - (10 as mutez)), s.locked_tez)
     });
     let dest_opt : option<contract<unit>> = Tezos.get_contract_opt(Tezos.sender);
     let destination : contract<unit> = match (dest_opt, {
