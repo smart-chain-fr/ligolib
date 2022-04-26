@@ -313,12 +313,38 @@ let test2 =
         let reveal_args : Random.Parameter.Types.reveal_param = (chest_key, time_secret) in
         let _ = Test.transfer_to_contract_exn x (Reveal(reveal_args)) 0mutez in
 
+        // check locked tez before bob reveals
+        let bob_balance_of_before_reveal = Test.get_balance bob in
+        let storage_before_bob_reveals : Random.storage = Test.get_storage addr in
+        let bob_locked_tez_opt : tez option = Map.find_opt bob storage_before_bob_reveals.locked_tez in
+        let bob_locked_tez_before_reveal : tez =  match bob_locked_tez_opt with
+        | None -> 0tez
+        | Some tez_val -> tez_val
+        in
+        let () = assert(bob_locked_tez_before_reveal = 10mutez) in
+
         // bob reveals
-        //let () = Test.log("bob reveals") in
         let () = Test.set_source bob in
         let reveal_args2 : Random.Parameter.Types.reveal_param = (chest_key2, time_secret2) in
         let _ = Test.transfer_to_contract_exn x (Reveal(reveal_args2)) 0mutez in
         
+        // check locked tez after bob reveals
+        let storage_after_bob_reveals : Random.storage = Test.get_storage addr in
+        let bob_locked_tez_opt : tez option = Map.find_opt bob storage_after_bob_reveals.locked_tez in
+        let bob_locked_tez_after_reveal : tez =  match bob_locked_tez_opt with
+        | None -> 0tez
+        | Some tez_val -> tez_val
+        in
+        let () = assert(bob_locked_tez_after_reveal = 0mutez) in
+        
+        // check balanceof after bob reveals
+        // let bob_balance_of_after_reveal = Test.get_balance bob in
+        // let bob_balance_diff_opt = bob_balance_of_after_reveal - bob_balance_of_before_reveal in
+        // let () = Test.log(bob_balance_of_before_reveal) in
+        // let () = Test.log(bob_balance_of_after_reveal) in
+        // let bob_balance_diff = Option.unopt(bob_balance_diff_opt) in
+        // let () = assert (bob_balance_diff = 10mutez) in
+
         //let () = Test.log("check storage") in
         let s2 : Random.storage = Test.get_storage addr in
         let () = Test.log(s2.result_nat) in
