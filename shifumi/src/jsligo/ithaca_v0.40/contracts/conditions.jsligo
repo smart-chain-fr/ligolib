@@ -1,0 +1,14 @@
+#import "errors.jsligo" "Errors"
+#import "session.mligo" "Session"
+
+export let check_player_authorized = ([player, allowed_players, error_message] : [Session.player, set<Session.player>, string]) : unit => {
+    assert_with_error( Set.mem(player, allowed_players), error_message);
+};
+
+export let check_session_end = ([result, expected] : [Session.result, Session.result]) : unit => {
+    assert_with_error( (result == expected), Errors.session_finished);
+};
+
+export let check_asleep = (current_session : Session.t) : unit => {
+    assert_with_error( (Tezos.now > current_session.asleep), Errors.must_wait_10_min);
+};

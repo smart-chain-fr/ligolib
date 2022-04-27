@@ -1,0 +1,23 @@
+export type createsession_param = {
+    total_rounds : nat,
+    players : set<address>
+};
+
+export type stopsession_param = {
+    sessionId : nat
+};
+
+export type play_param = {
+    sessionId : nat,
+    roundId : nat,
+    action : chest
+};
+
+export type reveal_param = {
+    sessionId : nat,
+    roundId : nat,
+    player_key : chest_key,
+    player_secret : nat
+};
+
+export type t = ["CreateSession", createsession_param] | ["Play", play_param] | ["RevealPlay", reveal_param] | ["StopSession", stopsession_param];
