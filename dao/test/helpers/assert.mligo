@@ -3,7 +3,8 @@ let string_failure (res : test_exec_result) (expected : string) : unit =
     let expected = Test.eval expected in
     match res with
         | Fail (Rejected (actual,_)) -> assert (actual = expected)
-        | Fail _ -> failwith "Transaction should fail with rejection"
+        | Fail (Balance_too_low err) -> failwith "contract failed: balance too low"
+        | Fail (Other s) -> failwith s
         | Success _ -> failwith "Transaction should fail"
 
 (* Assert contract result is successful *)
