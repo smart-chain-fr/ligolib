@@ -1,7 +1,6 @@
 # DAO
 
 A modular example DAO contract on Tezos written in Ligolang.  
-plop
 
 ## Intro
 
