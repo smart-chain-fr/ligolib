@@ -1,16 +1,14 @@
-ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:0.37.0
-# ligo_compiler=../../../ligo
-PROTOCOL_OPT=--protocol hangzhou
+ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
+PROTOCOL_OPT=--protocol ithaca
 JSON_OPT=--michelson-format json
 
 help:
 	@echo  'Usage:'
 	@echo  '  all             - Remove generated Michelson files, recompile smart contracts and lauch all tests'
 	@echo  '  clean           - Remove generated Michelson files'
-	@echo  '  compile         - Compiles smart contract Random'
+	@echo  '  compile         - Compiles smart contract Shifumi'
 	@echo  '  test            - Run integration tests (written in Ligo)'
-	@echo  '  dry-run         - Simulate execution of entrypoints (with the Ligo compiler)'
-	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
+	@echo  '  deploy          - Deploy smart contract Shifumi (typescript using Taquito)'
 	@echo  ''
 
 all: clean compile test
@@ -51,12 +49,3 @@ deploy.js:
 node_modules:
 	@echo "Install node modules"
 	@cd deploy && npm install
-
-dry-run: dry-run_random
-
-dry-run_random: contracts/main.mligo
-#	@echo $(simulateline)
-	$(ligo_compiler) compile parameter contracts/main.mligo 'Commit(unit)' -e main $(PROTOCOL_OPT)
-	$(ligo_compiler) compile parameter contracts/main.mligo 'Reveal(unit)' -e main $(PROTOCOL_OPT)
-	$(ligo_compiler) run dry-run contracts/main.mligo  'Commit(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT) 
-	$(ligo_compiler) run dry-run contracts/main.mligo  'Reveal(unit)' '{indiceAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e advisorMain $(PROTOCOL_OPT)
