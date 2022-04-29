@@ -19,10 +19,12 @@ shifumi: shifumi.tz shifumi.json
 
 shifumi.tz: contracts/main.mligo
 	@echo "Compiling smart contract to Michelson"
+	@mkdir -p compiled
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) > compiled/$@
 
 shifumi.json: contracts/main.mligo
 	@echo "Compiling smart contract to Michelson in JSON format"
+	@mkdir -p compiled
 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) > compiled/$@
 
 clean:
