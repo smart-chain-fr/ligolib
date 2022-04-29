@@ -1,0 +1,20 @@
+#import "errors.jsligo" "Errors"
+#import "parameter.jsligo" "Parameter"
+#import "session.jsligo" "Session"
+#import "conditions.jsligo" "Conditions"
+
+export type t = {
+    next_session : nat,
+    sessions : map<nat, Session.t>
+};
+
+export let update_sessions = ([storage, sessionId, new_session]: [t, nat, Session.t]): t => {
+    return { ...storage, sessions: Map.update(sessionId, (Some(new_session)), storage.sessions)}
+};
+
+export let getSession = ([sessionId, store] : [nat, t]) : Session.t => {
+    return match (Map.find_opt(sessionId, store.sessions), {
+        None: () => (failwith(Errors.unknown_session) as Session.t),
+        Some: (sess: Session.t) => sess
+    });
+};

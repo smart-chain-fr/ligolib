@@ -1,0 +1,20 @@
+#import "session.jsligo" "Session"
+
+
+export type sessionBoard = {
+    points : map<address, nat>
+};
+
+export let retrieve_board = (sess : Session.t) : sessionBoard => {
+    let scores : map<address, nat> = (Map.empty as map<address, nat>);
+    let myfunc = ([acc, elt] : [map<address, nat>, [Session.round, option<address>]]) : map<address, nat> => 
+        match (elt[1], {
+            None: () => acc,
+            Some: (winner_round: address) => (match (Map.find_opt(winner_round, acc), {
+                None: () => Map.add(winner_round, (1 as nat), acc),
+                Some: (old_value: nat) => Map.update(winner_round, (Some(old_value + (1 as nat))), acc)
+            }))
+        });
+    let final_scores = Map.fold(myfunc, sess.board, scores);
+    return { points:final_scores }
+};

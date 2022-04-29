@@ -1,0 +1,16 @@
+export let must_wait_10_min : string = "Must wait at least 600 seconds before claiming Victory (in case opponent is not playing)";
+export let unknown_session : string = "Unknown session";
+export let user_not_allowed_to_stop_session : string = "Not allowed to stop this session";
+export let user_not_allowed_to_play_in_session : string = "Not allowed to play this session";
+export let user_not_allowed_to_reveal_in_session : string = "Not allowed to reveal this session";
+export let session_finished : string = "this session is finished";
+export let wrong_current_round : string = "Wrong current round parameter";
+export let user_already_played : string = "You already have played for this round";
+export let missing_player_chest : string = "a player has not played";
+export let missing_all_chests : string = "no actions registered";
+export let missing_all_decoded_chests : string = "no decoded actions registered";
+export let missing_sender_chest : string = "user has not played";
+export let failed_to_open_chest : string = "Failed to open chest";
+export let user_already_revealed : string = "You already have revealed your play for this round";
+export let failed_to_unpack_payload : string = "Failed to unpack the payload";
+export let no_winner : string = "No players have played in the current round, thus cannot deduce troller";

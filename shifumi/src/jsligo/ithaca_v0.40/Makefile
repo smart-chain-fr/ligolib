@@ -1,4 +1,4 @@
-ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
+ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:0.40.0
 PROTOCOL_OPT=--protocol ithaca
 JSON_OPT=--michelson-format json
 
@@ -17,11 +17,11 @@ compile: shifumi
 
 shifumi: shifumi.tz shifumi.json
 
-shifumi.tz: contracts/main.mligo
+shifumi.tz: contracts/main.jsligo
 	@echo "Compiling smart contract to Michelson"
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) > compiled/$@
 
-shifumi.json: contracts/main.mligo
+shifumi.json: contracts/main.jsligo
 	@echo "Compiling smart contract to Michelson in JSON format"
 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) > compiled/$@
 
