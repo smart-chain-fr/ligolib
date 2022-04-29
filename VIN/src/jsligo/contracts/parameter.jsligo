@@ -1,0 +1,9 @@
+#import "generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
+
+export type generateCollectionParam = {
+    name : string,
+    tokenIds : list<nat>,
+    tokenMetas : NFT_FA2.NFT.TokenMetadata.t
+};
+
+export type t = ["GenerateCollection", generateCollectionParam] | ["Nothing"];

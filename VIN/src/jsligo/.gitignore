@@ -1,0 +1,4 @@
+compiled/*.tz
+compiled/*.json
+deploy/*.js
+deploy/package-lock.json

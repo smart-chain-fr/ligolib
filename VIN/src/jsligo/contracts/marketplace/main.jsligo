@@ -1,0 +1,102 @@
+#import "storage.jsligo" "Storage"
+#import "errors.jsligo" "Errors"
+#import "parameter.jsligo" "Parameter"
+#import "../generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
+
+type storage = Storage.t;
+export type parameter = Parameter.t;
+type return_ = [list<operation>, storage];
+
+let create_sell_proposal = ([param, store] : [Parameter.sell_proposal_param, Storage.t]) : return_ => {
+    // check if sender is the owner of the nft token
+    let balanceOpt : option<nat> = Tezos.call_view("get_balance", [Tezos.sender, param.token_id], param.collectionContract);
+    let balanceVal : nat = match(balanceOpt, {
+        None: () => (failwith(Errors.unknownViewGetBalance) as nat),
+        Some: (v: nat) => v
+    });
+    let usageOpt : option<nat> = Tezos.call_view("token_usage", param.token_id, param.collectionContract);
+    let usageVal : nat = match(usageOpt, {
+        None: () => (failwith(Errors.unknownViewTokenUsage) as nat),
+        Some: (v : nat) => v
+    });
+   
+    let _check_owner : unit = assert_with_error( (balanceVal == (1 as nat)), Errors.not_owner);
+    // Add new proposal
+    let new_proposals = Big_map.add(store.next_sell_id, { owner:Tezos.sender, token_id:param.token_id, collectionContract:param.collectionContract, active:true, price:param.price, hasard_level:usageVal }, store.sell_proposals);
+    let new_next_sell_id : nat = store.next_sell_id + (1 as nat);
+    let new_active_proposals : set<nat> = Set.add(store.next_sell_id, store.active_proposals); 
+
+    // approve this contract as operator
+    //let collection_approve_dest_opt : NFT_FA2.update_operators contract option = Tezos.get_entrypoint_opt "%update_operators" param.collectionContract;
+    //let collection_approve_dest : NFT_FA2.update_operators contract = match collection_approve_dest_opt with
+    //| None -> (failwith(Errors.unknown_fa2_contract): NFT_FA2.update_operators contract) 
+    //| Some ct -> ct
+    //in
+    //let update_op : NFT_FA2.update_operators = [Add_operator({owner=Tezos.sender; operator=Tezos.self_address; token_id=param.token_id})];
+    //let op : operation = Tezos.transaction update_op 0mutez collection_approve_dest;
+
+    return [(list([]) as list<operation>), { ...store, next_sell_id:new_next_sell_id, sell_proposals:new_proposals, active_proposals:new_active_proposals }];
+};
+
+let accept_proposal = ([param, store] : [Parameter.buy_param, Storage.t]) : return_ => {
+    let _check_among_active_proposals : unit = assert_with_error( (Set.mem(param.proposal_id, store.active_proposals)), Errors.proposal_not_active); 
+    let propal : Storage.sell_proposal = match(Big_map.find_opt(param.proposal_id, store.sell_proposals), {
+        None: () => (failwith(Errors.unknown_proposal) as Storage.sell_proposal),
+        Some: (pr: Storage.sell_proposal) => pr
+    });
+    let _check_status : unit = assert_with_error((propal.active), Errors.proposal_not_active);
+    let _check_amount : unit = assert_with_error((propal.price == Tezos.amount), Errors.wrong_amount);
+    
+    let new_propal = { ...propal, active:false };
+    let new_active_proposals : set<nat> = Set.remove(param.proposal_id, store.active_proposals);
+    let new_proposals = Big_map.update(param.proposal_id, (Some(new_propal)), store.sell_proposals);
+
+    // transfer Tez to owner
+    let dest_opt : option<contract<unit>> = Tezos.get_contract_opt(propal.owner);
+    let destination : contract<unit> = match(dest_opt, {
+        None: () => (failwith("Unknwon owner") as contract<unit>), 
+        Some: (c: contract<unit>) => c
+    });
+    let op : operation = Tezos.transaction(unit, Tezos.amount, destination);
+    
+    // unapprove this contract as operator
+    //let collection_approve_dest_opt : NFT_FA2.update_operators contract option = Tezos.get_entrypoint_opt "%update_operators" propal.collectionContract in 
+    //let collection_approve_dest : NFT_FA2.update_operators contract = match collection_approve_dest_opt with
+    //| None -> (failwith(Errors.unknown_fa2_contract): NFT_FA2.update_operators contract) 
+    //| Some ct -> ct
+    //in
+    //let update_op : NFT_FA2.update_operators = [Remove_operator({owner=propal.owner; operator=Tezos.self_address; token_id=propal.token_id})];
+    //let op1 : operation = Tezos.transaction update_op 0mutez collection_approve_dest;
+
+
+    // transfer Nft to new_owner
+    let collection_transfer_dest_opt :  option<contract<NFT_FA2.NFT.transfer>> = Tezos.get_entrypoint_opt("%transfer", propal.collectionContract);
+    let collection_transfer_dest : contract<NFT_FA2.NFT.transfer> = match(collection_transfer_dest_opt, {
+        None: () => (failwith(Errors.unknown_fa2_contract) as contract<NFT_FA2.NFT.transfer>), 
+        Some: (ct: contract<NFT_FA2.NFT.transfer>) => ct
+    });
+    let nft_transfer : NFT_FA2.NFT.transfer = list([{ from_:propal.owner, tx:list([{to_:Tezos.sender, token_id:propal.token_id}])}]);
+    let op2 : operation = Tezos.transaction(nft_transfer, (0 as mutez), collection_transfer_dest);
+    
+    return [list([op, op2]), { ...store,  sell_proposals:new_proposals, active_proposals:new_active_proposals }]
+};
+
+export let main = ([ep, store] : [parameter, storage]) : return_ => {
+    match(ep, { 
+        Sell: (p: sell_proposal_param) => create_sell_proposal(p, store),
+        Buy: (p: buy_param) => accept_proposal(p, store)
+    });
+};
+
+// @view
+let get_proposal = ([p, s] : [nat, storage]) : Storage.sell_proposal => { 
+    return match(Big_map.find_opt(p, s.sell_proposals), { 
+        None: () => (failwith("") as Storage.sell_proposal),
+        Some: (prop: Storage.sell_proposal) => prop 
+    });
+};
+
+// @view
+let active_proposals = ([_p, s] : [unit, storage]) : list<nat> => { 
+    Set.fold( ( ([acc, i] : [list<nat>, nat]) => list([i, ...acc])), s.active_proposals, (list([]) as list<nat>) );
+};
