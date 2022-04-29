@@ -1,4 +1,4 @@
-## Contract Super Wine
+## Contract VIN (Vinus In Numeris)
 
 This contract implements a factory of FA2 NFT. Each FA2 contract represents a collection of wine bottles. Wine bottles are represented by tokens inside a FA2 contract.
 When originating a collection of bottle, 
