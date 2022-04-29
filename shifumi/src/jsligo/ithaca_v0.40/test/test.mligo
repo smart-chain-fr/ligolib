@@ -1,4 +1,4 @@
-#import "../contracts/main.mligo" "SHIFUMI"
+#import "../contracts/main.jsligo" "SHIFUMI"
 
 let assert_string_failure (res : test_exec_result) (expected : string) : unit =
   let expected = Test.eval expected in

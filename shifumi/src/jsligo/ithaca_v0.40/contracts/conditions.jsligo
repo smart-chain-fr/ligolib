@@ -1,5 +1,5 @@
 #import "errors.jsligo" "Errors"
-#import "session.mligo" "Session"
+#import "session.jsligo" "Session"
 
 export let check_player_authorized = ([player, allowed_players, error_message] : [Session.player, set<Session.player>, string]) : unit => {
     assert_with_error( Set.mem(player, allowed_players), error_message);

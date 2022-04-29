@@ -1,8 +1,8 @@
 #import "storage.jsligo" "Storage"
 #import "parameter.jsligo" "Parameter"
-#import "views.mligo" "Views"
+#import "views.jsligo" "Views"
 #import "errors.jsligo" "Errors"
-#import "session.mligo" "Session"
+#import "session.jsligo" "Session"
 #import "conditions.jsligo" "Conditions"
 
 export type storage = Storage.t;
@@ -81,7 +81,7 @@ let reveal = ([param, store] : [Parameter.reveal_param, Storage.t]) : return_ =>
     let numberOfPlayers : nat = Set.cardinal(current_session.players);
     let listsize = ([acc, _elt]: [nat, Session.player_action]) : nat => acc + (1 as nat);
     let numberOfActions : nat = List.fold(listsize, current_round_actions, (0 as nat));
-    let _check_all_players_have_played : unit = assert_with_error( (numberOfPlayers = numberOfActions), Errors.missing_player_chest);
+    let _check_all_players_have_played : unit = assert_with_error( (numberOfPlayers == numberOfActions), Errors.missing_player_chest);
     // retrieve user chest (fails if not found)
     let user_chest : chest = Session.get_chest_exn(Tezos.sender, (Some(current_round_actions)));
     // decode action

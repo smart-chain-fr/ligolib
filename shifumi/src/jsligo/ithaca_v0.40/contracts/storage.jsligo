@@ -1,6 +1,6 @@
 #import "errors.jsligo" "Errors"
 #import "parameter.jsligo" "Parameter"
-#import "session.mligo" "Session"
+#import "session.jsligo" "Session"
 #import "conditions.jsligo" "Conditions"
 
 export type t = {
