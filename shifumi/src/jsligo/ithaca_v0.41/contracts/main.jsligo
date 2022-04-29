@@ -1,0 +1,119 @@
+#import "storage.jsligo" "Storage"
+#import "parameter.jsligo" "Parameter"
+#import "views.jsligo" "Views"
+#import "errors.jsligo" "Errors"
+#import "session.jsligo" "Session"
+#import "conditions.jsligo" "Conditions"
+
+export type storage = Storage.t;
+export type parameter = Parameter.t;
+export type return_ = [list<operation>, storage];
+
+// Anyone can create a session (must specify players and number of rounds)
+let createSession = ([param, store] : [Parameter.createsession_param, Storage.t]) : return_ => { 
+    let new_session : Session.t = Session.new(param.total_rounds, param.players);
+    let new_storage : Storage.t = { next_session:store.next_session + (1 as nat), sessions:Map.add(store.next_session, new_session, store.sessions)};
+    [list([]) as list<operation>, new_storage]
+};
+
+// search for a non troller in the session
+let find_me_a_name = ([sessionId, missing_players, current_session, store] : [nat, set<Session.player>, Session.t, Storage.t]) : return_ => { 
+    let rem_player = ([acc, elt] : [set<address>, address] ) : set<address> => Set.remove(elt, acc);
+    let winners_set : set<address> = Set.fold(rem_player, missing_players, current_session.players);
+    let _check_has_winner : unit = assert_with_error( (Set.cardinal(winners_set) > (0 as nat)), Errors.no_winner);
+    let add_player = ([acc, elt] : [list<address>, address]) : list<address> => list([elt, ...acc]);
+    let winners_list : list<address> = Set.fold(add_player, winners_set, (list([]) as list<address>));
+    let winner : address = Option.unopt(List.head_opt(winners_list));
+    let new_current_session : Session.t = {...current_session, result:Winner(winner) };
+    let new_storage : Storage.t = Storage.update_sessions(store, sessionId, new_current_session);
+    return [list([]) as list<operation>, new_storage];
+};
+
+// allow players to claim victory if opponent is a troller (refuse to play)
+let stopSession = ([param, store] : [Parameter.stopsession_param, Storage.t]) : return_ => {
+    let current_session : Session.t = Storage.getSession(param.sessionId, store);
+    let _check_players : unit = Conditions.check_player_authorized(Tezos.sender, current_session.players, Errors.user_not_allowed_to_stop_session);
+    let _check_session_end : unit = Conditions.check_session_end(current_session.result, Inplay());
+    let _check_asleep : unit = Conditions.check_asleep(current_session);
+    let current_round = match (Map.find_opt(current_session.current_round, current_session.rounds), {
+        None: () => (list([]) as Session.player_actions),
+        Some: (rnd: Session.player_actions) => rnd 
+    });
+    let missing_players = Session.find_missing(current_round, current_session.players);
+    if (Set.cardinal(missing_players) > (0 as nat)) {
+        return find_me_a_name (param.sessionId, missing_players, current_session, store);
+    } else {
+        let current_decoded_round = match (Map.find_opt(current_session.current_round, current_session.decoded_rounds), {
+            None: () => (failwith("SHOULD NOT BE HERE SESSION IS BROKEN") as Session.decoded_player_actions),
+            Some: (rnd: Session.decoded_player_actions) => rnd 
+        });
+        let missing_players_for_reveal = Session.find_missing(current_decoded_round, current_session.players);
+        if (Set.cardinal(missing_players_for_reveal) > (0 as nat)) {
+            return find_me_a_name (param.sessionId, missing_players_for_reveal, current_session, store);
+        } else {
+            return [list([]) as list<operation>, store]
+        }
+    }
+};
+
+// the player create a chest with the chosen action (Stone | Paper | Cisor) in backend
+// once the chest is created, the player send its chest to the smart contract
+let play = ([param, store] : [Parameter.play_param, Storage.t]) : return_ => {
+    let current_session : Session.t = Storage.getSession(param.sessionId, store);
+    let _check_players : unit = Conditions.check_player_authorized(Tezos.sender, current_session.players, Errors.user_not_allowed_to_play_in_session);
+    let _check_session_end : unit = Conditions.check_session_end(current_session.result, Inplay());
+    let _check_round : unit = assert_with_error( (current_session.current_round == param.roundId), Errors.wrong_current_round);
+    // register action
+    let new_rounds = Session.add_in_rounds(current_session.current_round, current_session, Tezos.sender, param.action);
+    let new_session : Session.t = Session.update_rounds(current_session, new_rounds);
+    let new_storage : Storage.t = Storage.update_sessions(store, param.sessionId, new_session);
+    return [list([]) as list<operation>, new_storage];
+};
+
+// Once all players have committed their chest, they must reveal the content of their chest
+let reveal = ([param, store] : [Parameter.reveal_param, Storage.t]) : return_ => {
+    // players can reveal only if all players have sent their chest
+    let current_session : Session.t = Storage.getSession(param.sessionId, store);
+    let _check_players : unit = Conditions.check_player_authorized(Tezos.sender, current_session.players, Errors.user_not_allowed_to_reveal_in_session);
+    let _check_session_end : unit = Conditions.check_session_end(current_session.result, Inplay());
+    let _check_round : unit = assert_with_error( (current_session.current_round == param.roundId), Errors.wrong_current_round);
+    let current_round_actions : Session.player_actions = Session.get_round_actions(current_session.current_round, current_session);
+    let numberOfPlayers : nat = Set.cardinal(current_session.players);
+    let listsize = ([acc, _elt]: [nat, Session.player_action]) : nat => acc + (1 as nat);
+    let numberOfActions : nat = List.fold(listsize, current_round_actions, (0 as nat));
+    let _check_all_players_have_played : unit = assert_with_error( (numberOfPlayers == numberOfActions), Errors.missing_player_chest);
+    // retrieve user chest (fails if not found)
+    let user_chest : chest = Session.get_chest_exn(Tezos.sender, (Some(current_round_actions)));
+    // decode action
+    let decoded_action : Session.action = Session.decode_chest_exn(param.player_key, user_chest, param.player_secret);
+    let new_decoded_rounds = Session.add_in_decoded_rounds(current_session.current_round, current_session, Tezos.sender, decoded_action);
+    let new_current_session : Session.t = Session.update_decoded_rounds(current_session, new_decoded_rounds);
+
+    // compute board if all players have revealed
+    let modified_new_current_session : Session.t = Session.finalize_current_round(new_current_session);
+
+    // if session is finished, we can compute the result winner
+    let final_current_session = Session.finalize_session(modified_new_current_session);
+    
+    let new_storage : Storage.t = Storage.update_sessions(store, param.sessionId, final_current_session);
+    return [list([]) as list<operation>, new_storage]
+};
+
+export let main = ([ep, store] : [parameter, storage]) : return_ => {
+    return match (ep, { 
+        CreateSession: (p: Parameter.createsession_param) => createSession(p, store),
+        Play: (p: Parameter.play_param) => play(p, store),
+        RevealPlay: (r: Parameter.reveal_param) => reveal(r, store),
+        StopSession: (c: Parameter.stopsession_param) => stopSession(c, store)
+        //Play: (p: Parameter.play_param) => [list([]) as list<operation>, new_storage],
+        //RevealPlay: (r: Parameter.reveal_param) => [list([]) as list<operation>, new_storage],
+        //StopSession: (c: Parameter.stopsession_param) => [list([]) as list<operation>, new_storage]
+    });
+};
+
+[@view] let board = ([sessionId, store]: [nat, storage]): Views.sessionBoard => { 
+    match (Map.find_opt(sessionId, store.sessions), {
+        Some: (sess: Session.t) => Views.retrieve_board(sess),
+        None: () => (failwith("Unknown session") as Views.sessionBoard)
+    });
+};
