@@ -12,7 +12,7 @@ uncovered.
 ### Propose
 
 A token owner can *propose* a vote by supplying a ***description_link***,
-and an optional record of type ***Lambda.t*** composed by a ***hash*** and a ***kind***.
+and an optional tuple of type ***Lambda.t*** composed by a ***hash*** and a ***kind***.
 As SPAM protection mechanism, the configured ***deposit_amount*** of tokens is
 transferred from the owner to the DAO. This amount will be sent back to
 the proposal creator if configured ***refund_threshold*** participation is

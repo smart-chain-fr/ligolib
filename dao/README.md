@@ -49,3 +49,6 @@ participation computation, see [example `FA2` int the test directory](./test/boo
 - <https://medium.com/daostack/voting-options-in-daos-b86e5c69a3e3>
 - <https://xord.com/research/curve-dao-a-brief-outlook-to-the-mechanism-of-dao/>
 - <https://finance.yahoo.com/news/defi-projects-embrace-vote-locking-161806673.html?guccounter=1>
+- <https://medium.com/block-science/dao-vulnerabilities-a-map-of-lido-governance-risks-opportunities-92bc6384ff68>
+- <https://policyreview.info/glossary/permissionlessness>
+- <https://medium.com/block-science/aligning-the-concept-of-decentralized-autonomous-organization-to-precedents-in-cybernetics-51344d1c1411>

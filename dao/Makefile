@@ -37,7 +37,7 @@ install: ## install dependencies
 	@npm i
 
 compile-lambda: ## compile a lambda (F=./lambdas/empty_operation_list.mligo make compile-lambda)
-# ^ helper to compile lambda from a file, used during develpment of lambdas
+# ^ helper to compile lambda from a file, used during development of lambdas
 ifndef F
 	@echo 'please provide an init file (F=)'
 else
