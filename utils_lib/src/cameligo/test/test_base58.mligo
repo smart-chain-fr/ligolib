@@ -145,5 +145,61 @@ let test =
 
         Test.log("Test finished")
     in
+    let _test_sqrt = 
+
+        let payload : nat = 9n in
+        let value : nat = Utils.Math.sqrt(payload) in
+        let () = assert(value = 3n) in
+
+        let payload : nat = 4n in
+        let value : nat = Utils.Math.sqrt(payload) in
+        let () = assert(value = 2n) in
+
+        let payload : nat = 16n in
+        let value : nat = Utils.Math.sqrt(payload) in
+        let () = assert(value = 4n) in
+
+        Test.log("Test finished")
+    in
+    let _test_rationnal = 
+
+        let a : Utils.Rationnal.rationnal = { p=1; q=6 } in
+        let value_resolved : int = Utils.Rationnal.resolve a 3n in
+        let () = assert(value_resolved = 166) in
+
+        let a : Utils.Rationnal.rationnal = { p=-1; q=6 } in
+        let value_resolved : int = Utils.Rationnal.resolve a 3n in
+        let () = assert(value_resolved = -166) in
+
+        let a : Utils.Rationnal.rationnal = { p=1; q=3 } in
+        let b : Utils.Rationnal.rationnal = { p=1; q=2 } in
+        let value : Utils.Rationnal.rationnal = Utils.Rationnal.add a b in
+        let () = assert(value = { p=5; q=6 }) in
+        let value_resolved : int = Utils.Rationnal.resolve value 3n in
+        let () = assert(value_resolved = 833) in
+
+        let a : Utils.Rationnal.rationnal = { p=1; q=3 } in
+        let b : Utils.Rationnal.rationnal = { p=1; q=2 } in
+        let value : Utils.Rationnal.rationnal = Utils.Rationnal.sub a b in
+        let () = assert(value = { p=-1; q=6 }) in
+        let value_resolved : int = Utils.Rationnal.resolve value 3n in
+        let () = assert(value_resolved = -166) in
+
+        let a : Utils.Rationnal.rationnal = { p=1; q=3 } in
+        let b : Utils.Rationnal.rationnal = { p=1; q=2 } in
+        let value : Utils.Rationnal.rationnal = Utils.Rationnal.mul a b in
+        let () = assert(value = { p=1; q=6 }) in
+        let value_resolved : int = Utils.Rationnal.resolve value 3n in
+        let () = assert(value_resolved = 166) in
+
+        let a : Utils.Rationnal.rationnal = { p=1; q=3 } in
+        let b : Utils.Rationnal.rationnal = { p=1; q=2 } in
+        let value : Utils.Rationnal.rationnal = Utils.Rationnal.div a b in
+        let () = assert(value = { p=2; q=3 }) in
+        let value_resolved : int = Utils.Rationnal.resolve value 3n in
+        let () = assert(value_resolved = 666) in
+
+        Test.log("Test finished")
+    in
     ()
 

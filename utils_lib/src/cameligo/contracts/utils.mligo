@@ -11,6 +11,59 @@ module Address = struct
 
 end
 
+module Math = struct 
+
+    let sqrt (y: nat) =
+        if y > 3n then
+            let z = y in
+            let x = y / 2n + 1n in
+            let rec iter (x, y, z: nat * nat * nat): nat =
+                if x < z then
+                    iter ((y / x + x) / 2n, y, x)
+                else
+                    z
+            in
+            iter (x, y, z)
+        else if y <> 0n then
+            1n
+        else
+            0n
+
+    let power (x, y : nat * nat) : nat = 
+        let rec multiply(acc, elt, last: nat * nat * nat ) : nat = if last = 0n then acc else multiply(acc * elt, elt, abs(last - 1n)) in
+        multiply(1n, x, y)
+end
+
+module Rationnal = struct 
+
+    type rationnal = { p : int; q: int }
+
+    [@inline]
+    let add (a : rationnal) (b : rationnal) : rationnal  =
+        { p= a.p * b.q + b.p * a.q ; q=a.q * b.q }
+    
+    [@inline]
+    let sub (a : rationnal) (b : rationnal) : rationnal  =
+        { p= a.p * b.q - b.p * a.q ; q=a.q * b.q }
+
+    [@inline]
+    let mul (a : rationnal) (b : rationnal) : rationnal  =
+        { p= a.p * b.p ; q=a.q * b.q }
+
+    [@inline]
+    let div (a : rationnal) (b : rationnal) : rationnal  =
+        { p= a.p * b.q ; q=a.q * b.p }
+        
+    [@inline]
+    let resolve (a: rationnal) (prec: nat) : int =
+        let input : rationnal = if (a.p < 0) then
+            { p= a.p * -1; q=a.q * -1 }
+        else
+            a
+        in
+        (input.p * Math.power(10n, prec)) / input.q
+end
+
 module Bytes = struct 
 
     module Packed = struct 
@@ -319,10 +372,6 @@ module Bytes = struct
             (failwith("Wrong hexa") : nat)
 
     let bytes_to_nat(payload : bytes) : nat =
-        let power (x, y : nat * nat) : nat = 
-            let rec multiply(acc, elt, last: nat * nat * nat ) : nat = if last = 0n then acc else multiply(acc * elt, elt, abs(last - 1n)) in
-            multiply(1n, x, y)
-        in
         let rec convert_to_nat(acc, indice, payload : nat * nat * bytes) : nat =
             if indice = 1n then
                 acc + hexa_to_nat(payload)
@@ -330,7 +379,7 @@ module Bytes = struct
                 let size : nat = (Bytes.length payload) in
                 let one_left_bytes = Bytes.sub 0n 1n payload in
                 let right_bytes = Bytes.sub 1n (abs(size - 1n)) payload in 
-                let one_left_nat = hexa_to_nat(one_left_bytes) * power(256n, abs(indice - 1n)) in 
+                let one_left_nat = hexa_to_nat(one_left_bytes) * Math.power(256n, abs(indice - 1n)) in 
                 convert_to_nat(acc + one_left_nat, abs(indice - 1n), right_bytes)
         in
         convert_to_nat(0n, Bytes.length payload, payload)
