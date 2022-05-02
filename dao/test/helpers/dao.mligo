@@ -36,6 +36,10 @@ let base_config : DAO.Storage.Config.t = {
 }
 
 let base_storage (governance_token : DAO.Storage.Token.t) : DAO.storage = {
+    metadata = Big_map.literal [
+        ("", Bytes.pack("tezos-storage:contents"));
+        ("contents", ("": bytes))
+    ];
     governance_token = governance_token;
     vault = (Big_map.empty : DAO.Storage.Vault.t);
     proposal = (None : DAO.Proposal.t option);

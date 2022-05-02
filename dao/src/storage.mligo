@@ -1,5 +1,6 @@
 #import "./config.mligo" "Config"
 #import "./lambda.mligo" "Lambda"
+#import "./metadata.mligo" "Metadata"
 #import "./outcome.mligo" "Outcome"
 #import "./proposal.mligo" "Proposal"
 #import "./timelock.mligo" "Timelock"
@@ -12,6 +13,7 @@ type outcomes = (nat, Outcome.t) big_map
 type t =
     [@layout:comb]
     {
+        metadata: Metadata.t;
         governance_token: Token.t;
         config: Config.t;
         vault: Vault.t;
