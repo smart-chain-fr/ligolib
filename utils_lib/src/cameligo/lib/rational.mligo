@@ -11,6 +11,10 @@ let inverse (a : rational) : rational =
     { p= a.q; q=a.p }
 
 [@inline]
+let lt (a : rational) (b : rational) : bool = 
+    (a.p * b.q < a.q * b.p)
+
+[@inline]
 let add (a : rational) (b : rational) : rational  =
     { p= a.p * b.q + b.p * a.q ; q=a.q * b.q }
 

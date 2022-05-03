@@ -1,4 +1,7 @@
 #import "../lib/math.mligo" "Math"
+#import "../lib/rational.mligo" "Rational"
+#import "../lib/trigo.mligo" "Trigo"
+
 
 let test =
 
@@ -24,6 +27,25 @@ let test =
         let () = assert(Math.factorial(6n) = 720n) in
         
         Test.log("Test 'factorial' finished")
+    in
+    let _test_trigo = 
+
+        let angle = Trigo.zero in
+        let () = assert(Trigo.sin(angle) = {p=0; q=1}) in
+
+        let angle = Trigo.pi_half in
+        let () = assert(Trigo.sin(angle) = {p=1; q=1}) in
+        
+        let angle = Trigo.pi in
+        let () = assert(Trigo.sin(angle) = {p=0; q=1}) in
+        
+        let angle = Trigo.three_pi_half in
+        let () = assert(Trigo.sin(angle) = {p=-1; q=1}) in
+        
+        let angle = Trigo.two_pi in
+        let () = assert(Trigo.sin(angle) = {p=0; q=1}) in
+        
+        Test.log("Test 'trigo' finished")
     in
     ()
 
