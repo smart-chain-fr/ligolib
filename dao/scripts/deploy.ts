@@ -3,7 +3,7 @@ import { MichelsonMap, TezosToolkit } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
 import { buf2hex } from '@taquito/utils';
 import code from "../compiled/dao.json";
-import metadata from '../metadata.json';
+import metadata from './metadata.json';
 
 // Read environment variables from .env file
 dotenv.config();

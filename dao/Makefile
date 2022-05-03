@@ -29,6 +29,8 @@ clean: ## clean up
 	@rm -rf compiled
 
 deploy: ## deploy
+	@if [ ! -f ./scripts/metadata.json ]; then cp scripts/metadata.json.dist \
+        scripts/metadata.json ; fi
 	@npx ts-node ./scripts/deploy.ts
 
 install: ## install dependencies
