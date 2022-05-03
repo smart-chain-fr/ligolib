@@ -1,4 +1,4 @@
-#import "../contracts/utils.mligo" "Utils"
+#import "../lib/utils.mligo" "Utils"
 
 
 let test =
@@ -143,76 +143,7 @@ let test =
         let () = assert(value = 4660n * 256n) in
 
 
-        Test.log("Test finished")
-    in
-    let _test_isqrt = 
-
-        let () = assert(Utils.Math.isqrt(4n) = 2n) in
-        let () = assert(Utils.Math.isqrt(8n) = 2n) in
-        let () = assert(Utils.Math.isqrt(9n) = 3n) in
-        let () = assert(Utils.Math.isqrt(15n) = 3n) in
-        let () = assert(Utils.Math.isqrt(16n) = 4n) in
-        let () = assert(Utils.Math.isqrt(17n) = 4n) in
-
-        Test.log("Test finished")
-    in
-    let _test_factorial = 
-
-        let () = assert(Utils.Math.factorial(0n) = 1n) in
-        let () = assert(Utils.Math.factorial(1n) = 1n) in
-        let () = assert(Utils.Math.factorial(2n) = 2n) in
-        let () = assert(Utils.Math.factorial(3n) = 6n) in
-        let () = assert(Utils.Math.factorial(4n) = 24n) in
-        let () = assert(Utils.Math.factorial(5n) = 120n) in
-        let () = assert(Utils.Math.factorial(6n) = 720n) in
-        
-        Test.log("Test finished")
-    in
-
-    let _test_rational = 
-
-        let a = Utils.Rational.new 6 in
-        let a = Utils.Rational.inverse a in
-        let value_resolved : int = Utils.Rational.resolve a 3n in
-        let () = assert(value_resolved = 166) in
-
-        let a : Utils.Rational.rational = { p=1; q=6 } in
-        let value_resolved : int = Utils.Rational.resolve a 3n in
-        let () = assert(value_resolved = 166) in
-
-        let a : Utils.Rational.rational = { p=-1; q=6 } in
-        let value_resolved : int = Utils.Rational.resolve a 3n in
-        let () = assert(value_resolved = -166) in
-
-        let a : Utils.Rational.rational = { p=1; q=3 } in
-        let b : Utils.Rational.rational = { p=1; q=2 } in
-        let value : Utils.Rational.rational = Utils.Rational.add a b in
-        let () = assert(value = { p=5; q=6 }) in
-        let value_resolved : int = Utils.Rational.resolve value 3n in
-        let () = assert(value_resolved = 833) in
-
-        let a : Utils.Rational.rational = { p=1; q=3 } in
-        let b : Utils.Rational.rational = { p=1; q=2 } in
-        let value : Utils.Rational.rational = Utils.Rational.sub a b in
-        let () = assert(value = { p=-1; q=6 }) in
-        let value_resolved : int = Utils.Rational.resolve value 3n in
-        let () = assert(value_resolved = -166) in
-
-        let a : Utils.Rational.rational = { p=1; q=3 } in
-        let b : Utils.Rational.rational = { p=1; q=2 } in
-        let value : Utils.Rational.rational = Utils.Rational.mul a b in
-        let () = assert(value = { p=1; q=6 }) in
-        let value_resolved : int = Utils.Rational.resolve value 3n in
-        let () = assert(value_resolved = 166) in
-
-        let a : Utils.Rational.rational = { p=1; q=3 } in
-        let b : Utils.Rational.rational = { p=1; q=2 } in
-        let value : Utils.Rational.rational = Utils.Rational.div a b in
-        let () = assert(value = { p=2; q=3 }) in
-        let value_resolved : int = Utils.Rational.resolve value 3n in
-        let () = assert(value_resolved = 666) in
-
-        Test.log("Test finished")
+        Test.log("Test 'rational' finished")
     in
     ()
 

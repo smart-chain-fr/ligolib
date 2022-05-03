@@ -1,5 +1,8 @@
+#import "../lib/math.mligo" "Math"
+
 module Address = struct 
 
+    (** Check if the given address is an implicit account (i.e tz1...) *)
     let is_implicit(elt: address) : bool = 
         let pack_elt : bytes = Bytes.pack elt in
         let is_imp : bytes = Bytes.sub 6n 1n pack_elt in
@@ -9,80 +12,6 @@ module Address = struct
         //let () = Test.log(value) in
         ( is_imp = 0x00 )
 
-end
-
-module Math = struct 
-
-    // This function is the integer square root function. 
-    //(i.e. isqrt(8n) -> 2n
-    //      isqrt(9n) -> 3n
-    //      isqrt(10n) -> 3n
-    //      isqrt(15n) -> 3n
-    //      isqrt(16n) -> 4n
-    //      isqrt(17n) -> 4n)
-    let isqrt (y: nat) =
-        if y > 3n then
-            let z = y in
-            let x = y / 2n + 1n in
-            let rec iter (x, y, z: nat * nat * nat): nat =
-                if x < z then
-                    iter ((y / x + x) / 2n, y, x)
-                else
-                    z
-            in
-            iter (x, y, z)
-        else if y <> 0n then
-            1n
-        else
-            0n
-
-    let power (x, y : nat * nat) : nat = 
-        let rec multiply(acc, elt, last: nat * nat * nat ) : nat = if last = 0n then acc else multiply(acc * elt, elt, abs(last - 1n)) in
-        multiply(1n, x, y)
-
-    let factorial (n : nat) : nat = 
-        let rec fact(acc, i : nat * nat) : nat = 
-            if (i < 2n) then acc else fact(acc * i, abs(i - 1n)) in
-        fact(1n, n)
-
-end
-
-module Rational = struct 
-
-    type rational = { p : int; q: int }
-
-    [@inline]
-    let new (init : int) : rational = 
-        { p= init; q=1 }
-
-    [@inline]
-    let inverse (a : rational) : rational = 
-        { p= a.q; q=a.p }
-
-    [@inline]
-    let add (a : rational) (b : rational) : rational  =
-        { p= a.p * b.q + b.p * a.q ; q=a.q * b.q }
-    
-    [@inline]
-    let sub (a : rational) (b : rational) : rational  =
-        { p= a.p * b.q - b.p * a.q ; q=a.q * b.q }
-
-    [@inline]
-    let mul (a : rational) (b : rational) : rational  =
-        { p= a.p * b.p ; q=a.q * b.q }
-
-    [@inline]
-    let div (a : rational) (b : rational) : rational  =
-        { p= a.p * b.q ; q=a.q * b.p }
-        
-    [@inline]
-    let resolve (a: rational) (prec: nat) : int =
-        let input : rational = if (a.p < 0) then
-            { p= a.p * -1; q=a.q * -1 }
-        else
-            a
-        in
-        (input.p * Math.power(10n, prec)) / input.q
 end
 
 module Bytes = struct 
