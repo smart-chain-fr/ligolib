@@ -13,7 +13,14 @@ end
 
 module Math = struct 
 
-    let sqrt (y: nat) =
+    // This function is the integer square root function. 
+    //(i.e. isqrt(8n) -> 2n
+    //      isqrt(9n) -> 3n
+    //      isqrt(10n) -> 3n
+    //      isqrt(15n) -> 3n
+    //      isqrt(16n) -> 4n
+    //      isqrt(17n) -> 4n)
+    let isqrt (y: nat) =
         if y > 3n then
             let z = y in
             let x = y / 2n + 1n in
@@ -32,31 +39,45 @@ module Math = struct
     let power (x, y : nat * nat) : nat = 
         let rec multiply(acc, elt, last: nat * nat * nat ) : nat = if last = 0n then acc else multiply(acc * elt, elt, abs(last - 1n)) in
         multiply(1n, x, y)
+
+    let factorial (n : nat) : nat = 
+        let rec fact(acc, i : nat * nat) : nat = 
+            if (i < 2n) then acc else fact(acc * i, abs(i - 1n)) in
+        fact(1n, n)
+
 end
 
-module Rationnal = struct 
+module Rational = struct 
 
-    type rationnal = { p : int; q: int }
+    type rational = { p : int; q: int }
 
     [@inline]
-    let add (a : rationnal) (b : rationnal) : rationnal  =
+    let new (init : int) : rational = 
+        { p= init; q=1 }
+
+    [@inline]
+    let inverse (a : rational) : rational = 
+        { p= a.q; q=a.p }
+
+    [@inline]
+    let add (a : rational) (b : rational) : rational  =
         { p= a.p * b.q + b.p * a.q ; q=a.q * b.q }
     
     [@inline]
-    let sub (a : rationnal) (b : rationnal) : rationnal  =
+    let sub (a : rational) (b : rational) : rational  =
         { p= a.p * b.q - b.p * a.q ; q=a.q * b.q }
 
     [@inline]
-    let mul (a : rationnal) (b : rationnal) : rationnal  =
+    let mul (a : rational) (b : rational) : rational  =
         { p= a.p * b.p ; q=a.q * b.q }
 
     [@inline]
-    let div (a : rationnal) (b : rationnal) : rationnal  =
+    let div (a : rational) (b : rational) : rational  =
         { p= a.p * b.q ; q=a.q * b.p }
         
     [@inline]
-    let resolve (a: rationnal) (prec: nat) : int =
-        let input : rationnal = if (a.p < 0) then
+    let resolve (a: rational) (prec: nat) : int =
+        let input : rational = if (a.p < 0) then
             { p= a.p * -1; q=a.q * -1 }
         else
             a
