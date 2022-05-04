@@ -38,8 +38,7 @@ type chebychev_coef =   Rational.rational * Rational.rational *
                         Rational.rational * Rational.rational * 
                         Rational.rational * Rational.rational *
                         Rational.rational * Rational.rational *
-                        Rational.rational * Rational.rational *
-                        Rational.rational
+                        Rational.rational 
 type chebychev = (chebychev_intervals, chebychev_coef) map 
 
 let zero : Rational.rational = {p=0 ; q=1}
@@ -79,8 +78,6 @@ let chebychev_lookup_table : chebychev = Map.literal [
     // ((seven_pi_quarter,two_pi),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
     (
         (zero, pi_half), ( 
-            {p=0;q=1}, 
-            {p=15707963267948966;q=10000000000000000},
             {p=6021947012555463;q=10000000000000000},
             {p=513625166679107;q=1000000000000000},
             {p=-10354634426296383;q=100000000000000000},
@@ -116,8 +113,23 @@ let find_chebychev_coef(a : Rational.rational) : chebychev_coef =
     )
 
 let sin(a : Rational.rational) : Rational.rational = 
-    let (t0, t1, t2, t3, t4, t5) = eval_chebychev_polynoms(a) in
-    let coef : chebychev_coef = find_chebychev_coef(a) in
+    let interval_opt : chebychev_intervals option = find_chebychev_interval(a) in
+    let interval_cheby = match interval_opt with
+    | None -> failwith("given angle is out of bound")
+    | Some interval -> interval
+    in
+    let two = Rational.new 2 in
+    //let u = (x - (a+b)/2.0 )/ (b-a)/2.0
+    let u = (Rational.div
+        (Rational.sub a (Rational.div (Rational.add interval_cheby.0 interval_cheby.1) (two)))
+        (Rational.div (Rational.sub interval_cheby.1 interval_cheby.0) (two))
+    ) in
+    let (t0, t1, t2, t3, t4, t5) = eval_chebychev_polynoms(u) in
+    let coef : chebychev_coef = match Map.find_opt interval_cheby chebychev_lookup_table with
+    | None -> failwith("chebychev_lookup_intervals does not match chebychev_lookup_table")
+    | Some coef -> coef
+    in
+    //let coef : chebychev_coef = find_chebychev_coef(a) in
     let (t6, t7, t8, t9, t10, t11, t12 , t13, t14, t15, t16) = (zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero) in
     Rational.add 
         (Rational.mul coef.0 t0) 
@@ -143,13 +155,7 @@ let sin(a : Rational.rational) : Rational.rational =
                                                 (Rational.mul coef.10 t10)
                                                 (Rational.add 
                                                     (Rational.mul coef.11 t11)
-                                                    (Rational.add 
-                                                        (Rational.mul coef.12 t12)
-                                                        (Rational.add 
-                                                            (Rational.mul coef.13 t13)
-                                                            (Rational.mul coef.14 t14)
-                                                        )
-                                                    )
+                                                    (Rational.mul coef.12 t12)
                                                 )
                                             )
                                         )
