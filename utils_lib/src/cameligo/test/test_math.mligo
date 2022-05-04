@@ -29,8 +29,28 @@ let test =
         Test.log("Test 'factorial' finished")
     in
     let _test_trigo = 
+        let angle = Trigo.zero in
+        let (t0, t1, t2, t3, t4, t5) = Trigo.eval_chebychev_polynoms(angle) in
+        let () = Test.log(t0) in
+        let () = Test.log(t1) in
+        let () = Test.log(t2) in
+        let () = Test.log(t3) in
+        let () = Test.log(t4) in
+        let () = Test.log(t5) in
+        
+        let manual = Rational.sub ({p=-10354634426296383;q=100000000000000000}) {p=6021947012555463;q=10000000000000000} in
+        let manual_resolved = Rational.resolve manual 3n in
+        let () = Test.log(manual) in
+        let () = Test.log(manual_resolved) in
+        
 
         let angle = Trigo.zero in
+        let sin_angle = Trigo.sin(angle) in
+        let sin_angle_resolved = Rational.resolve sin_angle 1n  in
+        let () = Test.log("sin(0)") in
+        let () = Test.log(sin_angle) in
+        let () = Test.log(sin_angle_resolved) in
+
         let () = assert(Trigo.sin(angle) = {p=0; q=1}) in
 
         let angle = Trigo.pi_half in

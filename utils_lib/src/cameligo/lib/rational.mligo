@@ -13,6 +13,9 @@ let inverse (a : rational) : rational =
 [@inline]
 let lt (a : rational) (b : rational) : bool = 
     (a.p * b.q < a.q * b.p)
+[@inline]
+let lte (a : rational) (b : rational) : bool = 
+    (a.p * b.q <= a.q * b.p)
 
 [@inline]
 let add (a : rational) (b : rational) : rational  =
