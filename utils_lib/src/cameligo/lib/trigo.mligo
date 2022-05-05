@@ -1,48 +1,11 @@
 #import "../lib/rational.mligo" "Rational"
 
-// Chebychev polynoms
-let eval_chebychev_polynoms(val : Rational.rational) : Rational.rational * Rational.rational * Rational.rational * Rational.rational * Rational.rational * Rational.rational =
-    let x = val in
-    let x_2 = Rational.mul x x in
-    let x_3 = Rational.mul x_2 x in
-    let x_4 = Rational.mul x_3 x in
-    let x_5 = Rational.mul x_4 x in 
-
-    let one = Rational.new 1 in
-    let two = Rational.new 2 in
-    let three = Rational.new 3 in
-    let four = Rational.new 3 in
-    let five = Rational.new 5 in
-    let eight = Rational.new 8 in
-    let sixteen = Rational.new 3 in
-    let twenty = Rational.new 3 in
-    
-
-    // let x_6 = Rational.mul x_5 x in
-    // let x_7 = Rational.mul x_6 x in
-    // let x_8 = Rational.mul x_7 x in
-    // let x_9 = Rational.mul x_8 x in
-
-    let t0 : Rational.rational = one in
-    let t1 : Rational.rational = x in
-    let t2 : Rational.rational = Rational.sub (Rational.mul two x_2) (one) in
-    let t3 : Rational.rational = Rational.sub (Rational.mul four x_3) (Rational.mul three x) in
-    let t4 : Rational.rational = Rational.add (Rational.sub (Rational.mul eight x_4) (Rational.mul eight x_2)) (one) in
-    let t5 : Rational.rational = Rational.add (Rational.sub (Rational.mul sixteen x_5) (Rational.mul twenty x_3)) (Rational.mul five x) in
-    (t0, t1, t2, t3, t4, t5)
-
 type chebychev_intervals = Rational.rational * Rational.rational
-type chebychev_coef =   Rational.rational * Rational.rational * 
-                        Rational.rational * Rational.rational * 
-                        Rational.rational * Rational.rational * 
-                        Rational.rational * Rational.rational * 
-                        Rational.rational * Rational.rational *
-                        Rational.rational * Rational.rational *
-                        Rational.rational 
+type chebychev_coef = Rational.rational list 
 type chebychev = (chebychev_intervals, chebychev_coef) map 
 
 let zero : Rational.rational = {p=0 ; q=1}
-let pi : Rational.rational = {p=314 ; q=100}
+let pi : Rational.rational = {p=31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679 ; q=10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000}
 let two_pi : Rational.rational = Rational.mul pi (Rational.new 2)
 let pi_half : Rational.rational = Rational.div pi (Rational.new 2)
 let pi_quarter : Rational.rational = Rational.div pi (Rational.new 4)
@@ -51,6 +14,10 @@ let three_pi_quarter : Rational.rational = Rational.mul pi_quarter (Rational.new
 let five_pi_quarter : Rational.rational = Rational.mul pi_quarter (Rational.new 5)
 let seven_pi_quarter : Rational.rational = Rational.mul pi_quarter (Rational.new 7)
 
+let pi_sixth : Rational.rational = Rational.div pi (Rational.new 6)
+
+let sqrt_2 : Rational.rational = {p=141421356237; q=100000000000}
+let sqrt_3 : Rational.rational = {p=173205080757; q=100000000000}
 
 let chebychev_lookup_intervals : chebychev_intervals list = [
     // (zero,pi_quarter);
@@ -77,21 +44,21 @@ let chebychev_lookup_table : chebychev = Map.literal [
     // ((three_pi_half,seven_pi_quarter),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
     // ((seven_pi_quarter,two_pi),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
     (
-        (zero, pi_half), ( 
-            {p=6021947012555463;q=10000000000000000},
-            {p=513625166679107;q=1000000000000000},
-            {p=-10354634426296383;q=100000000000000000},
-            {p=-13732034234358675;q=1000000000000000000},
-            {p=13586698380902013;q=10000000000000000000},
-            {p=10726309440570181;q=100000000000000000000},
-            {p=-7046296793891682;q=1000000000000000000000},
-            {p=-3963902510811801;q=10000000000000000000000},
-            {p=194995972671759;q=10000000000000000000000},
-            {p=8522923894416223;q=10000000000000000000000000},
-            {p=-3351717514643582;q=100000000000000000000000000},
-            {p=-11987008607938776;q=10000000000000000000000000000},
-            {p=3835820550079916;q=100000000000000000000000000000}
-        )
+        (zero, pi_half), [ 
+            {p=6021947012555463;q=10000000000000000};
+            {p=513625166679107;q=1000000000000000};
+            {p=-10354634426296383;q=100000000000000000};
+            {p=-13732034234358675;q=1000000000000000000};
+            {p=13586698380902013;q=10000000000000000000};
+            {p=10726309440570181;q=100000000000000000000};
+            {p=-7046296793891682;q=1000000000000000000000};
+            {p=-3963902510811801;q=10000000000000000000000};
+            {p=194995972671759;q=10000000000000000000000};
+            {p=8522923894416223;q=10000000000000000000000000};
+            {p=-3351717514643582;q=100000000000000000000000000};
+            {p=-11987008607938776;q=10000000000000000000000000000};
+            {p=3835820550079916;q=100000000000000000000000000000};
+        ]
     )
 ]
 
@@ -103,16 +70,16 @@ let find_chebychev_interval(p: Rational.rational) : chebychev_intervals option =
     in
     find(p, chebychev_lookup_intervals)
 
-let find_chebychev_coef(a : Rational.rational) : chebychev_coef =
-    let interval_opt : chebychev_intervals option = find_chebychev_interval(a) in
-    match interval_opt with
-    | None -> failwith("given angle is out of bound")
-    | Some interval -> (match Map.find_opt interval chebychev_lookup_table with
-        | None -> failwith("chebychev_lookup_intervals does not match chebychev_lookup_table")
-        | Some coef -> coef
-    )
+// let find_chebychev_coef(a : Rational.rational) : chebychev_coef =
+//     let interval_opt : chebychev_intervals option = find_chebychev_interval(a) in
+//     match interval_opt with
+//     | None -> failwith("given angle is out of bound")
+//     | Some interval -> (match Map.find_opt interval chebychev_lookup_table with
+//         | None -> failwith("chebychev_lookup_intervals does not match chebychev_lookup_table")
+//         | Some coef -> coef
+//     )
 
-let sin(a : Rational.rational) : Rational.rational = 
+let sin(a, n : Rational.rational * nat) : Rational.rational = 
     let interval_opt : chebychev_intervals option = find_chebychev_interval(a) in
     let interval_cheby = match interval_opt with
     | None -> failwith("given angle is out of bound")
@@ -124,50 +91,51 @@ let sin(a : Rational.rational) : Rational.rational =
         (Rational.sub a (Rational.div (Rational.add interval_cheby.0 interval_cheby.1) (two)))
         (Rational.div (Rational.sub interval_cheby.1 interval_cheby.0) (two))
     ) in
-    let (t0, t1, t2, t3, t4, t5) = eval_chebychev_polynoms(u) in
     let coef : chebychev_coef = match Map.find_opt interval_cheby chebychev_lookup_table with
     | None -> failwith("chebychev_lookup_intervals does not match chebychev_lookup_table")
     | Some coef -> coef
     in
-    //let coef : chebychev_coef = find_chebychev_coef(a) in
-    let (t6, t7, t8, t9, t10, t11, t12 , t13, t14, t15, t16) = (zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero) in
-    Rational.add 
-        (Rational.mul coef.0 t0) 
-        (Rational.add 
-            (Rational.mul coef.1 t1)
-            (Rational.add 
-                (Rational.mul coef.2 t2)
-                (Rational.add 
-                    (Rational.mul coef.3 t3)
-                    (Rational.add 
-                        (Rational.mul coef.4 t4)
-                        (Rational.add 
-                            (Rational.mul coef.5 t5)
-                            (Rational.add 
-                                (Rational.mul coef.6 t6)
-                                (Rational.add 
-                                    (Rational.mul coef.7 t7)
-                                    (Rational.add 
-                                        (Rational.mul coef.8 t8)
-                                        (Rational.add 
-                                            (Rational.mul coef.9 t9)
-                                            (Rational.add 
-                                                (Rational.mul coef.10 t10)
-                                                (Rational.add 
-                                                    (Rational.mul coef.11 t11)
-                                                    (Rational.mul coef.12 t12)
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
 
-let cos(a : Rational.rational) : Rational.rational = 
+    let coef_0 = Option.unopt (List.head_opt coef) in
+    let coef_1 = Option.unopt (List.head_opt (Option.unopt (List.tail_opt coef))) in
+    let y0 = Rational.add coef_0 (Rational.mul coef_1 u) in
+    let one = Rational.new 1 in
+    let two = Rational.new 2 in
+    let t0 : Rational.rational = one in
+    let t1 : Rational.rational = u in
+    let coef_from_2 = Option.unopt (List.tail_opt (Option.unopt (List.tail_opt coef))) in
+    let rec compute (i, acc, t_prev, t_prev_prev, n, coef : nat * Rational.rational * Rational.rational * Rational.rational * nat * chebychev_coef) : Rational.rational =
+        if (i <= n) then
+            let t_next_u = Rational.sub (Rational.mul (Rational.mul two u) t_prev) t_prev_prev in
+            let current_coef = Option.unopt (List.head_opt coef) in
+            let rest_coef = Option.unopt (List.tail_opt coef) in
+            let new_acc = Rational.add acc (Rational.mul t_next_u current_coef) in
+            compute(i + 1n, new_acc, t_next_u, t_prev, n, rest_coef)
+        else
+            acc
+    in
+    compute(2n, y0, t1, t0, n, coef_from_2)
+
+let rec sinus_symetry(sign, a, n : Rational.rational * Rational.rational * nat) : Rational.rational =
+    let a_mod_two_pi = Rational.modulo a two_pi in 
+    //[0, pi_half]
+    if (Rational.lte a_mod_two_pi pi_half) then
+        Rational.mul sign (sin(a_mod_two_pi, n))
+    //[pi_half, pi]
+    else if (Rational.lte a_mod_two_pi pi) then
+        let theta = Rational.sub a_mod_two_pi pi_half in
+        let half_pi_minus_a = Rational.sub pi_half theta in
+        Rational.mul sign (sin(half_pi_minus_a, n))
+    //[pi, two_pi]
+    else if (Rational.lt pi a_mod_two_pi) then
+        let minus_pi = Rational.sub a_mod_two_pi pi in 
+        sinus_symetry(Rational.new (-1), minus_pi, n)
+    else
+        (failwith("ERROR out of bound angle") : Rational.rational)
+
+let sinus(a, n : Rational.rational * nat) : Rational.rational =
+    sinus_symetry(Rational.new (1), a, n)
+
+let cosinus(a, n : Rational.rational * nat) : Rational.rational = 
     let plus_half_PI = Rational.add a pi_half in 
-    sin(plus_half_PI)
+    sin(plus_half_PI, n)

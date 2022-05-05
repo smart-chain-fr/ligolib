@@ -18,21 +18,31 @@ let lte (a : rational) (b : rational) : bool =
     (a.p * b.q <= a.q * b.p)
 
 [@inline]
-let add (a : rational) (b : rational) : rational  =
+let add (a : rational) (b : rational) : rational =
     { p= a.p * b.q + b.p * a.q ; q=a.q * b.q }
 
 [@inline]
-let sub (a : rational) (b : rational) : rational  =
+let sub (a : rational) (b : rational) : rational =
     { p= a.p * b.q - b.p * a.q ; q=a.q * b.q }
 
 [@inline]
-let mul (a : rational) (b : rational) : rational  =
+let mul (a : rational) (b : rational) : rational =
     { p= a.p * b.p ; q=a.q * b.q }
 
 [@inline]
-let div (a : rational) (b : rational) : rational  =
+let div (a : rational) (b : rational) : rational =
     { p= a.p * b.q ; q=a.q * b.p }
-    
+
+[@inline]
+let modulo (a : rational) (b : rational) : rational =
+    let rec compute (a, b : rational * rational) : rational =
+        if (lt a b) then 
+            a 
+        else
+            compute((sub a b), b)
+    in
+    compute(a, b)
+
 [@inline]
 let resolve (a: rational) (prec: nat) : int =
     let input : rational = if (a.p < 0) then
