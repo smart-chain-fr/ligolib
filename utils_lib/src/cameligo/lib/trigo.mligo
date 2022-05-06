@@ -13,11 +13,14 @@ let three_pi_half : Rational.rational = Rational.mul pi_half (Rational.new 3)
 let three_pi_quarter : Rational.rational = Rational.mul pi_quarter (Rational.new 3)
 let five_pi_quarter : Rational.rational = Rational.mul pi_quarter (Rational.new 5)
 let seven_pi_quarter : Rational.rational = Rational.mul pi_quarter (Rational.new 7)
-
+let pi_third : Rational.rational = Rational.div pi (Rational.new 3)
 let pi_sixth : Rational.rational = Rational.div pi (Rational.new 6)
 
-let sqrt_2 : Rational.rational = {p=141421356237; q=100000000000}
-let sqrt_3 : Rational.rational = {p=173205080757; q=100000000000}
+//1.414213562373095048801688724209698078569671875376948073176679737990732478462107038850387534327641572735013846230912297024924836055850737212644121497099935831413222665927505592755799950501152782060571
+//1.7320508075688772935
+
+let sqrt_2 : Rational.rational = {p=1414213562373095048801688724209; q=1000000000000000000000000000000}
+let sqrt_3 : Rational.rational = {p=17320508075688772935; q=10000000000000000000}
 
 let chebychev_lookup_intervals : chebychev_intervals list = [
     // (zero,pi_quarter);
@@ -117,21 +120,25 @@ let sin(a, n : Rational.rational * nat) : Rational.rational =
     compute(2n, y0, t1, t0, n, coef_from_2)
 
 let rec sinus_symetry(sign, a, n : Rational.rational * Rational.rational * nat) : Rational.rational =
-    let a_mod_two_pi = Rational.modulo a two_pi in 
-    //[0, pi_half]
-    if (Rational.lte a_mod_two_pi pi_half) then
-        Rational.mul sign (sin(a_mod_two_pi, n))
-    //[pi_half, pi]
-    else if (Rational.lte a_mod_two_pi pi) then
-        let theta = Rational.sub a_mod_two_pi pi_half in
-        let half_pi_minus_a = Rational.sub pi_half theta in
-        Rational.mul sign (sin(half_pi_minus_a, n))
-    //[pi, two_pi]
-    else if (Rational.lt pi a_mod_two_pi) then
-        let minus_pi = Rational.sub a_mod_two_pi pi in 
-        sinus_symetry(Rational.new (-1), minus_pi, n)
+    // sin(-a) = - sin(a)
+    if (Rational.lt a zero) then
+        sinus_symetry(Rational.mul sign (Rational.new (-1)), Rational.mul a (Rational.new (-1)), n)
     else
-        (failwith("ERROR out of bound angle") : Rational.rational)
+        let a_mod_two_pi = Rational.modulo a two_pi in 
+        //[0, pi_half]
+        if (Rational.lte a_mod_two_pi pi_half) then
+            Rational.mul sign (sin(a_mod_two_pi, n))
+        //[pi_half, pi]
+        else if (Rational.lte a_mod_two_pi pi) then
+            let theta = Rational.sub a_mod_two_pi pi_half in
+            let half_pi_minus_a = Rational.sub pi_half theta in
+            Rational.mul sign (sin(half_pi_minus_a, n))
+        //[pi, two_pi]
+        else if (Rational.lt pi a_mod_two_pi) then
+            let minus_pi = Rational.sub a_mod_two_pi pi in 
+            sinus_symetry(Rational.mul sign (Rational.new (-1)), minus_pi, n)
+        else
+            (failwith("ERROR out of bound angle") : Rational.rational)
 
 let sinus(a, n : Rational.rational * nat) : Rational.rational =
     sinus_symetry(Rational.new (1), a, n)
