@@ -232,6 +232,7 @@ let test =
         let cos_a = Trigo.cosinus(angle, precision) in
         let sin_a = Trigo.sinus(angle, precision) in
         let res = Rational.add (Rational.mul cos_a cos_a) (Rational.mul sin_a sin_a) in
+        let () = Test.log(res) in
         let diff = Rational.sub (res) expected in
         let error = Rational.resolve diff 12n in
         let () = assert(Rational.lt diff error_threshold ) in

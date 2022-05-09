@@ -11,13 +11,13 @@ help:
 
 all: test
 
-test: test_ligo_utils test_ligo_math test_ligo_rational
+test: test_ligo_utils test_ligo_math_rational test_ligo_rational test_ligo_float test_ligo_math_float
 
 test_ligo_utils: test/test_utils.mligo 
 	@echo "Running integration tests (is_implicit, bytes_to_nat)"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
-test_ligo_math: test/test_math.mligo 
+test_ligo_math_rational: test/test_math_rational.mligo 
 	@echo "Running integration tests (Math)"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
@@ -25,4 +25,10 @@ test_ligo_rational: test/test_rational.mligo
 	@echo "Running integration tests (Rational)"
 	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
+test_ligo_float: test/test_float.mligo 
+	@echo "Running integration tests (Float)"
+	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)
 
+test_ligo_math_float: test/test_math_float.mligo 
+	@echo "Running integration tests (Math)"
+	@$(ligo_compiler) run test $^ $(PROTOCOL_OPT)

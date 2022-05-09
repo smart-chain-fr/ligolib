@@ -26,6 +26,12 @@ let factorial (n : nat) : nat =
         if (i < 2n) then acc else fact(acc * i, abs(i - 1n)) in
     fact(1n, n)
 
+let min (a: nat) (b: nat) : nat =
+    if (a < b) then a else b
+
+let max (a: nat) (b: nat) : nat =
+    if (a > b) then a else b
+
 // let log_10 (x : nat) : nat =
 //     //precalculated= [log(2), log(1.1), log(1.01), ... , log(1.000001)];
 //     let precalculated : Rational.t list = [
