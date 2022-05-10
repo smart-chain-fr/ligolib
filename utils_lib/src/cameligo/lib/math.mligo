@@ -32,6 +32,16 @@ let min (a: nat) (b: nat) : nat =
 let max (a: nat) (b: nat) : nat =
     if (a > b) then a else b
 
+// TODO : optimize log algorithm !
+let log_10 (x : nat) : nat =
+    let rec check_power(x, i : nat * nat) : nat =
+        if (x mod power(10n, i) > 0n) then
+            abs(i - 1n)
+        else
+            check_power(x, i + 1n)
+    in 
+    check_power(x, 1n)
+
 // let log_10 (x : nat) : nat =
 //     //precalculated= [log(2), log(1.1), log(1.01), ... , log(1.000001)];
 //     let precalculated : Rational.t list = [
@@ -61,12 +71,3 @@ let max (a: nat) (b: nat) : nat =
 //     in
 //     let (k_final, y_final, p_final) = List.fold func precalculated (k_init, y_init, p_init) in
 //     y_final
-
-let log_10 (x : nat) : nat =
-    let rec check_power(x, i : nat * nat) : nat =
-        if (x mod power(10n, i) > 0n) then
-            abs(i - 1n)
-        else
-            check_power(x, i + 1n)
-    in 
-    check_power(x, 1n)

@@ -1,33 +1,10 @@
 #import "../lib/math.mligo" "Math"
 #import "../lib/rational.mligo" "Rational"
-#import "../lib/trigo.mligo" "Trigo"
+#import "../lib/trigo_rational.mligo" "Trigo"
 
 
 let test =
 
-    let _test_isqrt = 
-
-        let () = assert(Math.isqrt(4n) = 2n) in
-        let () = assert(Math.isqrt(8n) = 2n) in
-        let () = assert(Math.isqrt(9n) = 3n) in
-        let () = assert(Math.isqrt(15n) = 3n) in
-        let () = assert(Math.isqrt(16n) = 4n) in
-        let () = assert(Math.isqrt(17n) = 4n) in
-
-        Test.log("Test 'isqrt' finished")
-    in
-    let _test_factorial = 
-
-        let () = assert(Math.factorial(0n) = 1n) in
-        let () = assert(Math.factorial(1n) = 1n) in
-        let () = assert(Math.factorial(2n) = 2n) in
-        let () = assert(Math.factorial(3n) = 6n) in
-        let () = assert(Math.factorial(4n) = 24n) in
-        let () = assert(Math.factorial(5n) = 120n) in
-        let () = assert(Math.factorial(6n) = 720n) in
-        
-        Test.log("Test 'factorial' finished")
-    in
     let _test_trigo_sinus = 
         let error_threshold = (Rational.inverse (Rational.new (int(Math.power(10n, 12n))))) in
         let precision : nat = 11n in
@@ -232,16 +209,9 @@ let test =
         let cos_a = Trigo.cosinus(angle, precision) in
         let sin_a = Trigo.sinus(angle, precision) in
         let res = Rational.add (Rational.mul cos_a cos_a) (Rational.mul sin_a sin_a) in
-        let () = Test.log(res) in
         let diff = Rational.sub (res) expected in
         let error = Rational.resolve diff 12n in
         let () = assert(Rational.lt diff error_threshold ) in
-
-        // WTF it computes indefinitevley
-        // let angle = Rational.sub Trigo.pi_half Trigo.two_pi in
-        // let computed = Trigo.cosinus(angle, precision) in
-        // let computed_reduced : Rational.t = Rational.reduce_power_10 computed in
-        // let () = Test.log(computed_reduced) in
 
         Test.log("Test 'trigo' finished")
     in

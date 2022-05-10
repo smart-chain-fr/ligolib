@@ -48,24 +48,24 @@ let test =
 
         Test.log("Test finished")
     in
-    let _test_rational_reduce = 
-        let a : Rational.t = { p=123000; q=10000000 } in
-        let a_log_10 : Rational.t = Rational.reduce_power_10 a in
-        let () = Test.log(a_log_10) in
+    // let _test_rational_reduce = 
+    //     let a : Rational.t = { p=123000; q=10000000 } in
+    //     let a_log_10 : Rational.t = Rational.reduce_power_10 a in
+    //     let () = Test.log(a_log_10) in
 
-        let a : Rational.t = { p=12300000000; q=1000000000000 } in
-        let a_log_10 : Rational.t = Rational.reduce_power_10 a in
-        let () = Test.log(a_log_10) in
+    //     let a : Rational.t = { p=12300000000; q=1000000000000 } in
+    //     let a_log_10 : Rational.t = Rational.reduce_power_10 a in
+    //     let () = Test.log(a_log_10) in
 
-        let a : Rational.t = { p=123456789; q=100000000000000 } in
-        let a_log_10 : Rational.t = Rational.reduce_power_10 a in
-        let () = Test.log(a_log_10) in
+    //     let a : Rational.t = { p=123456789; q=100000000000000 } in
+    //     let a_log_10 : Rational.t = Rational.reduce_power_10 a in
+    //     let () = Test.log(a_log_10) in
 
-        let a : Rational.t = { p=1234567891234567891234567891234567891234567891234567891234567891234567891234567891234567891234567890000000000; q=1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 } in
-        let a_log_10 : Rational.t = Rational.reduce_power_10 a in
-        let () = Test.log(a_log_10) in
+    //     let a : Rational.t = { p=1234567891234567891234567891234567891234567891234567891234567891234567891234567891234567891234567890000000000; q=1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 } in
+    //     let a_log_10 : Rational.t = Rational.reduce_power_10 a in
+    //     let () = Test.log(a_log_10) in
 
-        Test.log("Test finished")
-    in
+    //     Test.log("Test finished")
+    // in
     ()
 
