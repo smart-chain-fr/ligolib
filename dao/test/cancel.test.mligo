@@ -65,9 +65,6 @@ let test_failure_not_creator =
     let r = DAO_helper.cancel(empty_nat_option, dao.contr) in
     let () = Assert.string_failure r DAO.Errors.not_creator in
 
-    (* restore back bootstrap sender *)
-    Test.set_source sender_
-
 (* Failing cancel proposal because timelock is unlocked *)
 let test_failure_timelock_unlocked =
     let (tok, dao, sender_) = bootstrap() in
