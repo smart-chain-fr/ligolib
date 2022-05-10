@@ -6,9 +6,9 @@ let blocks_per_cycle = 12n
 
 let cycletime = blocktime * blocks_per_cycle
 
-let sec_to_cycle (sec : nat) : nat = 
+let sec_to_cycle (sec : nat) : nat =
     let rest = sec mod cycletime in
-    if rest <> 0n 
+    if rest <> 0n
         then failwith "given seconds must be a multiple of cycle_time"
     else sec / cycletime
 
@@ -17,7 +17,7 @@ let advance (sec : nat) =
     let nb_cycles = sec_to_cycle(sec) in
     Test.bake_until_n_cycle_end nb_cycles
 
-let test_sec_to_cycle_success =
+let test_success_sec_to_cycle =
     let rec t (lst : (nat * nat) list) : unit =
         match lst with
         | [] -> ()

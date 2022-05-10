@@ -44,10 +44,10 @@ let add_outcome (o, s : Outcome.t * t) : t =
     let proposal = (match status with
         (* If proposal is accepted, also create timelock *)
         Accepted -> let unlock_at = Tezos.now + int(s.config.timelock_delay) in
-            { proposal with timelock = Some({
-               unlock_at = unlock_at;
-               relock_at = unlock_at + int(s.config.timelock_period);
-            })}
+            { proposal with timelock = Some(Timelock.make(
+                unlock_at,
+                s.config.timelock_period)
+            )}
         | _ -> proposal)
     in
     { s with

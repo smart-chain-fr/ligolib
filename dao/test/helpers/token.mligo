@@ -14,7 +14,7 @@ type originated = {
     contr: contr;
 }
 
-let originate (tok_amount : nat) = 
+let originate (tok_amount : nat) =
     let f = "./test/bootstrap/single_asset.mligo" in
     let init_storage, owners, ops = SingleAsset_helper.get_initial_storage(
         tok_amount, tok_amount, tok_amount
@@ -41,7 +41,7 @@ type single_asset_transfer_param = {
 
 (* Transfer token in [contr] between [from_] and [to_] addresses with [amount_] tokens,
  WARNING: changes Test framework source  *)
-let transfer (contr, from_, to_, amount_ : contr * address * address * nat) = 
+let transfer (contr, from_, to_, amount_ : contr * address * address * nat) =
     let () = Test.set_source from_ in
     let transfer_requests = ([
       ({from_=from_; tx=([{to_=to_;amount=amount_}] : SingleAsset.atomic_trans list)});
@@ -56,7 +56,7 @@ let add_operators (operators, contr : SingleAsset.operator list * SingleAsset.pa
     Assert.tx_success r
 
 (* assert for FA2 insuffiscient balance string failure *)
-let assert_ins_balance_failure (r : test_exec_result) =  
+let assert_ins_balance_failure (r : test_exec_result) =
     Assert.string_failure r SingleAsset.Errors.ins_balance
 
 (* assert FA2 contract at [taddr] have [owner] address with [amount_] tokens in its ledger *)
@@ -66,12 +66,19 @@ let assert_balance_amount (taddr, owner, amount_ : taddr * SingleAsset.Ledger.ow
         Some tokens -> assert(tokens = amount_)
         | None -> failwith("Big_map key should not be missing")
 
-(** 
-    Pack a transfer lambda for token contract at address [addr] 
+(* get balance in [taddr] contract for [owner] address *)
+let get_balance_for (taddr, owner : taddr * SingleAsset.Ledger.owner) =
+    let s = Test.get_storage taddr in
+    match Big_map.find_opt owner s.ledger with
+        Some amount_ -> amount_
+        | None -> 0n
+
+(**
+    Pack a transfer lambda for token contract at address [addr]
     between [from_] and [to_] addresses with [amount_] tokens
 *)
-let pack_transfer (addr, from_, to_, amount_ : address * address * address * nat) = 
-    Bytes.pack (fun() -> 
+let pack_transfer (addr, from_, to_, amount_ : address * address * address * nat) =
+    Bytes.pack (fun() ->
         match (Tezos.get_entrypoint_opt "%transfer" addr : SingleAsset.transfer contract option) with
         Some(c) ->
             let transfer_requests = ([

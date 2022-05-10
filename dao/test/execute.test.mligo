@@ -19,14 +19,12 @@ let test_success =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    (* empty operation list *)
-    let () = Suite_helper.make_proposal_success(tok, dao, Some((
-        0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
-        OperationList
-    ))) in
+    let lambda_ = Some(( DAO_helper.empty_op_list_hash, OperationList)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
-    let r = DAO_helper.execute(1n, 0x0502000000060320053d036d, dao.contr) in
+    let r = DAO_helper.execute(1n, DAO_helper.empty_op_list_packed, dao.contr) in
     DAO_helper.assert_executed(dao.taddr, 1n)
 
 (* Successful execution of a parameter change *)
@@ -36,10 +34,9 @@ let test_success_parameter_changed =
 
     let base_config = DAO_helper.base_config in
     let packed = Bytes.pack (fun() -> { base_config with quorum_threshold = 51n }) in
-    (* empty operation list *)
-    let () = Suite_helper.make_proposal_success(tok, dao, Some(
-        (Crypto.sha256 packed, ParameterChange)
-    )) in
+    let lambda_ = Some((Crypto.sha256 packed, ParameterChange)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, packed, dao.contr) in
@@ -52,40 +49,48 @@ let test_success_parameter_changed =
 (* Successful execution of an operation list *)
 let test_success_operation_list =
     let (tok, dao, sender_) = bootstrap() in
-    let owner1 = List_helper.nth_exn 1 tok.owners in
     let owner2 = List_helper.nth_exn 2 tok.owners in
     let dao_storage = Test.get_storage dao.taddr in
+    let owner2_initial_balance = Token_helper.get_balance_for(tok.taddr, owner2) in
 
-    let packed = Token_helper.pack_transfer(tok.addr, dao.addr, owner2, 2n) in
-    let () = Suite_helper.make_proposal_success(tok, dao, Some(
-        (Crypto.sha256 packed, OperationList)
-    )) in
+    (* Pack an operation that will send 2 tokens from DAO to owner2 *)
+    let owner2_amount_to_receive = 2n in
+    let packed = Token_helper.pack_transfer(tok.addr, dao.addr, owner2,
+    owner2_amount_to_receive) in
+
+    let owner2_amount_locked = 25n in
+    let lambda_ = Some((Crypto.sha256 packed, OperationList)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, owner2_amount_locked, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, packed, dao.contr) in
     let () = DAO_helper.assert_executed(dao.taddr, 1n) in
-    let tok_storage = Test.get_storage(tok.taddr) in
 
-    (* Assert that the FA2 storage has been changed *)
-    let () = (match Big_map.find_opt owner2 tok_storage.ledger with
-        Some(amt) -> assert(amt = 10n)
-        | None -> failwith("LEDGER_ENTRY_NOT_FOUND")) in
-    ()
+    let owner2_expected_balance : nat = abs(
+        owner2_initial_balance
+        - owner2_amount_locked
+        + owner2_amount_to_receive)
+    in
+    Token_helper.assert_balance_amount(tok.taddr, owner2, owner2_expected_balance)
 
 (* Failing because no outcome *)
 let test_failure_no_outcome =
     let (tok, dao, sender_) = bootstrap() in
 
-    let r = DAO_helper.execute(1n, 0x05030b, dao.contr) in
+    let r = DAO_helper.execute(1n, DAO_helper.dummy_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.outcome_not_found
 
 (* Failing because timelock delay not elapsed *)
-let test_failure_lambda_wrong_packed_data =
+let test_failure_timelock_delay_not_elapsed =
     let (tok, dao, sender_) = bootstrap() in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some((0x01, ParameterChange))) in
 
-    let r = DAO_helper.execute(1n, 0x05030b, dao.contr) in
+    let lambda_ = Some((DAO_helper.dummy_hash, ParameterChange)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
+
+    let r = DAO_helper.execute(1n, DAO_helper.dummy_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.timelock_locked
 
 (* Failing because the packed data is not matching *)
@@ -93,23 +98,24 @@ let test_failure_lambda_wrong_packed_data =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    let () = Suite_helper.make_proposal_success(tok, dao, Some((0x01, ParameterChange))) in
+    let lambda_ = Some((DAO_helper.dummy_hash, ParameterChange)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
-    let r = DAO_helper.execute(1n, 0x05030b, dao.contr) in
+    let r = DAO_helper.execute(1n, DAO_helper.dummy_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.lambda_wrong_packed_data
 
-(* Failing because the lambda couldn't be unpacked *)
+(* Failing because the lambda couldn't be unpacked because of wrong lambda kind *)
 let test_failure_wrong_lambda_kind =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    (* empty operation list *)
-    let () = Suite_helper.make_proposal_success(tok, dao, Some(
-        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
-        ParameterChange)
-    )) in
+    (* the lambda kind is ParameterChange but it should have been OperationList *)
+    let lambda_ = Some( (DAO_helper.empty_op_list_hash, ParameterChange)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
-    let r = DAO_helper.execute(1n, 0x0502000000060320053d036d, dao.contr) in
+    let r = DAO_helper.execute(1n, DAO_helper.empty_op_list_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.wrong_lambda_kind

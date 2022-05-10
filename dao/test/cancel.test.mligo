@@ -33,11 +33,9 @@ let test_success_current_proposal =
 let test_success_accepted_proposal =
     let (tok, dao, sender_) = bootstrap() in
 
-    (* empty operation list *)
-    let () = Suite_helper.make_proposal_success(tok, dao, Some(
-        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
-        OperationList)
-    )) in
+    let lambda_ = Some(( DAO_helper.empty_op_list_hash, OperationList)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
 
     let () = DAO_helper.cancel_success(Some(1n), dao.contr) in
     let dao_storage = Test.get_storage dao.taddr in
@@ -75,11 +73,9 @@ let test_failure_timelock_unlocked =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    (* empty operation list *)
-    let () = Suite_helper.make_proposal_success(tok, dao, Some(
-        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
-        OperationList)
-    )) in
+    let lambda_ = Some(( DAO_helper.empty_op_list_hash, OperationList)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.cancel(Some(1n), dao.contr) in
@@ -90,11 +86,9 @@ let test_failure_already_executed =
     let (tok, dao, sender_) = bootstrap() in
     let dao_storage = Test.get_storage dao.taddr in
 
-    (* empty operation list *)
-    let () = Suite_helper.make_proposal_success(tok, dao, Some(
-        (0xef67ec8260f062258375ab178c485146d467843d2a69b8eae7181441397f4021,
-        OperationList)
-    )) in
+    let lambda_ = Some(( DAO_helper.empty_op_list_hash, OperationList)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
     let () = Time_helper.advance(dao_storage.config.timelock_delay) in
     let () = DAO_helper.execute_success(1n, 0x0502000000060320053d036d, dao.contr) in
 

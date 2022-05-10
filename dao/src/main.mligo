@@ -188,17 +188,16 @@ let end_vote (s : storage) : result =
                     s.config.quorum_threshold,
                     s.config.super_majority
                 ) in
-            (match outcome.1 with
-                Rejected_(WithoutRefund) -> [Token.transfer(
-                    s.governance_token,
-                    Tezos.self_address,
-                    s.config.burn_address,
-                    s.config.deposit_amount)]
-                | _ -> [Token.transfer(
-                    s.governance_token,
-                    Tezos.self_address,
-                    Tezos.sender,
-                    s.config.deposit_amount)]
+            let (_, state) = outcome in
+            let transfer_to_addr = match state with
+                Rejected_(WithoutRefund) -> s.config.burn_address
+                | _ -> Tezos.sender
+            in
+            ([Token.transfer(
+                s.governance_token,
+                Tezos.self_address,
+                transfer_to_addr,
+                s.config.deposit_amount)]
             ), Storage.add_outcome(outcome, s)
 
 (**

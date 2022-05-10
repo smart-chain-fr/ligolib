@@ -11,9 +11,13 @@ type originated = {
     contr: contr;
 }
 
+(* Pack and hash of a lambda returning an empty operation list *)
+let empty_op_list_packed = Bytes.pack (fun() -> ([] :operation list))
+let empty_op_list_hash = Crypto.sha256 empty_op_list_packed
+
 (* Some dummy values intended to be used as placeholders *)
-let dummy_pack = Bytes.pack (fun() -> ([] :operation list))
-let dummy_hash = Crypto.sha256 dummy_pack
+let dummy_packed = 0x05030b
+let dummy_hash = 0x01
 let dummy_proposal = {
     description_link = "ipfs://QmbKq7QriWWU74NSq35sDSgUf24bYWTgpBq3Lea7A3d7jU";
     lambda = Some((0x01, ParameterChange))

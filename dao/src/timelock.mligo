@@ -15,11 +15,11 @@ type t =
     [unlock_at] timestamp and compute a relock_at timestamp equals to the
     [timelock_period] added to [unlock_at]
 *)
-let make (unlock_at, timelock_period : timestamp * nat) : t option =
-    Some({
+let make (unlock_at, timelock_period : timestamp * nat) : t =
+    {
        unlock_at = unlock_at;
        relock_at = unlock_at + int(timelock_period);
-    })
+    }
 
 (**
     [is_locked(t)] returns true if [t] timelock is locked, false otherwise.

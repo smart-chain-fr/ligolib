@@ -15,7 +15,7 @@ and the [tezos-ligo-fa2](https://www.npmjs.com/package/tezos-ligo-fa2) [package]
 
 The used `FA2` token is expected to extend the standard with an on-chain view
 `total_supply` returning the total supply of tokens, used as base for the
-participation computation, see [example `FA2` int the test directory](./test/bootstrap/single_asset.mligo).
+participation computation, see [example `FA2` in the test directory](./test/bootstrap/single_asset.mligo).
 
 ## Usage
 

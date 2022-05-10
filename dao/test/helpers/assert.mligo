@@ -10,6 +10,6 @@ let string_failure (res : test_exec_result) (expected : string) : unit =
 (* Assert contract result is successful *)
 let tx_success (res: test_exec_result) : unit =
     match res with
-        | Success(c) -> ()
+        | Success(_) -> ()
         | Fail (Rejected (error,_)) -> let () = Test.log(error) in failwith "Transaction should not fail"
         | Fail _ -> failwith "Transaction should not fail"
