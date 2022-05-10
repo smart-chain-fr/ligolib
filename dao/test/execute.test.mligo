@@ -85,12 +85,26 @@ let test_failure_no_outcome =
 let test_failure_timelock_delay_not_elapsed =
     let (tok, dao, sender_) = bootstrap() in
 
-
     let lambda_ = Some((DAO_helper.dummy_hash, ParameterChange)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
     let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
 
     let r = DAO_helper.execute(1n, DAO_helper.dummy_packed, dao.contr) in
+    Assert.string_failure r DAO.Errors.timelock_locked
+
+(* Failing because timelock has been relocked *)
+let test_failure_timelock_relocked =
+    let (tok, dao, sender_) = bootstrap() in
+    let dao_storage = Test.get_storage dao.taddr in
+
+    let lambda_ = Some(( DAO_helper.empty_op_list_hash, OperationList)) in
+    let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
+    let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
+
+    let time_elapsed : nat = dao_storage.config.timelock_delay + dao_storage.config.timelock_period in
+    let () = Time_helper.advance(time_elapsed) in
+
+    let r = DAO_helper.execute(1n, DAO_helper.empty_op_list_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.timelock_locked
 
 (* Failing because the packed data is not matching *)

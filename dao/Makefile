@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 LIGO=ligo
 ifeq (, $(shell which ligo))
-	LIGO=docker run -v "$(PWD):$(PWD)" -w "$(PWD)" --rm -i ligolang/ligo:0.40.0
+	LIGO=docker run -v "$(PWD):$(PWD)" -w "$(PWD)" --rm -i ligolang/ligo:0.41.0
 endif
 # ^ use ligo bin if available, otherwise use docker
 
