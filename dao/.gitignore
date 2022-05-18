@@ -3,3 +3,5 @@ compiled/
 _esy/
 .env
 scripts/metadata.json
+.DS_Store
+node_modules
