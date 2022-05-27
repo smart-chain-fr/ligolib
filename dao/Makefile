@@ -1,14 +1,12 @@
 SHELL := /bin/bash
 
-LIGO=ligo
-ifeq (, $(shell which ligo))
-	LIGO=docker run -v "$(PWD):$(PWD)" -w "$(PWD)" --rm -i ligolang/ligo:0.41.0
+ifndef LIGO
+LIGO=docker run --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.41.0
 endif
-# ^ use ligo bin if available, otherwise use docker
+# ^ use LIGO en var bin if configured, otherwise use docker
 
 project_root=--project-root .
 # ^ required when using packages
-protocol=--protocol ithaca
 
 help:
 	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
@@ -17,7 +15,7 @@ help:
 compile = $(LIGO) compile contract $(project_root) ./src/$(1) -o ./compiled/$(2) $(3)
 # ^ compile contract to michelson or micheline
 
-test = $(LIGO) run test $(project_root) $(protocol) ./test/$(1)
+test = $(LIGO) run test $(project_root) ./test/$(1)
 # ^ run given test file
 
 compile: ## compile contracts

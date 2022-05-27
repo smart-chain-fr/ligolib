@@ -63,7 +63,7 @@ let test_failure_not_creator =
     let sender_ = List_helper.nth_exn 2 tok.owners in
     let () = Test.set_source sender_ in
     let r = DAO_helper.cancel(empty_nat_option, dao.contr) in
-    let () = Assert.string_failure r DAO.Errors.not_creator in
+    Assert.string_failure r DAO.Errors.not_creator
 
 (* Failing cancel proposal because timelock is unlocked *)
 let test_failure_timelock_unlocked =

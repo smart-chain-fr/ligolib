@@ -1,6 +1,5 @@
 #import "tezos-ligo-fa2/lib/fa2/asset/single_asset.mligo" "SingleAsset"
 #import "tezos-ligo-fa2/test/fa2/single_asset.test.mligo" "SingleAsset_helper"
-#import "tezos-ligo-fa2/test/helpers/list.mligo" "List_helper"
 #import "./assert.mligo" "Assert"
 
 (* Some types for readability *)
@@ -60,7 +59,7 @@ let assert_ins_balance_failure (r : test_exec_result) =
     Assert.string_failure r SingleAsset.Errors.ins_balance
 
 (* assert FA2 contract at [taddr] have [owner] address with [amount_] tokens in its ledger *)
-let assert_balance_amount (taddr, owner, amount_ : taddr * SingleAsset.Ledger.owner *  nat) =
+let assert_balance_amount (taddr, owner, amount_ : taddr * SingleAsset.Ledger.owner * nat) =
     let s = Test.get_storage taddr in
     match Big_map.find_opt owner s.ledger with
         Some tokens -> assert(tokens = amount_)
