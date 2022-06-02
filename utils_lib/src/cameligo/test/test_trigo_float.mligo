@@ -6,195 +6,79 @@
 let test =
 
     let _test_trigo_sinus = 
+        // GIVEN
         let error_threshold = (Float.inverse (Float.new 1 12)) in
         let precision : nat = 11n in
-        // sin(0)
+
+        let test_sinus (angle, expected : Float.t * Float.t) : bool = 
+            let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
+            Float.lt diff error_threshold
+        in
+        // ASSERT
         let () = Test.log("sin(0)") in
-        let angle = Trigo.zero in
-        let expected = (Float.new 0 0) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // sin(PI/2)
+        let () = assert(test_sinus(Trigo.zero, Trigo.zero)) in
         let () = Test.log("sin(Pi/2)") in
-        let angle = Trigo.pi_half in
-        let expected = (Float.new 1 0) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // sin(PI)
+        let () = assert(test_sinus(Trigo.pi_half, Trigo.one)) in
         let () = Test.log("sin(Pi)") in
-        let angle = Trigo.pi in
-        let expected = (Float.new 0 0) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // sin(3*PI/2)
+        let () = assert(test_sinus(Trigo.pi, Trigo.zero)) in
         let () = Test.log("sin(3*Pi/2)") in
-        let angle = Trigo.three_pi_half in
-        let expected = (Float.new (-1) 0) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-        
-        // sin(2*PI)
+        let () = assert(test_sinus(Trigo.three_pi_half, Trigo.minus_one)) in
         let () = Test.log("sin(2*Pi)") in
-        let angle = Trigo.two_pi in
-        let expected = (Float.new 0 0) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // sin(PI/4)
+        let () = assert(test_sinus(Trigo.two_pi, Trigo.zero)) in
         let () = Test.log("sin(Pi/4)") in
-        let angle = Trigo.pi_quarter in
-        let expected = (Float.div Trigo.sqrt_2 (Float.new 2 0)) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-        
-        // sin(PI/6)
+        let expected = (Float.div Trigo.sqrt_2 Trigo.two) in
+        let () = assert(test_sinus(Trigo.pi_quarter, expected)) in
         let () = Test.log("sin(Pi/6)") in
-        let angle = Trigo.pi_sixth in
-        let expected = (Float.inverse (Float.new 2 0)) in
-        //let expected = (Float.div Trigo.sqrt_3 (Float.new 2)) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // sin(PI/3)
+        let expected = (Float.inverse Trigo.two) in
+        let () = assert(test_sinus(Trigo.pi_sixth, expected)) in
         let () = Test.log("sin(Pi/3)") in
-        let angle = Trigo.pi_third in
-        let expected = (Float.div Trigo.sqrt_3 (Float.new 2 0)) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // sin(-PI/2)
+        let expected = (Float.div Trigo.sqrt_3 Trigo.two) in
+        let () = assert(test_sinus(Trigo.pi_third, expected)) in
         let () = Test.log("sin(-Pi/2)") in
-        let angle = Float.sub (Float.new 0 0) Trigo.pi_half in
-        let expected = (Float.new (-1) 0) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // sin(-3*PI/2)
+        let angle = Float.sub Trigo.zero Trigo.pi_half in
+        let () = assert(test_sinus(angle, Trigo.minus_one)) in
         let () = Test.log("sin(-3*Pi/2)") in
-        //let angle = Float.sub Trigo.zero Trigo.three_pi_half in
         let angle = Float.sub Trigo.pi_half Trigo.two_pi in
-        let expected = (Float.new (1) 0) in
-        let diff = Float.sub (Trigo.sinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
+        let () = assert(test_sinus(angle, Trigo.one)) in
 
         Test.log("Test 'trigo sinus (with float)' finished")
     in
     let _test_trigo_cosinus = 
+        // GIVEN
         let error_threshold = (Float.inverse (Float.new 1 12)) in
         let precision : nat = 11n in
-        // cos(0)
+
+        let test_cosinus (angle, expected : Float.t * Float.t) : bool = 
+            let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
+            Float.lt diff error_threshold
+        in
+
+        // ASSERT
         let () = Test.log("cos(0)") in
-        let angle = Trigo.zero in
-        let expected = (Float.new 1 0) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // cos(PI/2)
+        let () = assert(test_cosinus(Trigo.zero, Trigo.one)) in
         let () = Test.log("cos(Pi/2)") in
-        let angle = Trigo.pi_half in
-        let expected = (Float.new 0 0) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // cos(PI)
+        let () = assert(test_cosinus(Trigo.pi_half, Trigo.zero)) in
         let () = Test.log("cos(Pi)") in
-        let angle = Trigo.pi in
-        let expected = (Float.new (-1) 0) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // cos(3*PI/2)
+        let () = assert(test_cosinus(Trigo.pi, Trigo.minus_one)) in
         let () = Test.log("cos(3*Pi/2)") in
-        let angle = Trigo.three_pi_half in
-        let expected = (Float.new 0 0) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-        
-        // cos(2*PI)
+        let () = assert(test_cosinus(Trigo.three_pi_half, Trigo.zero)) in
         let () = Test.log("cos(2*Pi)") in
-        let angle = Trigo.two_pi in
-        let expected = (Float.new 1 0) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // cos(PI/4)
+        let () = assert(test_cosinus(Trigo.two_pi, Trigo.one)) in
         let () = Test.log("cos(Pi/4)") in
-        let angle = Trigo.pi_quarter in
-        let expected = (Float.div Trigo.sqrt_2 (Float.new 2 0)) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-        
-        // cos(PI/6)
+        let expected = (Float.div Trigo.sqrt_2 Trigo.two) in
+        let () = assert(test_cosinus(Trigo.pi_quarter, expected)) in
         let () = Test.log("cos(Pi/6)") in
-        let angle = Trigo.pi_sixth in
-        let expected = (Float.div Trigo.sqrt_3 (Float.new 2 0)) in
-        //let expected = (Float.div Trigo.sqrt_3 (Float.new 2)) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // cos(PI/3)
+        let expected = (Float.div Trigo.sqrt_3 Trigo.two) in
+        let () = assert(test_cosinus(Trigo.pi_sixth, expected)) in
         let () = Test.log("cos(Pi/3)") in
-        let angle = Trigo.pi_third in
         let expected = (Float.inverse (Float.new 2 0)) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // cos(-PI/2)
+        let () = assert(test_cosinus(Trigo.pi_third, expected)) in
         let () = Test.log("cos(-Pi/2)") in
         let angle = Float.sub (Float.new 0 0) Trigo.pi_half in
-        let expected = (Float.new 0 0) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
-
-        // cos(-3*PI/2)
+        let () = assert(test_cosinus(angle, Trigo.zero)) in
         let () = Test.log("cos(-3*Pi/2)") in
-        //let angle = Float.sub Trigo.zero Trigo.three_pi_half in
         let angle = Float.sub Trigo.pi_half Trigo.two_pi in
-        let expected = (Float.new 0 0) in
-        let diff = Float.sub (Trigo.cosinus(angle, precision)) expected in
-        let error = Float.resolve diff 12n in
-        //let () = Test.log(error) in
-        let () = assert(Float.lt diff error_threshold ) in
+        let () = assert(test_cosinus(angle, Trigo.zero)) in
 
         Test.log("Test 'trigo cosinus (with float)' finished")
     in
@@ -209,10 +93,10 @@ let test =
         let sin_a = Trigo.sinus(angle, precision) in
         let res = Float.add (Float.mul cos_a cos_a) (Float.mul sin_a sin_a) in
         let diff = Float.sub (res) expected in
-        let error = Float.resolve diff 12n in
+        // let error = Float.resolve diff 12n in
         let () = assert(Float.lt diff error_threshold ) in
 
-        Test.log("Test 'trigo' finished")
+        Test.log("Test 'trigo (with float)' finished")
     in
     ()
 

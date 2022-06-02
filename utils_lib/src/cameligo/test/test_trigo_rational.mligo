@@ -100,7 +100,7 @@ let test =
         //let () = Test.log(error) in
         let () = assert(Rational.lt diff error_threshold ) in
 
-        Test.log("Test 'trigo' finished")
+        Test.log("Test 'trigo sinus (with rational)' finished")
     in
     let _test_trigo_cosinus = 
         let error_threshold = (Rational.inverse (Rational.new (int(Math.power(10n, 12n))))) in
@@ -197,7 +197,7 @@ let test =
         //let () = Test.log(error) in
         let () = assert(Rational.lt diff error_threshold ) in
 
-        Test.log("Test 'trigo' finished")
+        Test.log("Test 'trigo cosinus (with rational)' finished")
     in
     let _test_trigo = 
         let error_threshold = (Rational.inverse (Rational.new (int(Math.power(10n, 12n))))) in
@@ -213,7 +213,7 @@ let test =
         let error = Rational.resolve diff 12n in
         let () = assert(Rational.lt diff error_threshold ) in
 
-        Test.log("Test 'trigo' finished")
+        Test.log("Test 'trigo (with rational)' finished")
     in
     ()
 

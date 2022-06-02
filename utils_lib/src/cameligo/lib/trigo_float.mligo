@@ -5,6 +5,10 @@ type chebychev_coef = Float.t list
 type chebychev = (chebychev_intervals, chebychev_coef) map 
 
 let zero : Float.t = {val=0 ; pow=0}
+let one : Float.t = {val=1; pow=0}
+let minus_one : Float.t = {val=-1; pow=0}
+let two : Float.t = {val=2; pow=0}
+//PI = 1.414213562373095048801688724209698078569671875376948073176679737990732478462107038850387534327641572735013846230912297024924836055850737212644121497099935831413222665927505592755799950501152782060571
 let pi : Float.t = {val=31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679 ; pow=-100}
 let two_pi : Float.t = Float.mul pi (Float.new 2 0)
 let pi_half : Float.t = Float.div pi (Float.new 2 0)
@@ -16,36 +20,14 @@ let seven_pi_quarter : Float.t = Float.mul pi_quarter (Float.new 7 0)
 let pi_third : Float.t = Float.div pi (Float.new 3 0)
 let pi_sixth : Float.t = Float.div pi (Float.new 6 0)
 
-//1.414213562373095048801688724209698078569671875376948073176679737990732478462107038850387534327641572735013846230912297024924836055850737212644121497099935831413222665927505592755799950501152782060571
-//1.7320508075688772935
-
 let sqrt_2 : Float.t = {val=1414213562373095048801688724209; pow=-30}
 let sqrt_3 : Float.t = {val=17320508075688772935; pow=-19}
 
 let chebychev_lookup_intervals : chebychev_intervals list = [
-    // (zero,pi_quarter);
-    // (pi_quarter,pi_half);
-    // (pi_half,three_pi_quarter);
-    // (three_pi_quarter,pi);
-    // (pi,five_pi_quarter);
-    // (five_pi_quarter,three_pi_half);
-    // (three_pi_half,seven_pi_quarter);
-    // (seven_pi_quarter,two_pi);
     (zero, pi_half)
 ]
 
-//0.0, 1.5707963267948966, 0.6021947012555463, 0.513625166679107, -0.10354634426296383, -0.013732034234358675, 0.0013586698380902013, 0.00010726309440570181, -7.046296793891682e-06, -3.963902510811801e-07, 1.94995972671759e-08, 8.522923894416223e-10, -3.351717514643582e-11, -1.1987008607938776e-12, 3.835820550079916e-14, 4.163336342344337e-16, -6.591949208711867e-16, -1.9290125052862095e-15
-
-
 let chebychev_lookup_table : chebychev = Map.literal [
-    // ((zero,pi_quarter),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
-    // ((pi_quarter,pi_half),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
-    // ((pi_half,three_pi_quarter),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
-    // ((three_pi_quarter,pi),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
-    // ((pi,five_pi_quarter),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
-    // ((five_pi_quarter,three_pi_half),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
-    // ((three_pi_half,seven_pi_quarter),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
-    // ((seven_pi_quarter,two_pi),({p=0;q=1}, {p=0;q=1}, {p=0;q=1}) );
     (
         (zero, pi_half), [ 
             {val=6021947012555463;pow=-16};
