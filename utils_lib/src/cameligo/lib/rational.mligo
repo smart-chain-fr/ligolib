@@ -53,20 +53,4 @@ let resolve (a: t) (prec: nat) : int =
     in
     (input.p * Math.power(10n, prec)) / input.q
 
-// [@inline]
-// let reduce_power_10 (a: t): t =
-//     let (p,q) : int * int = (a.p, a.q) in
-//     let p_log_10 : nat = Math.log_10(abs(p)) in
-//     let max_power: nat = abs(p_log_10 - 1n) in
-//     let rec reduce_(a, indice_10_power : t * nat) : t = 
-//         if (indice_10_power <= 0n) then
-//             a
-//         else
-//             let divisor = Math.power(10n, indice_10_power) in
-//             if (p mod divisor = 0n) && (abs(q) >= 10n * divisor) then
-//                 {p=p / divisor; q=q / divisor}
-//             else
-//                 reduce_(a, abs(indice_10_power - 1n))
-//     in
-//     reduce_(a, max_power)
 

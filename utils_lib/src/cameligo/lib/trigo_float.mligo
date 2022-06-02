@@ -23,8 +23,8 @@ let sqrt_3 : Float.t = {val=17320508075688772935; pow=-19}
 
 (* computes sinus for an ange between zero and half_pi *)
 let sin(a, n : Float.t * nat) : Float.t = 
-    let _check_angle_positive = assert_with_error (Float.gte a zero) "given angle is out of bound" in
-    let _check_angle_pi_half = assert_with_error (Float.lte a pi_half) "given angle is out of bound" in
+    let _check_angle_positive = assert_with_error (Float.gte a zero) "[Trigo_float.sinus] given angle is out of bound" in
+    let _check_angle_pi_half = assert_with_error (Float.lte a pi_half) "[Trigo_float.sinus] given angle is out of bound" in
     let one = Float.new 1 0 in
     let two = Float.new 2 0 in
     //let u = (x - (a+b)/2.0 )/ (b-a)/2.0
@@ -86,7 +86,7 @@ let rec sinus_symetry(sign, a, n : Float.t * Float.t * nat) : Float.t =
             let minus_pi = Float.sub a_mod_two_pi pi in 
             sinus_symetry(Float.mul sign (Float.new (-1) 0), minus_pi, n)
         else
-            (failwith("ERROR out of bound angle") : Float.t)
+            (failwith("[Trigo_float.sinus] ERROR out of bound angle") : Float.t)
 
 let sinus(a, n : Float.t * nat) : Float.t =
     sinus_symetry(Float.new (1) 0, a, n)
