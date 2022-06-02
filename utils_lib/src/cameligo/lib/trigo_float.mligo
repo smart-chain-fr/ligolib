@@ -1,8 +1,6 @@
 #import "../lib/float.mligo" "Float"
 
-type chebychev_intervals = Float.t * Float.t
 type chebychev_coef = Float.t list 
-type chebychev = (chebychev_intervals, chebychev_coef) map 
 
 let zero : Float.t = {val=0 ; pow=0}
 let one : Float.t = {val=1; pow=0}
@@ -23,13 +21,18 @@ let pi_sixth : Float.t = Float.div pi (Float.new 6 0)
 let sqrt_2 : Float.t = {val=1414213562373095048801688724209; pow=-30}
 let sqrt_3 : Float.t = {val=17320508075688772935; pow=-19}
 
-let chebychev_lookup_intervals : chebychev_intervals list = [
-    (zero, pi_half)
-]
-
-let chebychev_lookup_table : chebychev = Map.literal [
-    (
-        (zero, pi_half), [ 
+(* computes sinus for an ange between zero and half_pi *)
+let sin(a, n : Float.t * nat) : Float.t = 
+    let _check_angle_positive = assert_with_error (Float.gte a zero) "given angle is out of bound" in
+    let _check_angle_pi_half = assert_with_error (Float.lte a pi_half) "given angle is out of bound" in
+    let one = Float.new 1 0 in
+    let two = Float.new 2 0 in
+    //let u = (x - (a+b)/2.0 )/ (b-a)/2.0
+    let u = (Float.div
+        (Float.sub a (Float.div (Float.add zero pi_half) (two)))
+        (Float.div (Float.sub pi_half zero) (two))
+    ) in
+    let coef : chebychev_coef = [ 
             {val=6021947012555463;pow=-16};
             {val=513625166679107;pow=-15};
             {val=-10354634426296383;pow=-17};
@@ -44,39 +47,11 @@ let chebychev_lookup_table : chebychev = Map.literal [
             {val=-11987008607938776;pow=-28};
             {val=3835820550079916;pow=-29};
         ]
-    )
-]
-
-let find_chebychev_interval(p: Float.t) : chebychev_intervals option =
-    let rec find (x, lst : Float.t * chebychev_intervals list) : chebychev_intervals option =
-        match lst with
-        | [] -> (None: chebychev_intervals option)
-        | hd::tl -> if (Float.lte x hd.1) then (Some (hd)) else find(x, tl)
-    in
-    find(p, chebychev_lookup_intervals)
-
-let sin(a, n : Float.t * nat) : Float.t = 
-    let interval_opt : chebychev_intervals option = find_chebychev_interval(a) in
-    let interval_cheby = match interval_opt with
-    | None -> failwith("given angle is out of bound")
-    | Some interval -> interval
-    in
-    let two = Float.new 2 0 in
-    //let u = (x - (a+b)/2.0 )/ (b-a)/2.0
-    let u = (Float.div
-        (Float.sub a (Float.div (Float.add interval_cheby.0 interval_cheby.1) (two)))
-        (Float.div (Float.sub interval_cheby.1 interval_cheby.0) (two))
-    ) in
-    let coef : chebychev_coef = match Map.find_opt interval_cheby chebychev_lookup_table with
-    | None -> failwith("chebychev_lookup_intervals does not match chebychev_lookup_table")
-    | Some coef -> coef
     in
 
     let coef_0 = Option.unopt (List.head_opt coef) in
     let coef_1 = Option.unopt (List.head_opt (Option.unopt (List.tail_opt coef))) in
     let y0 = Float.add coef_0 (Float.mul coef_1 u) in
-    let one = Float.new 1 0 in
-    let two = Float.new 2 0 in
     let t0 : Float.t = one in
     let t1 : Float.t = u in
     let coef_from_2 = Option.unopt (List.tail_opt (Option.unopt (List.tail_opt coef))) in

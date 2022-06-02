@@ -1,5 +1,6 @@
 #import "../lib/math.mligo" "Math"
 
+// n = a * 10^b
 type t = { val : int; pow: int }
 
 [@inline]
@@ -45,6 +46,25 @@ let lte (a : t) (b : t) : bool =
         let diff = sub a b in
         diff.val <= 0  
 
+[@inline]
+let gte (a : t) (b : t) : bool = 
+    if (a.val >= 0) && (b.val < 0) then
+        true
+    else if (a.val <= 0) && (b.val > 0) then
+        false
+    else 
+        let diff = sub a b in
+        diff.val >= 0  
+
+[@inline]
+let gt (a : t) (b : t) : bool = 
+    if (a.val > 0) && (b.val < 0) then
+        true
+    else if (a.val < 0) && (b.val > 0) then
+        false
+    else 
+        let diff = sub a b in
+        diff.val > 0  
 
 [@inline]
 let mul (a : t) (b : t) : t =
