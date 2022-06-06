@@ -1,0 +1,19 @@
+{
+    "name": "DAO Example",
+    "description": "An Example DAO Contract",
+    "version": "beta",
+    "license": {
+        "name": "MIT"
+    },
+    "authors": [
+        "smart-chain <tezos@smart-chain.fr>"
+    ],
+    "homepage": "https://github.com/smart-chain-fr/ligolib/dao",
+    "source": {
+        "tools": "cameligo",
+        "location": "https://github.com/smart-chain-fr/ligolib/dao/src"
+    },
+    "interfaces": [
+        "TZIP-016"
+    ]
+}
