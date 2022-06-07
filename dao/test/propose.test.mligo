@@ -9,7 +9,7 @@ let () = Log.describe("[Propose] test suite")
 
 (* Boostrapping of the test environment, *)
 let init_tok_amount = 10n
-let bootstrap () = Bootstrap.boot(init_tok_amount)
+let bootstrap () = Bootstrap.boot(init_tok_amount, DAO_helper.base_storage)
 
 (* Successful proposal creation *)
 let test_success =

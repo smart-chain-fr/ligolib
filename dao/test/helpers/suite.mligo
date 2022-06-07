@@ -1,6 +1,5 @@
 #import "./token.mligo" "Token_helper"
 #import "./dao.mligo" "DAO_helper"
-#import "./time.mligo" "Time_helper"
 #import "tezos-ligo-fa2/test/helpers/list.mligo" "List_helper"
 
 (*
@@ -12,7 +11,8 @@
     and votes "yes" to the created proposal,
     eventually, the end_vote entry point is called.
     Can lead to either accepted or rejected proposal, according to
-    the given [amount_] of tokens
+    the given [amount_] of tokens.
+    Requires appropriate config of various periods and delays
 *)
 let create_and_vote_proposal (
     tok, dao, lambda_, votes : Token_helper.originated *
@@ -42,10 +42,6 @@ let create_and_vote_proposal (
     in
     let () = List.iter do_vote votes in
 
-    (* advance suffiscient time for the voting period to elapse, and call end_vote
-       entry point *)
-    let dao_storage = Test.get_storage dao.taddr in
-    let () = Time_helper.advance(dao_storage.config.start_delay) in
     let () = Test.set_source sender_ in
     let () = DAO_helper.end_vote_success(dao.contr) in
     ()
