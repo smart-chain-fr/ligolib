@@ -1,0 +1,7 @@
+export let unknownViewGetBalance : string = "unknown view get_balance.";
+export let unknownViewTokenUsage : string = "unknown view token_usage.";
+export let not_owner : string = "Not owner of this token";
+export let unknown_fa2_contract : string = "Unknown FA2 contract";
+export let unknown_proposal : string = "Unknown proposal";
+export let proposal_not_active : string = "Already sold";
+export let wrong_amount : string = "You did not transfer enough tez for this nft";
