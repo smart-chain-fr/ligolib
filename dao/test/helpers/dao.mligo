@@ -1,5 +1,4 @@
 #import "../../src/main.mligo" "DAO"
-#import "./time.mligo" "Time_helper"
 #import "./assert.mligo" "Assert"
 
 (* Some types for readability *)
@@ -22,6 +21,7 @@ let dummy_proposal = {
     description_link = "ipfs://QmbKq7QriWWU74NSq35sDSgUf24bYWTgpBq3Lea7A3d7jU";
     lambda = Some((0x01, ParameterChange))
 }
+let dummy_governance_token = ("KT1VqarPDicMFn1ejmQqqshUkUXTCTXwmkCN": address)
 
 (* Some default values *)
 let default_votes = (Map.empty : DAO.Vote.votes)
@@ -32,19 +32,19 @@ let base_config : DAO.Storage.Config.t = {
     refund_threshold = 32n;
     quorum_threshold = 67n;
     super_majority = 80n;
-    start_delay = Time_helper.cycletime;
-    voting_period = Time_helper.cycletime * 4n;
-    timelock_delay = Time_helper.cycletime;
-    timelock_period = Time_helper.cycletime * 2n;
+    start_delay = 360n;
+    voting_period = 1440n;
+    timelock_delay = 360n;
+    timelock_period = 720n;
     burn_address = ("tz1burnburnburnburnburnburnburjAYjjX": address);
 }
 
-let base_storage (governance_token : DAO.Storage.Token.t) : DAO.storage = {
+let base_storage : DAO.storage = {
     metadata = Big_map.literal [
         ("", Bytes.pack("tezos-storage:contents"));
         ("contents", ("": bytes))
     ];
-    governance_token = governance_token;
+    governance_token = dummy_governance_token;
     vault = (Big_map.empty : DAO.Storage.Vault.t);
     proposal = (None : DAO.Proposal.t option);
     config = base_config;

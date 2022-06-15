@@ -3,7 +3,6 @@
 #import "./helpers/dao.mligo" "DAO_helper"
 #import "./helpers/suite.mligo" "Suite_helper"
 #import "./helpers/log.mligo" "Log"
-#import "./helpers/time.mligo" "Time_helper"
 #import "./helpers/assert.mligo" "Assert"
 #import "./bootstrap/bootstrap.mligo" "Bootstrap"
 #import "../src/main.mligo" "DAO"
@@ -12,32 +11,39 @@ let () = Log.describe("[Execute] test suite")
 
 (* Boostrapping of the test environment, *)
 let init_tok_amount = 33n
-let bootstrap () = Bootstrap.boot(init_tok_amount)
+let bootstrap (init_dao_storage : DAO.storage) =
+    Bootstrap.boot(init_tok_amount, init_dao_storage)
+let base_config = DAO_helper.base_config
+let base_storage = DAO_helper.base_storage
 
 (* Successful timelock execution of an operation list *)
 let test_success =
-    let (tok, dao, sender_) = bootstrap() in
-    let dao_storage = Test.get_storage dao.taddr in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n; } in
+    let dao_storage = { base_storage with config = config } in
+    let (tok, dao, sender_) = bootstrap(dao_storage) in
 
     let lambda_ = Some(( DAO_helper.empty_op_list_hash, OperationList)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
     let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
-    let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, DAO_helper.empty_op_list_packed, dao.contr) in
     DAO_helper.assert_executed(dao.taddr, 1n)
 
 (* Successful execution of a parameter change *)
 let test_success_parameter_changed =
-    let (tok, dao, sender_) = bootstrap() in
-    let dao_storage = Test.get_storage dao.taddr in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n; } in
+    let dao_storage = { base_storage with config = config } in
+    let (tok, dao, sender_) = bootstrap(dao_storage) in
 
     let base_config = DAO_helper.base_config in
     let packed = Bytes.pack (fun() -> { base_config with quorum_threshold = 51n }) in
     let lambda_ = Some((Crypto.sha256 packed, ParameterChange)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
     let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
-    let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, packed, dao.contr) in
     let () = DAO_helper.assert_executed(dao.taddr, 1n) in
@@ -48,7 +54,11 @@ let test_success_parameter_changed =
 
 (* Successful execution of an operation list *)
 let test_success_operation_list =
-    let (tok, dao, sender_) = bootstrap() in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n; } in
+    let dao_storage = { base_storage with config = config } in
+    let (tok, dao, sender_) = bootstrap(dao_storage) in
     let owner2 = List_helper.nth_exn 2 tok.owners in
     let dao_storage = Test.get_storage dao.taddr in
     let owner2_initial_balance = Token_helper.get_balance_for(tok.taddr, owner2) in
@@ -62,7 +72,6 @@ let test_success_operation_list =
     let lambda_ = Some((Crypto.sha256 packed, OperationList)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, owner2_amount_locked, true)] in
     let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
-    let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, packed, dao.contr) in
     let () = DAO_helper.assert_executed(dao.taddr, 1n) in
@@ -76,14 +85,19 @@ let test_success_operation_list =
 
 (* Failing because no outcome *)
 let test_failure_no_outcome =
-    let (tok, dao, sender_) = bootstrap() in
+    let (tok, dao, sender_) = bootstrap(base_storage) in
 
     let r = DAO_helper.execute(1n, DAO_helper.dummy_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.outcome_not_found
 
 (* Failing because timelock delay not elapsed *)
 let test_failure_timelock_delay_not_elapsed =
-    let (tok, dao, sender_) = bootstrap() in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n;
+        timelock_delay = 1800n } in
+    let dao_storage = { base_storage with config = config } in
+    let (tok, dao, sender_) = bootstrap(dao_storage) in
 
     let lambda_ = Some((DAO_helper.dummy_hash, ParameterChange)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
@@ -94,42 +108,47 @@ let test_failure_timelock_delay_not_elapsed =
 
 (* Failing because timelock has been relocked *)
 let test_failure_timelock_relocked =
-    let (tok, dao, sender_) = bootstrap() in
-    let dao_storage = Test.get_storage dao.taddr in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n;
+        timelock_period = 10n } in
+    let dao_storage = { base_storage with config = config } in
+    let (tok, dao, sender_) = bootstrap(dao_storage) in
 
     let lambda_ = Some(( DAO_helper.empty_op_list_hash, OperationList)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
     let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
-
-    let time_elapsed : nat = dao_storage.config.timelock_delay + dao_storage.config.timelock_period in
-    let () = Time_helper.advance(time_elapsed) in
 
     let r = DAO_helper.execute(1n, DAO_helper.empty_op_list_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.timelock_locked
 
 (* Failing because the packed data is not matching *)
 let test_failure_lambda_wrong_packed_data =
-    let (tok, dao, sender_) = bootstrap() in
-    let dao_storage = Test.get_storage dao.taddr in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n } in
+    let dao_storage = { base_storage with config = config } in
+    let (tok, dao, sender_) = bootstrap(dao_storage) in
 
     let lambda_ = Some((DAO_helper.dummy_hash, ParameterChange)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
     let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
-    let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, DAO_helper.dummy_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.lambda_wrong_packed_data
 
 (* Failing because the lambda couldn't be unpacked because of wrong lambda kind *)
 let test_failure_wrong_lambda_kind =
-    let (tok, dao, sender_) = bootstrap() in
-    let dao_storage = Test.get_storage dao.taddr in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n } in
+    let dao_storage = { base_storage with config = config } in
+    let (tok, dao, sender_) = bootstrap(dao_storage) in
 
     (* the lambda kind is ParameterChange but it should have been OperationList *)
     let lambda_ = Some( (DAO_helper.empty_op_list_hash, ParameterChange)) in
     let votes = [(0, 25n, true); (1, 25n, true); (2, 25n, true)] in
     let () = Suite_helper.create_and_vote_proposal(tok, dao, lambda_, votes) in
-    let () = Time_helper.advance(dao_storage.config.timelock_delay) in
 
     let r = DAO_helper.execute(1n, DAO_helper.empty_op_list_packed, dao.contr) in
     Assert.string_failure r DAO.Errors.wrong_lambda_kind

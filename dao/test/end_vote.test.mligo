@@ -1,6 +1,5 @@
 #import "tezos-ligo-fa2/test/helpers/list.mligo" "List_helper"
 #import "./helpers/dao.mligo" "DAO_helper"
-#import "./helpers/time.mligo" "Time_helper"
 #import "./helpers/suite.mligo" "Suite_helper"
 #import "./helpers/log.mligo" "Log"
 #import "./helpers/assert.mligo" "Assert"
@@ -11,7 +10,15 @@ let () = Log.describe("[End_vote] test suite")
 
 (* Boostrapping of the test environment, *)
 let init_tok_amount = 33n
-let bootstrap () = Bootstrap.boot(init_tok_amount)
+let bootstrap () =
+    let base_config = DAO_helper.base_config in
+    let base_storage = DAO_helper.base_storage in
+    let config = { base_config with
+        start_delay = 10n;
+        voting_period = 1800n;
+    } in
+    let dao_storage = { base_storage with config = config } in
+    Bootstrap.boot(init_tok_amount, dao_storage)
 
 (* Successful end_vote with proposal accepted *)
 let test_success_prop_accepted =
@@ -52,7 +59,6 @@ let test_failure_voting_period =
 
     let () = DAO_helper.propose_success(DAO_helper.dummy_proposal, dao.contr) in
 
-    let () = Time_helper.advance(dao_storage.config.start_delay * 2n) in
     let r = DAO_helper.end_vote(dao.contr) in
     Assert.string_failure r DAO.Errors.voting_period
 
