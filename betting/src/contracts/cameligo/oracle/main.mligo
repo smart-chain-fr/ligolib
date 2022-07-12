@@ -34,38 +34,68 @@ let switchPause (s : TYPES.storage) : (operation list * TYPES.storage) =
   )
   else failwith ERRORS.not_manager
 
-let addEvent (newEvent : TYPES.oracleEventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
-  let newEvents : (nat, TYPES.oracleEventType) map = Map.add (s.events_index + 1n) newEvent s.events in
-  (([] : operation list), {s with events = newEvents})
+let incrementEventIndex (s : TYPES.storage) : (operation list * TYPES.storage) =
+  let new_events_index : nat = s.events_index + 1n in
+  (([] : operation list), {s with events_index = new_events_index})
 
+let addEvent (newEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
+  let sender = Tezos.get_sender() in
+  if ((sender = s.manager) || (sender = s.signer) )
+  then
+  (
+    let ( _ , s) = incrementEventIndex(s) in
+    let newEvents : (nat, TYPES.eventType) map = (Map.add (s.events_index) newEvent s.events) in
+    (([] : operation list), {s with events = newEvents})
+  )
+  else failwith ERRORS.not_manager
 
-let getEvent (_requestedEventID : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
+let getEvent (requestedEventID : nat)(callback : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
+  let cbk_event =
+    match Map.find_opt requestedEventID s.events with
+      Some event -> event
+    | None -> (failwith ERRORS.no_event_id)
+    in
+  let returnedValue : TYPES.callbackReturnedValue = {
+    requestedEvent = cbk_event;
+    callback = callback;
+  } in
+  let _operation = Tezos.transaction(returnedValue, 0tez, callback) in
   (([] : operation list), s)
 
-// let getEvent (requestedEventID, cbk_addr : nat * address)(s : TYPES.storage) : (operation list * TYPES.storage) =
-//   let callback = cbk_addr in
-//   let returnedValue : TYPES.callbackReturnedValue = {
-//     requestedEvent = requestedEventID;
-//     callback = cbk_addr;
-//   } in
-//   let _operation = Tezos.transaction(returnedValue, 0tez, callback) in
-//   (([] : operation list), s)
-
-let updateEvent (_newValue : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
-  (([] : operation list), s)
+let updateEvent (updatedEventID : nat)(updatedEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
+  let sender = Tezos.get_sender() in
+  if ((sender = s.manager) || (sender = s.signer) )
+  then
+  (
+    let _cbk_event : TYPES.eventType =
+      match Map.find_opt updatedEventID s.events with
+        Some event -> event
+      | None -> (failwith ERRORS.no_event_id)
+    in
+    let newEvents : (nat, TYPES.eventType) map = Map.update updatedEventID (Some(updatedEvent)) s.events in
+    (([] : operation list), {s with events = newEvents})
+  )
+  else failwith ERRORS.not_manager
 
 let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.storage) =
   let result =
     match params with
-    | ChangeManager p -> changeManager p s
-    | ChangeSigner p -> changeSigner p s
+    | ChangeManager a -> changeManager a s
+    | ChangeSigner a -> changeSigner a s
     | SwitchPause _ -> switchPause s
-    | AddEvent p -> addEvent p s
-    | GetEvent p -> getEvent p s
-    // | GetEvent (p,q) -> getEvent (p,q) s
-    | UpdateEvent p -> updateEvent p s
+    | AddEvent e -> addEvent e s
+    | GetEvent p -> getEvent p.requestedEventID p.callback s
+    | UpdateEvent p -> updateEvent p.updatedEventID p.updatedEvent s
   in
   result
+
+[@view]
+let getManager (_, s : unit * TYPES.storage) : timestamp * address =
+  (Tezos.get_now(), s.manager)
+
+[@view]
+let getSigner (_, s : unit * TYPES.storage) : timestamp * address =
+  (Tezos.get_now(), s.signer)
 
 [@view]
 let getStatus (_, s : unit * TYPES.storage) : timestamp * bool =

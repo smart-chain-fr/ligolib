@@ -1,37 +1,40 @@
 #import "../../../contracts/cameligo/oracle/main.mligo" "ORACLE"
 #import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
 
-// let base_config = {
-//     init_token_supply = 777777777777n;
-//     init_token_balance = 1000n;
-//     burn_rate = 7n;
-//     reserve_rate = 1n;
-//     allwn_amount = 300n;
-//     tsfr_amount = 200n;
-//     burn_address = ("tz1burnburnburnburnburnburnburjAYjjX": address);
-//     reserve_address = ("tz1djkbrkYiuWFTgd3qUiViijGUuz2wBGxQ2": address);
-//     random_contract_address = ("KT1MsktCnwfS1nGZmf8QbaTpZ8euVijWdmkC": address)
-// }
+let printStorage (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) : unit =
+    let ctr_storage = Test.get_storage(ctr_taddr) in
+    Test.log("Storage :", ctr_storage)
 
-let get_storage(addr : (TYPES.action, TYPES.storage) typed_address) : TYPES.storage =
-    let oracle_storage : TYPES.storage = Test.get_storage addr in
-    oracle_storage
+let trscChangeManager(contr, from, new_ : TYPES.action contract * address * address) =
+    let () = Test.set_source from in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new_) 0tez in
+    result
 
-let trscChangeManager(contr, from_ : TYPES.action contract * address) =
-    let () = Test.set_source from_ in
+let trscChangeSigner(contr, from, new_ : TYPES.action contract * address * address) =
+    let () = Test.set_source from in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeSigner new_) 0tez in
+    result
+
+let trscSwitchPause(contr, from : TYPES.action contract * address) =
+    let () = Test.set_source from in
     let result : test_exec_result = Test.transfer_to_contract contr (SwitchPause) 0tez in
     result
 
-let trscChangeSigner(contr, from_ : TYPES.action contract * address) =
-    let () = Test.set_source from_ in
-    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPause) 0tez in
+let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.eventType) =
+    let () = Test.set_source from in
+    let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0tez in
     result
 
-let trscSwitchPause(contr, from_ : TYPES.action contract * address) =
-    let () = Test.set_source from_ in
-    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPause) 0tez in
+let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * address * nat * TYPES.eventType) =
+    let () = Test.set_source from in
+    let updateEventParam : TYPES.updateEventParameter =
+    {
+        updatedEventID = event_num;
+        updatedEvent = event;
+    }
+    in
+    let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0tez in
     result
-
 
 // let get_balance_from_storage(anti_address, owner_address : (ANTI.parameter, ANTI.storage) typed_address * address) : nat =
 //     let anti_storage : ANTI.storage = Test.get_storage anti_address in

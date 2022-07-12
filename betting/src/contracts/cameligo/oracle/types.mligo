@@ -1,10 +1,10 @@
-type oracleEventType = 
+type eventType = 
   [@layout:comb] {
   name : string;
-  videogame: string;
-  begin_at: timestamp;
-  end_at: timestamp;
-  modified_at: timestamp;
+  videogame : string;
+  begin_at : timestamp;
+  end_at : timestamp;
+  modified_at : timestamp;
   opponents : { teamOne : string; teamTwo : string};
   isFinished : bool;
   isDraw : bool option;
@@ -23,22 +23,32 @@ type storage =
   isPaused : bool;
   manager : address;
   signer : address;
-  events : (nat, oracleEventType) map;
+  events : (nat, eventType) map;
   events_index : nat;
+}
+
+type updateEventParameter =
+  [@layout:comb] {
+  updatedEventID : nat;
+  updatedEvent : eventType;
+}
+
+type callbackAskedParameter =
+  [@layout:comb] {
+  requestedEventID : nat;
+  callback : address
 }
 
 type callbackReturnedValue =
   [@layout:comb] {
-  requestedEvent : nat;
+  requestedEvent : eventType;
   callback : address
 }
-
-type parameter = string * callbackReturnedValue contract
 
 type action =
   ChangeManager of address
   | ChangeSigner of address
   | SwitchPause of unit
-  | AddEvent of oracleEventType
-  | GetEvent of nat
-  | UpdateEvent of nat
+  | AddEvent of eventType
+  | GetEvent of callbackAskedParameter
+  | UpdateEvent of updateEventParameter
