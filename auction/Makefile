@@ -15,7 +15,7 @@ help:
 
 all: clean compile test
 
-compile: fa2_nft.tz nft_multi.tz factory fa1.tz auction
+compile: fa2_nft.tz nft_multi.tz factory auction
 
 fa2_nft.tz: contracts/generic_fa2/core/instance/NFT.mligo
 	@echo "Compiling smart contract FA2 to Michelson"
@@ -27,10 +27,6 @@ nft_multi.tz: contracts/nft_multi/core/instance/NFT.mligo
 	@mkdir -p contracts/nft_multi/compiled
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/nft_multi/compiled/$@
 
-fa1.tz: contracts/fa1/fa1.jsligo
-	@echo "Compiling smart contract FA1 to Michelson"
-	@mkdir -p contracts/fa1/compiled
-	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/fa1/compiled/$@
 
 factory: factory.tz factory.json
 

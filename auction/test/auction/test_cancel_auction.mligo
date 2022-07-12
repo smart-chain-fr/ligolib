@@ -9,9 +9,28 @@ type ext = Factory.NFT_FA2.extension
 type ext_fa2_storage = ext fa2_storage
 
 let test_works =
-    let (accounts, _factory_originated, auction_originated, fa2_nft_originated, _fa1_originated, _fa2_originated, _nft_multi_originated, _bob_fa2_nft_originated) = Bootstrap.bootstrap_full((None : Auction.Storage.t option)) in
-        let (alice, bob, _reserve, _royalties, admin, frank, baker, accountZero, accountOne) = accounts in
+    // ARRANGE
+    let (alice, bob, reserve, royalties, admin, frank, baker, accountZero, accountOne) = Bootstrap.bootstrap_accounts(("2022-01-01T00:22:10Z" : timestamp)) in
     let () = Test.set_baker_policy (By_account baker) in
+    let factory_originated = Bootstrap.bootstrap_factory_NFT() in 
+    let fa2_nft_originated = Bootstrap.bootstrap_NFT_with_one_token(factory_originated, alice, "alice_collection_1", "QRcode", 0x623d82eff132) in
+    let partial_auction_storage : Auction.Storage.t = 
+    {
+        admin = admin ; 
+        commissionFee = 2500n ; 
+        extension_duration = 100n ; 
+        isPaused = false ; 
+        min_bp_bid = 10n ; 
+        nftSaleId = 0n ; 
+        reserveAddress = reserve ; 
+        royaltiesStorage = royalties;
+        auctionIdToAuction = (Big_map.empty : Auction.Storage.auctions)
+    } in
+    let auction_originated = Bootstrap.bootstrap_auction_with_storage(partial_auction_storage, 23mutez) in
+
+    // let (accounts, _factory_originated, auction_originated, fa2_nft_originated, _fa1_originated, _fa2_originated, _nft_multi_originated, _bob_fa2_nft_originated) = Bootstrap.bootstrap_full((None : Auction.Storage.t option)) in
+    // let (alice, bob, _reserve, _royalties, admin, frank, baker, accountZero, accountOne) = accounts in
+    // let () = Test.set_baker_policy (By_account baker) in
 
     let _alice_create_auction_should_work = 
         let () = Test.log("_alice_create_auction_should_work") in
@@ -99,9 +118,28 @@ let test_works =
     ()
 
 let test_fails =
-    let (accounts, _factory_originated, auction_originated, fa2_nft_originated, _fa1_originated, _fa2_originated, _nft_multi_originated, _bob_fa2_nft_originated) = Bootstrap.bootstrap_full((None : Auction.Storage.t option)) in
-    let (alice, bob, _reserve, _royalties, admin, frank, baker, accountZero, accountOne) = accounts in
+    // ARRANGE
+    let (alice, bob, reserve, royalties, admin, frank, baker, accountZero, accountOne) = Bootstrap.bootstrap_accounts(("2022-01-01T00:22:10Z" : timestamp)) in
     let () = Test.set_baker_policy (By_account baker) in
+    let factory_originated = Bootstrap.bootstrap_factory_NFT() in 
+    let fa2_nft_originated = Bootstrap.bootstrap_NFT_with_one_token(factory_originated, alice, "alice_collection_1", "QRcode", 0x623d82eff132) in
+    let partial_auction_storage : Auction.Storage.t = 
+    {
+        admin = admin ; 
+        commissionFee = 2500n ; 
+        extension_duration = 100n ; 
+        isPaused = false ; 
+        min_bp_bid = 10n ; 
+        nftSaleId = 0n ; 
+        reserveAddress = reserve ; 
+        royaltiesStorage = royalties;
+        auctionIdToAuction = (Big_map.empty : Auction.Storage.auctions)
+    } in
+    let auction_originated = Bootstrap.bootstrap_auction_with_storage(partial_auction_storage, 23mutez) in
+
+    // let (accounts, _factory_originated, auction_originated, fa2_nft_originated, _fa1_originated, _fa2_originated, _nft_multi_originated, _bob_fa2_nft_originated) = Bootstrap.bootstrap_full((None : Auction.Storage.t option)) in
+    // let (alice, bob, _reserve, _royalties, admin, frank, baker, accountZero, accountOne) = accounts in
+    // let () = Test.set_baker_policy (By_account baker) in
 
     let _alice_create_auction_should_work = 
         let () = Test.log("_alice_create_auction_should_work") in
