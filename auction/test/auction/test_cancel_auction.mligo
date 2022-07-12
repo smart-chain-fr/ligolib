@@ -1,0 +1,171 @@
+
+#import "../../contracts/factory/main.mligo" "Factory"
+#import "../../contracts/auction/main.mligo" "Auction"
+#import "bootstrap.mligo" "Bootstrap"
+#import "../helpers/common.mligo" "Common_helper"
+
+type fa2_storage = Factory.NFT_FA2.Storage.t
+type ext = Factory.NFT_FA2.extension
+type ext_fa2_storage = ext fa2_storage
+
+let test_works =
+    let (accounts, _factory_originated, auction_originated, fa2_nft_originated, _fa1_originated, _fa2_originated, _nft_multi_originated, _bob_fa2_nft_originated) = Bootstrap.bootstrap_full((None : Auction.Storage.t option)) in
+        let (alice, bob, _reserve, _royalties, admin, frank, baker, accountZero, accountOne) = accounts in
+    let () = Test.set_baker_policy (By_account baker) in
+
+    let _alice_create_auction_should_work = 
+        let () = Test.log("_alice_create_auction_should_work") in
+        // retrieve FA2 address collection
+        let fa2_nft_address : address = fa2_nft_originated.addr in
+        let auction_storage : Auction.Storage.t = Test.get_storage auction_originated.taddr in
+
+        // APPROVE marketplace to transfer token 1
+        let () = Test.set_source alice in
+        let fa2_contract : Factory.NFT_FA2.parameter contract = Test.to_contract fa2_nft_originated.taddr in
+        let update_op : Factory.NFT_FA2.NFT.update_operators = [(Add_operator({owner=alice; operator=auction_originated.addr; token_id=1n}) : Factory.NFT_FA2.NFT.unit_update)] in
+        let _ = Test.transfer_to_contract_exn fa2_contract (Update_operators(update_op) : Factory.NFT_FA2.parameter) 0mutez in
+
+        // Set NFT 
+        let param_set_nft : Auction.Parameter.set_nft_auction_param = {
+            nftAddress=fa2_nft_address;
+            tokenId=1n;
+            reservePrice=12n;
+            auctionBiddingPeriod=100n;
+            auctionExpirationPeriod=1000n;
+            assetClass=NFT;
+            tokenAmount=1n;
+        } in
+        let () = Test.set_source alice in
+        let _ = Test.transfer_to_contract_exn auction_originated.contr (SetNftAuction(param_set_nft) : Auction.parameter) 0mutez in
+        
+        // verify auction has been recorded in the storage
+        let auction_storage_after : Auction.storage = Test.get_storage auction_originated.taddr in
+        let _check_counter : unit = assert_with_error (auction_storage_after.nftSaleId=1n) "nftSaleId does not match expected value" in
+        let found_auction_opt : Auction.Storage.nftauction option = Big_map.find_opt 0n auction_storage_after.auctionIdToAuction in
+        let found_auction : Auction.Storage.nftauction = match found_auction_opt with
+        | None -> failwith("auction 0 does not exist")
+        | Some auct -> auct
+        in
+        let _check_field : unit = assert_with_error (found_auction.nftAddress=fa2_nft_address) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.tokenId=1n) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.reservePrice=12n) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.biddingPeriod=100n) "does not match expected value" in
+        //let _check_field : unit = assert_with_error (found_auction.expirationTime=Some(Tezos.get_now() + int(param_set_nft.auctionExpirationPeriod))) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.assetClass=NFT) "does not match expected value" in
+
+        // verify alice NFT token sent to auction contract
+        let fa2_storage : ext_fa2_storage = Test.get_storage fa2_nft_originated.taddr in
+        let auction_balance_token_1 = Factory.NFT_FA2.Storage.get_balance fa2_storage auction_originated.addr 1n in
+        let _check_auction_ownership_of_token_1 : unit = assert(auction_balance_token_1 = 1n) in
+        let alice_balance_token_1 = Factory.NFT_FA2.Storage.get_balance fa2_storage alice 1n in
+        let _check_alice_ownership_of_token_1 : unit = assert(alice_balance_token_1 = 0n) in
+        "OK"
+    in
+    let _alice_cancel_auction_should_work = 
+        let () = Test.log("_alice_cancel_auction_should_work") in
+        // retrieve FA2 address collection
+        let fa2_nft_address : address = fa2_nft_originated.addr in
+        let auction_storage : Auction.Storage.t = Test.get_storage auction_originated.taddr in
+
+        // APPROVE marketplace to transfer token 1
+        // let () = Test.set_source alice in
+        // let fa2_contract : Factory.NFT_FA2.parameter contract = Test.to_contract fa2_nft_originated.taddr in
+        // let update_op : Factory.NFT_FA2.NFT.update_operators = [(Add_operator({owner=alice; operator=auction_originated.addr; token_id=1n}) : Factory.NFT_FA2.NFT.unit_update)] in
+        // let _ = Test.transfer_to_contract_exn fa2_contract (Update_operators(update_op) : Factory.NFT_FA2.parameter) 0mutez in
+
+        // Set NFT 
+        let param_cancel : Auction.Parameter.cancel_nft_auction_param = 0n in
+        let () = Test.set_source alice in
+        let _ = Test.transfer_to_contract_exn auction_originated.contr (CancelNftAuction(param_cancel) : Auction.parameter) 0mutez in
+        
+        // verify auction has been recorded in the storage
+        let auction_storage_after : Auction.storage = Test.get_storage auction_originated.taddr in
+        let _check_counter : unit = assert_with_error (auction_storage_after.nftSaleId=1n) "nftSaleId does not match expected value" in
+        let found_auction_opt : Auction.Storage.nftauction option = Big_map.find_opt 0n auction_storage_after.auctionIdToAuction in
+        let is_auction_removed : bool = match found_auction_opt with
+        | None -> true
+        | Some auct -> failwith("auction 0 should not exist")
+        in
+        let _check_auction_removed : unit = assert_with_error (is_auction_removed) "Auction has not been removed" in
+
+        // verify NFT token sent back to alice
+        let fa2_storage : ext_fa2_storage = Test.get_storage fa2_nft_originated.taddr in
+        let auction_balance_token_1 = Factory.NFT_FA2.Storage.get_balance fa2_storage auction_originated.addr 1n in
+        let _check_auction_ownership_of_token_1 : unit = assert(auction_balance_token_1 = 0n) in
+        let alice_balance_token_1 = Factory.NFT_FA2.Storage.get_balance fa2_storage alice 1n in
+        let _check_alice_ownership_of_token_1 : unit = assert(alice_balance_token_1 = 1n) in
+        "OK"
+    in
+    ()
+
+let test_fails =
+    let (accounts, _factory_originated, auction_originated, fa2_nft_originated, _fa1_originated, _fa2_originated, _nft_multi_originated, _bob_fa2_nft_originated) = Bootstrap.bootstrap_full((None : Auction.Storage.t option)) in
+    let (alice, bob, _reserve, _royalties, admin, frank, baker, accountZero, accountOne) = accounts in
+    let () = Test.set_baker_policy (By_account baker) in
+
+    let _alice_create_auction_should_work = 
+        let () = Test.log("_alice_create_auction_should_work") in
+        // retrieve FA2 address collection
+        let fa2_nft_address : address = fa2_nft_originated.addr in
+        let auction_storage : Auction.Storage.t = Test.get_storage auction_originated.taddr in
+
+        // APPROVE marketplace to transfer token 1
+        let () = Test.set_baker baker in
+        let () = Test.set_source alice in
+        let fa2_contract : Factory.NFT_FA2.parameter contract = Test.to_contract fa2_nft_originated.taddr in
+        let update_op : Factory.NFT_FA2.NFT.update_operators = [(Add_operator({owner=alice; operator=auction_originated.addr; token_id=1n}) : Factory.NFT_FA2.NFT.unit_update)] in
+        let _ = Test.transfer_to_contract_exn fa2_contract (Update_operators(update_op) : Factory.NFT_FA2.parameter) 0mutez in
+
+
+
+        // Set NFT 
+        let param_set_nft : Auction.Parameter.set_nft_auction_param = {
+            nftAddress=fa2_nft_address;
+            tokenId=1n;
+            reservePrice=12n;
+            auctionBiddingPeriod=100n;
+            auctionExpirationPeriod=1000n;
+            assetClass=NFT;
+            tokenAmount=1n;
+        } in
+  
+        let () = Test.set_source alice in
+        let _gas_spent = Test.transfer_to_contract_exn auction_originated.contr (SetNftAuction(param_set_nft) : Auction.parameter) 0mutez in      
+
+        // verify auction has been recorded in the storage
+        let auction_storage_after : Auction.storage = Test.get_storage auction_originated.taddr in
+        let _check_counter : unit = assert_with_error (auction_storage_after.nftSaleId=1n) "nftSaleId does not match expected value" in
+        let found_auction_opt : Auction.Storage.nftauction option = Big_map.find_opt 0n auction_storage_after.auctionIdToAuction in
+        let found_auction : Auction.Storage.nftauction = match found_auction_opt with
+        | None -> failwith("auction 0 does not exist")
+        | Some auct -> auct
+        in
+        let _check_field : unit = assert_with_error (found_auction.nftAddress=fa2_nft_address) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.tokenId=1n) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.reservePrice=12n) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.biddingPeriod=100n) "does not match expected value" in
+        //let _check_field : unit = assert_with_error (found_auction.expirationTime=Some(Tezos.get_now() + int(param_set_nft.auctionExpirationPeriod))) "does not match expected value" in
+        let _check_field : unit = assert_with_error (found_auction.assetClass=NFT) "does not match expected value" in
+
+        // verify alice NFT token sent to auction contract
+        let fa2_storage : ext_fa2_storage = Test.get_storage fa2_nft_originated.taddr in
+        let auction_balance_token_1 = Factory.NFT_FA2.Storage.get_balance fa2_storage auction_originated.addr 1n in
+        let _check_auction_ownership_of_token_1 : unit = assert(auction_balance_token_1 = 1n) in
+        let alice_balance_token_1 = Factory.NFT_FA2.Storage.get_balance fa2_storage alice 1n in
+        let _check_alice_ownership_of_token_1 : unit = assert(alice_balance_token_1 = 0n) in
+        "OK"
+    in
+    let _admin_cancel_auction_should_fail = 
+        let () = Test.log("_admin_cancel_auction_should_fail") in
+        // retrieve FA2 address collection
+        let fa2_nft_address : address = fa2_nft_originated.addr in
+        let auction_storage : Auction.Storage.t = Test.get_storage auction_originated.taddr in
+
+        // Admin fail to cancel auction 
+        let param_cancel : Auction.Parameter.cancel_nft_auction_param = 0n in
+        let () = Test.set_source auction_storage.admin in
+        let fail_not_owner = Test.transfer_to_contract auction_originated.contr (CancelNftAuction(param_cancel) : Auction.parameter) 0mutez in
+        let () = Common_helper.assert_string_failure fail_not_owner Auction.Errors.not_owner_auction in
+        "OK"
+    in
+    ()

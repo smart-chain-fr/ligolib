@@ -1,0 +1,23 @@
+{
+    "name": "Smarketplace",
+    "version": "1.0.0",
+    "description": "Smarketplace is a white-mark marketplace.",
+    "main": "index.js",
+    "directories": {
+      "test": "tests"
+    },
+    "dependencies": {
+      "@taquito/signer": "^13.0.0",
+      "@taquito/taquito": "^13.0.0",
+      "dotenv": "^10.0.0"
+    },
+    "devDependencies": {
+      "typescript": "^4.5.5"
+    },
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "MIT"
+  }
+  
