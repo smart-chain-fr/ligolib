@@ -115,6 +115,6 @@ let transferAssetToAuctionContract(assetClass, nftAddress, tokenId, from_address
         | None -> failwith("unknown NFT address")
         | Some ctr -> ctr
         in
-        let transfer_param : NFT_MULTI.NFT.transfer = [{ from_=from_address; tx=[{ to_=to_address; token_id=tokenId; amount=1n}] }] in
+        let transfer_param : NFT_MULTI.NFT.transfer = [{ from_=from_address; tx=[{ to_=to_address; token_id=tokenId; amount=tokenAmount}] }] in
         let op : operation = Tezos.transaction transfer_param 0mutez dest in
         op
