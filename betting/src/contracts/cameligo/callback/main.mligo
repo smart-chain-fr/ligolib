@@ -18,5 +18,7 @@ type storage =
   closedTeamOneRate : nat option
 }
 
+type action = nat
+
 let main ((p, _):(storage * storage)) =
   (([]: operation list), p)

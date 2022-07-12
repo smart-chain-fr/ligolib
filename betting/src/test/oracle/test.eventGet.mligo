@@ -6,35 +6,18 @@
 
 let () = Test.log("___ TEST getEvent STARTED ___")
 
-let _emptyMap : (nat, TYPES.eventType) map = (Map.empty : (nat, TYPES.eventType) map)
-
-let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap
-
-let () = Test.log("-> Initial Storage :")
-let () = Test.log(oracle_contract, oracle_taddress, elon, jeff)
-
-let () = ASSERT.assert_eventsMap oracle_taddress _emptyMap
-
-let () = Test.log("-> Adding an Event from unauthorized address")
-let () = HELPER.trscAddEvent (oracle_contract, alice, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap oracle_taddress _emptyMap
-
 let _oneEventMap : (nat, TYPES.eventType) map = Map.literal [
-    (1n, BOOTSTRAP.primaryEvent)
+    (1n, BOOTSTRAP.secondaryEvent)
     ]
 
-let () = Test.log("-> Adding an Event from Manager")
-let () = HELPER.trscAddEvent (oracle_contract, elon, BOOTSTRAP.primaryEvent)
+let (oracle_contract, oracle_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
+let (callback_contract, callback_taddr, callback_addr) = BOOTSTRAP.bootstrap_callback
+let () = HELPER.trscAddEvent (oracle_contract, elon, BOOTSTRAP.secondaryEvent)
 let () = ASSERT.assert_eventsMap oracle_taddress _oneEventMap
 
-let _doubleEventMap : (nat, TYPES.eventType) map = Map.literal [
-    (1n, BOOTSTRAP.primaryEvent);
-    (2n, BOOTSTRAP.primaryEvent)
-    ]
+let () = HELPER.trscGetEvent (oracle_contract, elon, callback_addr, 1n)
 
-let () = Test.log("-> Adding an Event from Signer")
-let () = HELPER.trscAddEvent (oracle_contract, jeff, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap oracle_taddress _doubleEventMap
+// let () = Test.get_storage(callback_taddr)
 
 // let () = Test.log("-> Changing Manager of the contract from original Manager")
 // let () = HELPER.trscAddEvent (oracle_contract, elon, jeff)

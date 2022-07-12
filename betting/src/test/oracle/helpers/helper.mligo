@@ -36,6 +36,16 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
     let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0tez in
     result
 
+let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * address * address * nat) =
+    let () = Test.set_source from in
+    let callbackParameter : TYPES.callbackAskedParameter =
+    {
+        requestedEventID = event_num;
+        callback = cbk_addr
+    } in
+    let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0tez in
+    result_cbk
+
 // let get_balance_from_storage(anti_address, owner_address : (ANTI.parameter, ANTI.storage) typed_address * address) : nat =
 //     let anti_storage : ANTI.storage = Test.get_storage anti_address in
 //     let retrieved_balance_opt : nat option = Big_map.find_opt owner_address anti_storage.ledger in
