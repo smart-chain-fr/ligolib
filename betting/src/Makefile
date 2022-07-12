@@ -16,11 +16,13 @@ help:
 
 all: clean compile test
 
-compile: compile_oracle compile_betting
+compile: compile_oracle compile_betting compile_callback
 
 compile_oracle: oracle.tz oracle.json
 
 compile_betting: betting.tz betting.json
+
+compile_callback: callback.tz callback.json
 
 oracle.tz: contracts/cameligo/oracle/main.mligo
 	@echo "Compiling Oracle smart contract to Michelson"
@@ -36,6 +38,14 @@ betting.tz: contracts/cameligo/betting/main.mligo
 
 betting.json: contracts/cameligo/betting/main.mligo
 	@echo "Compiling Betting smart contract to Michelson in JSON format"
+	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
+
+callback.tz: contracts/cameligo/callback/main.mligo
+	@echo "Compiling Callback smart contract to Michelson"
+	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
+
+callback.json: contracts/cameligo/callback/main.mligo
+	@echo "Compiling Callback smart contract to Michelson in JSON format"
 	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
 
 clean:
@@ -58,8 +68,19 @@ test_oracle_pause: test/oracle/test.pause.mligo
 	@echo "Running Oracle (SwitchPause) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_oracle_events: test/oracle/test.eventAdd.mligo test/oracle/test.eventUpdate.mligo test/oracle/test.eventGet.mligo
-	@echo "Running Oracle Events tests..." 
+test_oracle_events: test_oracle_event_add test_oracle_event_update test_oracle_event_get
+	@echo "Running Oracle Events tests..."
+
+test_oracle_event_add: test/oracle/test.eventAdd.mligo
+	@echo "Running Oracle eventAdd tests..." 
+	@$(LIGO) run test $^ $(PROTOCOL_OPT)
+
+test_oracle_event_update: test/oracle/test.eventUpdate.mligo
+	@echo "Running Oracle eventUpdate tests..." 
+	@$(LIGO) run test $^ $(PROTOCOL_OPT)
+
+test_oracle_event_get: test/oracle/test.eventGet.mligo
+	@echo "Running Oracle eventGet tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting: test_betting_manager test_betting_signer test_betting_pause
