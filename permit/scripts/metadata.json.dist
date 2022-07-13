@@ -1,0 +1,100 @@
+{
+    "name": "Permit Example",
+    "description": "A Permit Example Contract",
+    "version": "1.0.0",
+    "license": {
+        "name": "MIT"
+    },
+    "authors": [
+        "smart-chain <tezos@smart-chain.fr>"
+    ],
+    "homepage": "https://github.com/ligolang/permit-cameligo",
+    "source": {
+        "tools": "cameligo",
+        "location": "https://github.com/ligolang/permit-cameligo/src"
+    },
+    "interfaces": [
+        "TZIP-012",
+        "TZIP-016",
+        "TZIP-017"
+    ],
+    "views": [
+        {
+            "name": "get-default-expiry",
+            "implementations": [
+                {
+                    "michelsonStorageView": {
+                        "parameter": {
+                            "prim": "unit"
+                        },
+                        "returnType": {
+                            "prim": "nat"
+                        },
+                        "code": [
+                            {
+                                "prim": "CDR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CDR"
+                            },
+                            {
+                                "prim": "CAR"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "get-counter",
+            "implementations": [
+                {
+                    "michelsonStorageView": {
+                        "parameter": {
+                            "prim": "unit"
+                        },
+                        "returnType": {
+                            "prim": "nat"
+                        },
+                        "code": [
+                            {
+                                "prim": "CDR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CAR"
+                            },
+                            {
+                                "prim": "CDR"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+
+    ]
+}
