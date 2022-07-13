@@ -4,25 +4,37 @@ JSON_OPT=--michelson-format json
 
 help:
 	@echo  'Usage:'
-	@echo  '  all					- Remove Michelson files, recompile contracts and launch tests'
-	@echo  '  clean					- Remove generated Michelson files'
-	@echo  '  compile				- Compiles smart contract Oracle and Betting'
+	@echo  '  all					- Removes Michelson files, recompile contracts and launch tests'
+	@echo  '  clean					- Removes generated Michelson files'
+	@echo  '  compile				- Compiles smart contract Callback, Oracle and Betting'
+	@echo  '  compile_callback		- Compiles smart contract Callback'
 	@echo  '  compile_oracle		- Compiles smart contract Oracle'
 	@echo  '  compile_betting		- Compiles smart contract Betting'
-	@echo  '  test					- Run integration tests in LIGO'
-	@echo  '  dry-run				- Simulate execution of entrypoints in LIGO'
-	@echo  '  deploy				- Deploy smart contracts Oracle & Betting with Taquito'
+	@echo  '  test					- Runs integration tests in LIGO'
+	@echo  '  dry-run				- Simulates execution of entrypoints in LIGO'
+	@echo  '  deploy				- Deploys smart contracts Callback, Oracle and Betting with Taquito'
+	@echo  '  deploy_callback		- Deploys smart contracts Callback with Taquito'
+	@echo  '  deploy_oracle			- Deploys smart contracts Oracle with Taquito'
+	@echo  '  deploy_betting		- Deploys smart contracts Betting with Taquito'
 	@echo  ''
 
 all: clean compile test
 
 compile: compile_oracle compile_betting compile_callback
 
+compile_callback: callback.tz callback.json
+
 compile_oracle: oracle.tz oracle.json
 
 compile_betting: betting.tz betting.json
 
-compile_callback: callback.tz callback.json
+callback.tz: contracts/cameligo/callback/main.mligo
+	@echo "Compiling Callback smart contract to Michelson"
+	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
+
+callback.json: contracts/cameligo/callback/main.mligo
+	@echo "Compiling Callback smart contract to Michelson in JSON format"
+	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
 
 oracle.tz: contracts/cameligo/oracle/main.mligo
 	@echo "Compiling Oracle smart contract to Michelson"
@@ -38,14 +50,6 @@ betting.tz: contracts/cameligo/betting/main.mligo
 
 betting.json: contracts/cameligo/betting/main.mligo
 	@echo "Compiling Betting smart contract to Michelson in JSON format"
-	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
-
-callback.tz: contracts/cameligo/callback/main.mligo
-	@echo "Compiling Callback smart contract to Michelson"
-	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
-
-callback.json: contracts/cameligo/callback/main.mligo
-	@echo "Compiling Callback smart contract to Michelson in JSON format"
 	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
 
 clean:
@@ -97,16 +101,24 @@ test_betting_pause: test/betting/test.pause.mligo
 	@echo "Running Betting (SwitchPause) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-deploy: node_modules deploy.js
+deploy: node_modules deploy_callback
 	@echo "Deploying contracts"
-	@node deploy/deploy.js
-
+	
 node_modules:
 	@echo "Installing node modules"
 	@cd deploy && npm install
 
-deploy.js:
-	@cd deploy && tsc deploy.ts --resolveJsonModule -esModuleInterop
+deploy_callback:
+	@cd deploy && tsc deploy_callback --resolveJsonModule -esModuleInterop
+	@node deploy/deploy_callback.js
+
+deploy_oracle:
+	@cd deploy && tsc deploy_oracle --resolveJsonModule -esModuleInterop
+	@node deploy/deploy_oracle.js
+
+deploy_betting:
+	@cd deploy && tsc deploy_betting --resolveJsonModule -esModuleInterop
+	@node deploy/deploy_betting.js
 
 dry-run: dry-run_oracle dry-run_betting
 

@@ -2,6 +2,18 @@
 #import "../../../contracts/cameligo/callback/main.mligo" "CALLBACK"
 #import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
 
+// let base_config = {
+//     init_token_supply = 777777777777n;
+//     init_token_balance = 1000n;
+//     burn_rate = 7n;
+//     reserve_rate = 1n;
+//     allwn_amount = 300n;
+//     tsfr_amount = 200n;
+//     burn_address = ("tz1burnburnburnburnburnburnburjAYjjX": address);
+//     reserve_address = ("tz1djkbrkYiuWFTgd3qUiViijGUuz2wBGxQ2": address);
+//     random_contract_address = ("KT1MsktCnwfS1nGZmf8QbaTpZ8euVijWdmkC": address)
+// }
+
 let primaryEvent : TYPES.eventType =
     {
         name = "First Event";
@@ -13,6 +25,13 @@ let primaryEvent : TYPES.eventType =
         isFinished = false;
         isDraw = None;
         isTeamOneWin = None;
+        startBetTime = Tezos.get_now();
+        closedBetTime = Tezos.get_now() + 1000;
+        betsTeamOne = (Map.empty : (address, tez) map);
+        betsTeamOne_index = 0n;
+        betsTeamTwo = (Map.empty : (address, tez) map);
+        betsTeamTwo_index = 0n;
+        closedTeamOneRate = None;
     }
 
 let secondaryEvent : TYPES.eventType =
@@ -26,6 +45,13 @@ let secondaryEvent : TYPES.eventType =
         isFinished = false;
         isDraw = None;
         isTeamOneWin = None;
+        startBetTime = Tezos.get_now();
+        closedBetTime = Tezos.get_now() + 1000;
+        betsTeamOne = (Map.empty : (address, tez) map);
+        betsTeamOne_index = 0n;
+        betsTeamTwo = (Map.empty : (address, tez) map);
+        betsTeamTwo_index = 0n;
+        closedTeamOneRate = None;
     }
 
 let callbackInitStorage : CALLBACK.storage =
@@ -39,6 +65,13 @@ let callbackInitStorage : CALLBACK.storage =
         isFinished = false;
         isDraw = None;
         isTeamOneWin = None;
+        startBetTime = Tezos.get_now();
+        closedBetTime = Tezos.get_now() + 1000;
+        betsTeamOne = (Map.empty : (address, tez) map);
+        betsTeamOne_index = 0n;
+        betsTeamTwo = (Map.empty : (address, tez) map);
+        betsTeamTwo_index = 0n;
+        closedTeamOneRate = None;
     }
 
 let bootstrap =
