@@ -3,10 +3,15 @@
 #import "../../contracts/auction/main.mligo" "Auction"
 #import "bootstrap.mligo" "Bootstrap"
 #import "../helpers/common.mligo" "Common_helper"
+#import "../helpers/nft_multi.mligo" "NFT_MULTI_helper"
 
 type fa2_storage = Factory.NFT_FA2.Storage.t
 type ext = Factory.NFT_FA2.extension
 type ext_fa2_storage = ext fa2_storage
+
+type nft_multi_storage = NFT_MULTI_helper.NFT_MULTI.Storage.t
+type ext_multi = NFT_MULTI_helper.NFT_MULTI.extension
+type ext_nft_multi_storage = ext_multi nft_multi_storage
 
 // let test_finalize_auction_with_2_bids_works =
 //     let (accounts, _factory_originated, auction_originated, fa2_nft_originated, _fa1_originated, _fa2_originated, _nft_multi_originated, _bob_fa2_nft_originated) = Bootstrap.bootstrap_full((None : Auction.storage option)) in
@@ -849,6 +854,135 @@ let test_finalize_auction_with_wrong_fee =
         let _check_alice_ownership_of_token_1 : unit = assert(alice_balance_token_1 = 0n) in
         let frank_balance_token_1 = Factory.NFT_FA2.Storage.get_balance fa2_storage_after frank 1n in
         let _check_frank_ownership_of_token_1 : unit = assert(frank_balance_token_1 = 0n) in
+        "OK"
+    in
+    ()
+
+
+let test_finalize_auction_with_nft_multi_and_2_bids_works =
+    let (alice, bob, reserve, royalties, admin, frank, baker, accountZero, accountOne) = Bootstrap.bootstrap_accounts(("2022-01-01T00:22:10Z" : timestamp)) in
+    let () = Test.set_baker_policy (By_account baker) in
+
+    // originate FA2 NFT semi-fungible smart contract
+    let nft_multi_init_ledger : ((address * nat), nat)map = Map.literal[((alice, 1n), 1000n); ((bob, 2n), 1000n)] in    
+    let nft_multi_totalsupply : (nat, nat) map = Map.literal[(1n, 1000n); (2n, 1000n)] in 
+    let nft_multi_originated = Bootstrap.bootstrap_fa2_MULTI_NFT(alice, frank, [1n; 2n], nft_multi_totalsupply, nft_multi_init_ledger) in 
+
+    let partial_auction_storage : Auction.Storage.t = 
+    {
+        admin = admin ; 
+        commissionFee = 2500n ; 
+        extension_duration = 100n ; 
+        isPaused = false ; 
+        min_bp_bid = 10n ; 
+        nftSaleId = 1n ; 
+        reserveAddress = reserve ; 
+        royaltiesStorage = royalties;
+        auctionIdToAuction = Big_map.literal[
+            (0n, {
+                assetClass = NFT_MULTI (()) ; 
+                auctionPrice = 23n ; 
+                bidderAddress = Some (frank) ; 
+                biddingPeriod = 100n ; 
+                endTime = Some (("2022-01-01T01:31:10Z" : timestamp)) ; 
+                expirationTime = Some (("2022-01-01T00:39:25Z" : timestamp)) ; 
+                nftAddress = nft_multi_originated.addr ; 
+                reservePrice = 12n ; 
+                saleId = 0n ; 
+                sellerAddress = alice ; 
+                tokenId = 1n ;
+                tokenAmount = 2n ;
+            })
+        ]
+    } in
+    let auction_originated = Bootstrap.bootstrap_auction_with_storage(partial_auction_storage, 23mutez) in
+
+
+    // alice send NFT to auction contract
+    let () = Test.set_source alice in
+    let dest : NFT_MULTI_helper.NFT_MULTI.NFT.transfer contract = Test.to_entrypoint "transfer" nft_multi_originated.taddr in
+    let transfer_param : NFT_MULTI_helper.NFT_MULTI.NFT.transfer = [{ from_=alice; tx=[{ to_=auction_originated.addr; token_id=1n; amount=2n}] }] in
+    let _ = Test.transfer_to_contract_exn dest transfer_param 0mutez in
+
+    // verify auction owns token 1n
+    let fa2_storage_initial : ext_nft_multi_storage = Test.get_storage nft_multi_originated.taddr in
+    let auction_balance_token_1 = NFT_MULTI_helper.NFT_MULTI.NFT.Storage.get_balance fa2_storage_initial auction_originated.addr 1n in
+    let _check_auction_ownership_of_token_1 : unit = assert(auction_balance_token_1 = 2n) in
+
+    let _alice_finalize_nft_multi_should_work =
+        let () = Test.log("_alice_finalize_nft_multi_should_work") in
+        let auction_storage_before : Auction.Storage.t = Test.get_storage auction_originated.taddr in
+        //let () = Test.log(auction_storage_before) in
+        let found_auction_opt_before : Auction.Storage.nftauction option = Big_map.find_opt 0n auction_storage_before.auctionIdToAuction in
+        let found_auction_before : Auction.Storage.nftauction = match found_auction_opt_before with
+        | None -> (failwith("Unknown auction") : Auction.Storage.nftauction)
+        | Some auct -> auct
+        in
+        let previous_bidder = Option.unopt(found_auction_before.bidderAddress) in
+        let sellerAddress : address = found_auction_before.sellerAddress in
+        let reserveAddress : address = auction_storage_before.reserveAddress in
+        let auction_balance_before : tez = Test.get_balance auction_originated.addr in
+        let reserve_balance_before : tez = Test.get_balance reserveAddress in
+        let seller_balance_before : tez = Test.get_balance sellerAddress in
+        let previous_bidder_balance_before : tez = Test.get_balance previous_bidder in
+        
+        // FINALIZE 
+        let param_finalize : Auction.Parameter.finalize_auction_param = 0n in
+        let () = Test.set_source admin in // uses admin instead of alice to not corrupt its balance with gas consumption
+        let () = Test.set_baker baker in
+        let _consumed = Test.transfer_to_contract_exn auction_originated.contr (FinalizeAuction(param_finalize) : Auction.parameter) 0mutez in
+
+        // VERIFICATIONS
+        let auction_storage_after : Auction.Storage.t = Test.get_storage auction_originated.taddr in
+        let expected_fee : tez = found_auction_before.auctionPrice * 1mutez * auction_storage_before.commissionFee / 10000n in 
+        let expected_seller_trsfer : tez = match (found_auction_before.auctionPrice * 1mutez - expected_fee) with
+        | None -> failwith("Negative transfer  !! ")
+        | Some diff -> diff
+        in
+
+        // verify that the last bidder does not send anymore XTZ during finalization
+        let previous_bidder_balance_after : tez = Test.get_balance previous_bidder in
+        let previous_bidder_diff : tez = match (previous_bidder_balance_after - previous_bidder_balance_before) with 
+        | None -> failwith("Negative transfer !! ")
+        | Some diff -> diff
+        in
+        let _check_buyer_movment : unit = assert_with_error (previous_bidder_diff = 0mutez) "Buyer movmentshould be 0" in
+
+        // verify that the seller receive the expected amount (minus fees) 
+        let seller_balance_after : tez = Test.get_balance sellerAddress in
+        let seller_balance_diff_opt : tez option = seller_balance_after - seller_balance_before in
+        let seller_balance_diff : tez = match seller_balance_diff_opt with 
+        | None -> failwith("Negative transfer seller!! ")
+        | Some diff -> diff
+        in
+        let _check_seller_movment : unit = assert_with_error (seller_balance_diff = expected_seller_trsfer) "Seller movment should be 18mutez" in
+
+        // verify reserve address receive  fees
+        let reserve_balance_after : tez = Test.get_balance reserveAddress in
+        let reserve_balance_diff_opt : tez option = reserve_balance_after - reserve_balance_before in        
+        let reserve_balance_diff : tez = match reserve_balance_diff_opt with 
+        | None -> failwith("Negative transfer !! ")
+        | Some diff -> diff
+        in
+        let _check_commission_movment : unit = assert_with_error (reserve_balance_diff = expected_fee) "Commission amount does not match" in
+
+        // verify auction balance decrease by the auctionprice
+        let auction_balance_after : tez = Test.get_balance auction_originated.addr in
+        let auction_balance_diff_inv_opt : tez option = auction_balance_before - auction_balance_after in
+        let auction_balance_diff_inv : tez = match auction_balance_diff_inv_opt with 
+        | None -> failwith("Negative transfer !! ")
+        | Some diff -> diff
+        in
+        let _check_commission_movment : unit = assert_with_error (auction_balance_diff_inv = found_auction_before.auctionPrice * 1mutez) "Auction balance movment amount does not match" in
+
+        // verify NFT token sent to last bidder 
+        let fa2_storage_after : ext_nft_multi_storage = Test.get_storage nft_multi_originated.taddr in
+        let auction_balance_token_1 = NFT_MULTI_helper.NFT_MULTI.NFT.Storage.get_balance fa2_storage_after auction_originated.addr 1n in
+        let _check_auction_ownership_of_token_1 : unit = assert(auction_balance_token_1 = 0n) in
+        let alice_balance_token_1 = NFT_MULTI_helper.NFT_MULTI.NFT.Storage.get_balance fa2_storage_after alice 1n in
+        let _check_alice_ownership_of_token_1 : unit = assert(alice_balance_token_1 = 998n) in
+        let frank_balance_token_1 = NFT_MULTI_helper.NFT_MULTI.NFT.Storage.get_balance fa2_storage_after frank 1n in
+        let _check_frank_ownership_of_token_1 : unit = assert(frank_balance_token_1 = 2n) in
         "OK"
     in
     ()
