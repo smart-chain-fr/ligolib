@@ -1,6 +1,6 @@
 #import "../../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "../../../contracts/cameligo/callback/main.mligo" "CALLBACK"
 #import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
+#import "../../../contracts/cameligo/oracle/callback/main.mligo" "CALLBACK"
 
 let primaryEvent : TYPES.eventType =
     {
@@ -69,7 +69,7 @@ let bootstrap =
     (oracle_contract, oracle_taddress, elon, jeff, alice, bob, james)
 
 let bootstrap_callback =
-    let oraclePath = "./contracts/cameligo/callback/main.mligo" in
+    let oraclePath = "./contracts/cameligo/oracle/callback/main.mligo" in
     let iTres = Test.run (fun (x : CALLBACK.storage) -> x) callbackInitStorage in
     let (callback_addr, _, _) = Test.originate_from_file oraclePath "main" ([] : string list) iTres 0tez in
     let callback_taddress = (Test.cast_address callback_addr : (CALLBACK.action, CALLBACK.storage) typed_address) in

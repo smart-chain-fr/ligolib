@@ -12,17 +12,6 @@ let changeManager (newManager : address)( s : TYPES.storage) : (operation list *
   )
   else failwith ERRORS.not_manager
 
-let changeOracleAddress (newOracleAddress : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
-  let sender = Tezos.get_sender() in
-  if (sender = s.manager)
-  then
-  (
-    if (newOracleAddress <> s.oracleAddress)
-    then (([] : operation list), {s with oracleAddress = newOracleAddress})
-    else failwith ERRORS.same_previous_oracleAddress
-  )
-  else failwith ERRORS.not_manager
-
 let switchPause (s : TYPES.storage) : (operation list * TYPES.storage) =
   let sender = Tezos.get_sender() in
   if (sender = s.manager)
@@ -31,6 +20,17 @@ let switchPause (s : TYPES.storage) : (operation list * TYPES.storage) =
     if (s.betConfig.isBettingPaused)
     then (([] : operation list), {s with betConfig.isBettingPaused = false})
     else (([] : operation list), {s with betConfig.isBettingPaused = true})
+  )
+  else failwith ERRORS.not_manager
+
+let changeOracleAddress (newOracleAddress : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
+  let sender = Tezos.get_sender() in
+  if (sender = s.manager)
+  then
+  (
+    if (newOracleAddress <> s.oracleAddress)
+    then (([] : operation list), {s with oracleAddress = newOracleAddress})
+    else failwith ERRORS.same_previous_oracleAddress
   )
   else failwith ERRORS.not_manager
 

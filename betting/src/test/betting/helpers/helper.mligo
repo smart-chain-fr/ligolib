@@ -1,5 +1,5 @@
-#import "../../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
+#import "../../../contracts/cameligo/betting/main.mligo" "BETTING"
+#import "../../../contracts/cameligo/betting/types.mligo" "TYPES"
 
 let printStorage (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
@@ -10,9 +10,9 @@ let trscChangeManager(contr, from, new_ : TYPES.action contract * address * addr
     let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new_) 0tez in
     result
 
-let trscChangeSigner(contr, from, new_ : TYPES.action contract * address * address) =
+let trscChangeOracleAddress(contr, from, new_ : TYPES.action contract * address * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (ChangeSigner new_) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeOracleAddress new_) 0tez in
     result
 
 let trscSwitchPause(contr, from : TYPES.action contract * address) =

@@ -24,7 +24,7 @@ type betConfigType = {
   minBetAmount : nat;
   minPeriodToBet : nat;
   maxBetDifference : nat;
-  retainedProfitFee : nat;
+  retainedProfitQuota : nat;
 }
 
 type storage = {

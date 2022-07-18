@@ -1,5 +1,5 @@
-#import "../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "../../contracts/cameligo/oracle/types.mligo" "TYPES"
+#import "../../contracts/cameligo/betting/main.mligo" "ORACLE"
+#import "../../contracts/cameligo/betting/types.mligo" "TYPES"
 #import "./helpers/bootstrap.mligo" "BOOTSTRAP"
 #import "./helpers/helper.mligo" "HELPER"
 #import "./helpers/assert.mligo" "ASSERT"
@@ -10,22 +10,22 @@ let _oneEventMap : (nat, TYPES.eventType) map = Map.literal [
     (1n, BOOTSTRAP.secondaryEvent)
     ]
 
-let (oracle_contract, oracle_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
+let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
 let (callback_contract, callback_taddr, callback_addr) = BOOTSTRAP.bootstrap_callback
-let () = HELPER.trscAddEvent (oracle_contract, elon, BOOTSTRAP.secondaryEvent)
-let () = ASSERT.assert_eventsMap oracle_taddress _oneEventMap
+let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.secondaryEvent)
+let () = ASSERT.assert_eventsMap betting_taddress _oneEventMap
 
-let () = HELPER.trscGetEvent (oracle_contract, elon, callback_addr, 1n)
+let () = HELPER.trscGetEvent (betting_contract, elon, callback_addr, 1n)
 
 // let () = Test.get_storage(callback_taddr)
 
 // let () = Test.log("-> Changing Manager of the contract from original Manager")
-// let () = HELPER.trscAddEvent (oracle_contract, elon, jeff)
-// let () = ASSERT.assert_manager oracle_taddress jeff
+// let () = HELPER.trscAddEvent (betting_contract, elon, jeff)
+// let () = ASSERT.assert_manager betting_taddress jeff
 
 // let () = Test.log("-> Changing Manager of the contract from the current Manager")
-// let () = HELPER.trscAddEvent (oracle_contract, jeff, elon)
-// let () = ASSERT.assert_manager oracle_taddress elon
+// let () = HELPER.trscAddEvent (betting_contract, jeff, elon)
+// let () = ASSERT.assert_manager betting_taddress elon
 
 (* OK : Transferring 100 from Alice to a random contract *)
 // let test_transfer_to_contract (_ant_ctr : ANTI.parameter contract)(_alice : address)(_tsfr_amount : nat) =

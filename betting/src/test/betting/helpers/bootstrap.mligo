@@ -1,18 +1,6 @@
-#import "../../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "../../../contracts/cameligo/callback/main.mligo" "CALLBACK"
-#import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
-
-// let base_config = {
-//     init_token_supply = 777777777777n;
-//     init_token_balance = 1000n;
-//     burn_rate = 7n;
-//     reserve_rate = 1n;
-//     allwn_amount = 300n;
-//     tsfr_amount = 200n;
-//     burn_address = ("tz1burnburnburnburnburnburnburjAYjjX": address);
-//     reserve_address = ("tz1djkbrkYiuWFTgd3qUiViijGUuz2wBGxQ2": address);
-//     random_contract_address = ("KT1MsktCnwfS1nGZmf8QbaTpZ8euVijWdmkC": address)
-// }
+#import "../../../contracts/cameligo/betting/main.mligo" "ORACLE"
+#import "../../../contracts/cameligo/betting/types.mligo" "TYPES"
+#import "../../../contracts/cameligo/betting/callback/main.mligo" "CALLBACK"
 
 let primaryEvent : TYPES.eventType =
     {
@@ -83,28 +71,39 @@ let bootstrap =
     let bob: address = Test.nth_bootstrap_account 3 in
     let james: address = Test.nth_bootstrap_account 4 in
 
+    let initBetConfig : TYPES.betConfigType = {
+        isBettingPaused = false;
+        isEventCreationPaused = false;
+        minBetAmount = 1n;
+        minPeriodToBet = 1n;
+        maxBetDifference = 1n;
+        retainedProfitQuota = 0n;
+    } in
+    
     (* Boostrapping storage *)
     let init_storage : TYPES.storage = {
-        isPaused = false;
         manager = elon;
-        signer = jeff;
+        oracleAddress = jeff;
+        betConfig = initBetConfig;
+        retainedProfits = 0tez;
         events = (Map.empty : (nat, TYPES.eventType) map);
         events_index = 0n;
+        metadata = (Map.empty : (string, bytes) map);
     } in
 
     (* Boostrapping Oracle contract *)
-    let oraclePath = "./contracts/cameligo/oracle/main.mligo" in
+    let bettingPath = "./contracts/cameligo/betting/main.mligo" in
     let iBis = Test.run (fun (x : TYPES.storage) -> x) init_storage in
-    let (oracle_address, _, _) = Test.originate_from_file oraclePath "main" (["getManager"; "getSigner"; "getStatus"] : string list) iBis 0tez in
-    let oracle_taddress = (Test.cast_address oracle_address : (TYPES.action,TYPES.storage) typed_address) in
-    let oracle_contract = Test.to_contract oracle_taddress in
+    let (betting_address, _, _) = Test.originate_from_file bettingPath "main" (["getManager"; "getOracleAddress"; "getStatus"] : string list) iBis 0tez in
+    let betting_taddress = (Test.cast_address betting_address : (TYPES.action,TYPES.storage) typed_address) in
+    let betting_contract = Test.to_contract betting_taddress in
     
-    (oracle_contract, oracle_taddress, elon, jeff, alice, bob, james)
+    (betting_contract, betting_taddress, elon, jeff, alice, bob, james)
 
 let bootstrap_callback =
-    let oraclePath = "./contracts/cameligo/callback/main.mligo" in
+    let bettingPath = "./contracts/cameligo/betting/callback/main.mligo" in
     let iTres = Test.run (fun (x : CALLBACK.storage) -> x) callbackInitStorage in
-    let (callback_addr, _, _) = Test.originate_from_file oraclePath "main" ([] : string list) iTres 0tez in
+    let (callback_addr, _, _) = Test.originate_from_file bettingPath "main" ([] : string list) iTres 0tez in
     let callback_taddress = (Test.cast_address callback_addr : (CALLBACK.action, CALLBACK.storage) typed_address) in
     let callback_contract = Test.to_contract callback_taddress in
     (callback_contract, callback_taddress, callback_addr)

@@ -1,4 +1,4 @@
-#import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
+#import "../../../contracts/cameligo/betting/types.mligo" "TYPES"
 
 (* Assert contract result is successful *)
 let tx_success (res: test_exec_result) : unit =
@@ -26,10 +26,10 @@ let assert_manager (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (ex
         then Test.log("OK", ctr_value)
         else Test.failwith("NOT OK", ctr_value)
 
-(* Assert Signer parameter with expected result *)
-let assert_signer (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
+(* Assert Oracle parameter with expected result *)
+let assert_oracle (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : address = (ctr_storage.signer) in
+    let ctr_value : address = (ctr_storage.oracleAddress) in
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else Test.failwith("NOT OK", ctr_value)
@@ -37,18 +37,10 @@ let assert_signer (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (exp
 (* Assert isPaused parameter with expected result *)
 let assert_ispaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : bool = (ctr_storage.isPaused) in
+    let ctr_value : bool = (ctr_storage.betConfig.isBettingPaused) in
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else Test.failwith("NOT OK", ctr_value)
-
-// (* Assert isPaused parameter with expected result *)
-// let assert_event (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (event_num : nat)(event : TYPES.eventType) : unit =
-//     let ctr_storage = Test.get_storage(ctr_taddr) in
-//     let ctr_value : TYPES.eventType = (ctr_storage.events.event_num) in
-//     if (ctr_value = expected)
-//         then Test.log("OK", ctr_value)
-//         else Test.failwith("NOT OK", ctr_value)
 
 (* Assert isPaused parameter with expected result *)
 let assert_eventsMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.eventType) map) : unit =
