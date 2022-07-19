@@ -1,0 +1,217 @@
+{ parameter
+    (or (nat %buy)
+        (pair %sell (pair (address %collectionContract) (mutez %price)) (nat %token_id))) ;
+  storage
+    (pair (pair (set %active_proposals nat) (nat %next_sell_id))
+          (big_map %sell_proposals
+             nat
+             (pair (pair (pair (bool %active) (address %collectionContract))
+                         (pair (address %owner) (mutez %price)))
+                   (nat %token_id)))) ;
+  code { PUSH string "Already sold" ;
+         SWAP ;
+         UNPAIR ;
+         IF_LEFT
+           { DUP 3 ;
+             DUP 3 ;
+             CAR ;
+             CAR ;
+             DUP 3 ;
+             MEM ;
+             IF { DROP } { FAILWITH } ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CDR ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             GET ;
+             IF_NONE { PUSH string "Unknown proposal" ; FAILWITH } {} ;
+             DIG 3 ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CAR ;
+             CAR ;
+             IF { DROP } { FAILWITH } ;
+             PUSH string "You did not transfer enough tez for this nft" ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CDR ;
+             CDR ;
+             AMOUNT ;
+             COMPARE ;
+             GE ;
+             IF { DROP } { FAILWITH } ;
+             DUP ;
+             CAR ;
+             CDR ;
+             CAR ;
+             CONTRACT unit ;
+             IF_NONE { PUSH string "Unknwon owner" ; FAILWITH } {} ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CDR ;
+             CDR ;
+             UNIT ;
+             TRANSFER_TOKENS ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             CAR ;
+             CDR ;
+             CONTRACT %transfer
+               (list (pair (address %from_) (list %tx (pair (address %to_) (nat %token_id))))) ;
+             IF_NONE { PUSH string "Unknown FA2 contract" ; FAILWITH } {} ;
+             NIL (pair address (list (pair address nat))) ;
+             NIL (pair address nat) ;
+             DUP 5 ;
+             CDR ;
+             SENDER ;
+             PAIR ;
+             CONS ;
+             DUP 5 ;
+             CAR ;
+             CDR ;
+             CAR ;
+             PAIR ;
+             CONS ;
+             DUP 4 ;
+             CAR ;
+             CDR ;
+             CDR ;
+             AMOUNT ;
+             SUB_MUTEZ ;
+             IF_NONE { PUSH string "missing tez for paying royalties" ; FAILWITH } {} ;
+             DIG 2 ;
+             SWAP ;
+             DIG 2 ;
+             TRANSFER_TOKENS ;
+             DUP 5 ;
+             CDR ;
+             DUP 4 ;
+             CDR ;
+             DUP 5 ;
+             CAR ;
+             CDR ;
+             DIG 5 ;
+             CAR ;
+             CAR ;
+             CDR ;
+             PUSH bool False ;
+             PAIR ;
+             PAIR ;
+             PAIR ;
+             SOME ;
+             DUP 5 ;
+             UPDATE ;
+             DUP 5 ;
+             CAR ;
+             CDR ;
+             DIG 5 ;
+             CAR ;
+             CAR ;
+             DIG 5 ;
+             PUSH bool False ;
+             SWAP ;
+             UPDATE ;
+             PAIR ;
+             PAIR ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             DIG 2 ;
+             CONS ;
+             PAIR }
+           { DIG 2 ;
+             DROP ;
+             DUP ;
+             CAR ;
+             CAR ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CDR ;
+             SENDER ;
+             PAIR ;
+             VIEW "get_balance" nat ;
+             IF_NONE { PUSH string "unknown view get_balance." ; FAILWITH } {} ;
+             PUSH string "Not owner of this token" ;
+             PUSH nat 1 ;
+             DIG 2 ;
+             COMPARE ;
+             EQ ;
+             IF { DROP } { FAILWITH } ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CDR ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CDR ;
+             DUP 3 ;
+             CAR ;
+             CDR ;
+             SENDER ;
+             PAIR ;
+             DIG 3 ;
+             CAR ;
+             CAR ;
+             PUSH bool True ;
+             PAIR ;
+             PAIR ;
+             PAIR ;
+             DUP 3 ;
+             CAR ;
+             CDR ;
+             SWAP ;
+             SOME ;
+             SWAP ;
+             UPDATE ;
+             PUSH nat 1 ;
+             DUP 3 ;
+             CAR ;
+             CDR ;
+             ADD ;
+             DUP 3 ;
+             CAR ;
+             CAR ;
+             PAIR ;
+             CDR ;
+             DUP 3 ;
+             CAR ;
+             CAR ;
+             DIG 3 ;
+             CAR ;
+             CDR ;
+             PUSH bool True ;
+             SWAP ;
+             UPDATE ;
+             PAIR ;
+             PAIR ;
+             NIL operation ;
+             PAIR } } ;
+  view "active_proposals"
+       unit
+       (list nat)
+       { CDR ; NIL nat ; SWAP ; CAR ; CAR ; ITER { CONS } } ;
+  view "get_proposal"
+       nat
+       (pair (pair (pair (bool %active) (address %collectionContract))
+                   (pair (address %owner) (mutez %price)))
+             (nat %token_id))
+       { UNPAIR ;
+         SWAP ;
+         CDR ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH string "" ; FAILWITH } {} } }
+
