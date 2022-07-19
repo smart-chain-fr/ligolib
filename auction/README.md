@@ -36,7 +36,12 @@ make deploy
 
 It is based on a .env file that contains deployment information:
 ```
-ADMIN_PK - private key
-ADMIN_ADDRESS - public key
-RPC - URL of the RPC node that will process the transaction 
+DEPLOYER_PK=
+ADMIN_ADDRESS=
+FEE_ADDRESS=
+FACTORY_CONTRACT_ADDRESS=
+MARKETPLACE_CONTRACT_ADDRESS=
+AUCTION_CONTRACT_ADDRESS=
+
+RPC=http://127.0.0.1:8733
 ```
