@@ -1,4 +1,4 @@
-#import "../../contracts/auction/main.mligo" "Auction"
+#import "../../contracts/auction/main.jsligo" "Auction"
 
 type taddr = (Auction.parameter, Auction.storage) typed_address
 type contr = Auction.parameter contract

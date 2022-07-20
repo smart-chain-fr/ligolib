@@ -1,6 +1,6 @@
 
 #import "../contracts/factory/main.mligo" "Factory"
-#import "../../contracts/auction/main.mligo" "Auction"
+#import "../../contracts/auction/main.jsligo" "Auction"
 #import "../helpers/auction.mligo" "Auction_helper"
 #import "../helpers/factory.mligo" "Factory_helper"
 #import "../helpers/nft_multi.mligo" "NFT_MULTI_helper"
