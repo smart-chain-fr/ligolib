@@ -1,5 +1,5 @@
 
-#import "../../contracts/factory/main.mligo" "Factory"
+#import "../contracts/factory/main.mligo" "Factory"
 #import "../../contracts/auction/main.mligo" "Auction"
 #import "bootstrap.mligo" "Bootstrap"
 #import "../helpers/common.mligo" "Common_helper"

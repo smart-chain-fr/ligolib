@@ -1,7 +1,7 @@
 #import "errors.jsligo" "Errors"
 #import "storage.jsligo" "Storage"
-#import "../generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
-#import "../nft_multi/core/instance/NFT.mligo" "NFT_MULTI"
+#import "../../test/contracts/generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
+#import "../../test/contracts/nft_multi/core/instance/NFT.mligo" "NFT_MULTI"
 
 
 export let no_amount = () : bool => Tezos.get_amount() == (0 as mutez)

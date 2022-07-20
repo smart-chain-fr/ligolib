@@ -1,4 +1,4 @@
-#import "../../contracts/factory/main.mligo" "Factory"
+#import "../contracts/factory/main.mligo" "Factory"
 
 (* Some types for readability *)
 type taddr = (Factory.parameter, Factory.storage) typed_address

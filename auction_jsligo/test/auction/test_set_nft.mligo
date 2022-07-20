@@ -1,5 +1,5 @@
 
-#import "../../contracts/factory/main.mligo" "Factory"
+#import "../contracts/factory/main.mligo" "Factory"
 #import "../../contracts/auction/main.mligo" "Auction"
 #import "bootstrap.mligo" "Bootstrap"
 #import "../helpers/common.mligo" "Common_helper"
@@ -404,7 +404,7 @@ let test_set_nft_without_reserve_price_should_fail =
     // let () = Test.set_baker_policy (By_account baker) in
     
     let _alice_create_auction_without_reserve_price_should_fail = 
-        let () = Test.log("_alice_create_auction_without_expiration_period_should_fail") in
+        let () = Test.log("_alice_create_auction_without_reserve_price_should_fail") in
         // retrieve FA2 address collection
         let fa2_nft_address : address = fa2_nft_originated.addr in
         let auction_storage : Auction.Storage.t = Test.get_storage auction_originated.taddr in
@@ -454,7 +454,7 @@ let test_set_nft_multi_should_work =
     let (alice, bob, reserve, royalties, admin, frank, baker, accountZero, accountOne) = Bootstrap.bootstrap_accounts(("2022-01-01T00:22:10Z" : timestamp)) in
     let () = Test.set_baker_policy (By_account baker) in
     //let factory_originated = Bootstrap.bootstrap_factory_NFT() in 
-    
+
     // originate FA2 NFT semi-fungible smart contract
     let nft_multi_init_ledger : ((address * nat), nat)map = Map.literal[((alice, 1n), 1000n); ((bob, 2n), 1000n)] in    
     let nft_multi_totalsupply : (nat, nat) map = Map.literal[(1n, 1000n); (2n, 1000n)] in 

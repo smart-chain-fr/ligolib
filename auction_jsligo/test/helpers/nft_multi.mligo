@@ -1,4 +1,4 @@
-#import "../../contracts/nft_multi/core/instance/NFT.mligo" "NFT_MULTI"
+#import "../contracts/nft_multi/core/instance/NFT.mligo" "NFT_MULTI"
 
 type contr = NFT_MULTI.parameter contract
 
@@ -51,7 +51,7 @@ let originate (init_storage : multi_ext multi_storage) =
     // let contr = Test.to_contract taddr in
     // let addr = Tezos.address contr in
     let ist = Test.compile_value(init_storage) in
-    let (addr, _, _) = Test.originate_from_file "contracts/nft_multi/core/instance/NFT.mligo" "main" (["get_balance"; "total_supply"; "all_tokens"; "is_operator"; "token_metadata" ] : string list) ist 0mutez in
+    let (addr, _, _) = Test.originate_from_file "test/contracts/nft_multi/core/instance/NFT.mligo" "main" (["get_balance"; "total_supply"; "all_tokens"; "is_operator"; "token_metadata" ] : string list) ist 0mutez in
     let taddr = (Test.cast_address(addr) : (NFT_MULTI.parameter, multi_ext multi_storage)typed_address) in
     let contr = Test.to_contract(taddr) in
     {addr = addr; taddr = taddr; contr = contr}
