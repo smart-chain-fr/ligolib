@@ -1,0 +1,35 @@
+
+export type counter = nat
+
+export type auctionAssetClass = 
+| ["NFT", unit] 
+| ["NFT_MULTI", unit]
+
+export type nftauction = {
+    saleId : counter,
+    nftAddress : address,
+    tokenId : nat,
+    sellerAddress: address,
+    bidderAddress : option<address>,
+    reservePrice : nat,
+    auctionPrice : nat,
+    biddingPeriod : nat,
+    expirationTime : option<timestamp>,
+    endTime : option<timestamp>,
+    assetClass : auctionAssetClass,
+    tokenAmount : nat,
+}
+
+export type auctions = big_map<nat, nftauction>
+
+export type t = {
+    admin : address,
+    min_bp_bid : nat,
+    commissionFee : nat,
+    reserveAddress : address,
+    royaltiesStorage : address,
+    isPaused : bool,
+    nftSaleId : counter,
+    auctionIdToAuction : auctions,
+    extension_duration : nat,
+}

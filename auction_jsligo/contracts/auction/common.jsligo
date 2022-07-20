@@ -1,0 +1,107 @@
+#import "errors.jsligo" "Errors"
+#import "storage.jsligo" "Storage"
+#import "../generic_fa2/core/instance/NFT.mligo" "NFT_FA2"
+#import "../nft_multi/core/instance/NFT.mligo" "NFT_MULTI"
+
+
+export let no_amount = () : bool => Tezos.get_amount() == (0 as mutez)
+export let only_admin = (store : Storage.t) : bool => Tezos.get_sender() == store.admin
+export let is_paused = (store : Storage.t) : bool => store.isPaused
+export let is_expired = (auction : Storage.nftauction) : bool => 
+    match (auction.expirationTime, {
+        None: () => false,
+        Some: (tt: timestamp) => tt < Tezos.get_now(),
+	})
+
+
+export let is_over = (auction : Storage.nftauction) : bool => 
+    match (auction.endTime, {
+        None: () => false,
+        Some: (v: timestamp) => v < Tezos.get_now()
+	}) 
+
+export let is_started = (auction : Storage.nftauction) : bool => 
+    match (auction.endTime, {
+        None: () => false,
+        Some: (_v: timestamp) => true
+	}) 
+
+export let is_sender_last_bidder = (auction : Storage.nftauction) : bool => 
+    match (auction.bidderAddress, {
+        None: () => false,
+        Some: (addr: address) => addr == Tezos.get_sender()
+	})
+
+export let is_bid_enough = ([auction, store] : [Storage.nftauction, Storage.t]) : bool => 
+    Tezos.get_amount() / (1 as mutez) >= auction.auctionPrice + store.min_bp_bid
+
+export let has_auction_reserve_price = (auction : Storage.nftauction) : bool => auction.reservePrice != (0 as nat)
+export let has_reserve_price = (reservePrice : nat) : bool => reservePrice != (0 as nat)
+export let has_expiration_period = (exp_period : nat) : bool => exp_period != (0 as nat)
+export let has_bidding_period = (bid_period : nat) : bool => bid_period != (0 as nat)
+
+export let is_auction_ended = (auction : Storage.nftauction) : bool => 
+    match (auction.endTime, {
+        None: () => false,
+        Some: (endtime: timestamp) => Tezos.get_now() > endtime
+	}) 
+
+
+
+export let verify_entrypoint_tranfer_nft = (contractAddress : address) : bool => 
+    match ((Tezos.get_entrypoint_opt("%transfer", contractAddress) as option<contract<NFT_FA2.NFT.transfer>>), {
+        None: () => false,
+        Some: (ctr: contract<NFT_FA2.NFT.transfer>) => true
+    })
+
+export let verify_entrypoint_tranfer_nft_multi = (contractAddress : address) : bool => 
+    match ((Tezos.get_entrypoint_opt("%transfer", contractAddress) as option<contract<NFT_MULTI.NFT.transfer>>), {
+        None: () => false,
+        Some: (ctr: contract<NFT_MULTI.NFT.transfer>) => true
+    })
+
+
+export let transferAsset = ([assetClass, nftAddress, sellerAddress, tokenId, tokenAmount] : [Storage.auctionAssetClass, address, address, nat, nat]) : operation =>
+    match (assetClass, {
+        NFT: () => {
+            let dest : contract<NFT_FA2.NFT.transfer> = match ((Tezos.get_entrypoint_opt("%transfer",nftAddress) as option<contract<NFT_FA2.NFT.transfer>>), {
+                None: () => (failwith("unknown NFT address") as contract<NFT_FA2.NFT.transfer>),
+                Some: (ctr : contract<NFT_FA2.NFT.transfer>) => ctr
+            });
+            let transfer_param : NFT_FA2.NFT.transfer = list([{ from_:Tezos.get_self_address(), tx:list([{ to_:sellerAddress, token_id:tokenId}]) }]);
+            let op : operation = Tezos.transaction(transfer_param, (0 as mutez), dest);
+            op
+        },
+        NFT_MULTI: () => {
+            let dest : contract<NFT_MULTI.NFT.transfer> = match ((Tezos.get_entrypoint_opt("%transfer", nftAddress) as option<contract<NFT_MULTI.NFT.transfer>>), {
+                None: () => (failwith("unknown NFT address") as contract<NFT_MULTI.NFT.transfer>),
+                Some: (ctr : contract<NFT_MULTI.NFT.transfer>) => ctr
+            });
+            let transfer_param : NFT_MULTI.NFT.transfer = list([{ from_:Tezos.get_self_address(), tx:list([{ to_:sellerAddress, token_id:tokenId, amount:tokenAmount}]) }]);
+            let op : operation = Tezos.transaction(transfer_param, (0 as mutez), dest);
+            op
+        }
+	})
+
+
+export let transferAssetToAuctionContract = ([assetClass, nftAddress, tokenId, from_address, to_address, tokenAmount] : [Storage.auctionAssetClass, address, nat, address, address, nat]) : operation =>
+    match (assetClass, {
+        NFT: () => {
+            let dest : contract<NFT_FA2.NFT.transfer> = match ((Tezos.get_entrypoint_opt("%transfer", nftAddress) as option<contract<NFT_FA2.NFT.transfer>>), {
+                None: () => (failwith("unknown NFT address") as contract<NFT_FA2.NFT.transfer>),
+                Some: (ctr: contract<NFT_FA2.NFT.transfer>) => ctr
+            });
+            let transfer_param : NFT_FA2.NFT.transfer = list([{ from_:from_address, tx:list([{ to_:to_address, token_id:tokenId}]) }]);
+            let op : operation = Tezos.transaction(transfer_param, (0 as mutez), dest);
+            op
+        },
+        NFT_MULTI: () => {
+            let dest : contract<NFT_MULTI.NFT.transfer> = match ((Tezos.get_entrypoint_opt("%transfer", nftAddress) as option<contract<NFT_MULTI.NFT.transfer>>), {
+                None: () => (failwith("unknown NFT address") as contract<NFT_MULTI.NFT.transfer>),
+                Some: (ctr: contract<NFT_MULTI.NFT.transfer>) => ctr
+            });
+            let transfer_param : NFT_MULTI.NFT.transfer = list([{ from_:from_address, tx:list([{ to_:to_address, token_id:tokenId, amount:tokenAmount}]) }]);
+            let op : operation = Tezos.transaction(transfer_param, (0 as mutez), dest);
+            op
+        }
+	})
