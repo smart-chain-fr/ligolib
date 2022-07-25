@@ -13,8 +13,10 @@ type storage =
   closedBetTime : timestamp;
   betsTeamOne : (address, tez) map;
   betsTeamOne_index : nat;
+  betsTeamOne_total : tez;
   betsTeamTwo : (address, tez) map;
   betsTeamTwo_index : nat;
+  betsTeamTwo_total : tez;
   closedTeamOneRate : nat option
   }
 

@@ -12,7 +12,7 @@ let changeManager (newManager : address)( s : TYPES.storage) : (operation list *
   )
   else failwith ERRORS.not_manager
 
-let switchPause (s : TYPES.storage) : (operation list * TYPES.storage) =
+let switchPauseBetting (s : TYPES.storage) : (operation list * TYPES.storage) =
   let sender = Tezos.get_sender() in
   if (sender = s.manager)
   then
@@ -20,6 +20,17 @@ let switchPause (s : TYPES.storage) : (operation list * TYPES.storage) =
     if (s.betConfig.isBettingPaused)
     then (([] : operation list), {s with betConfig.isBettingPaused = false})
     else (([] : operation list), {s with betConfig.isBettingPaused = true})
+  )
+  else failwith ERRORS.not_manager
+
+let switchPauseEventCreation (s : TYPES.storage) : (operation list * TYPES.storage) =
+  let sender = Tezos.get_sender() in
+  if (sender = s.manager)
+  then
+  (
+    if (s.betConfig.isEventCreationPaused)
+    then (([] : operation list), {s with betConfig.isEventCreationPaused = false})
+    else (([] : operation list), {s with betConfig.isEventCreationPaused = true})
   )
   else failwith ERRORS.not_manager
 
@@ -34,6 +45,15 @@ let changeOracleAddress (newOracleAddress : address)( s : TYPES.storage) : (oper
   )
   else failwith ERRORS.not_manager
 
+let changeConfigType (newBetConfig : TYPES.betConfigType)( s : TYPES.storage) : (operation list * TYPES.storage) =
+  let sender = Tezos.get_sender() in
+  if (sender = s.manager)
+  then
+  (
+    (([] : operation list), {s with betConfig = newBetConfig})
+  )
+  else failwith ERRORS.not_manager
+
 let incrementEventIndex (s : TYPES.storage) : (operation list * TYPES.storage) =
   let new_events_index : nat = s.events_index + 1n in
   (([] : operation list), {s with events_index = new_events_index})
@@ -43,9 +63,14 @@ let addEvent (newEvent : TYPES.eventType)(s : TYPES.storage) : (operation list *
   if ((sender = s.manager) || (sender = s.oracleAddress) )
   then
   (
-    let ( _ , s) = incrementEventIndex(s) in
-    let newEvents : (nat, TYPES.eventType) map = (Map.add (s.events_index) newEvent s.events) in
-    (([] : operation list), {s with events = newEvents})
+    if (s.betConfig.isEventCreationPaused = false)
+    then
+    (
+      let ( _ , s) = incrementEventIndex(s) in
+      let newEvents : (nat, TYPES.eventType) map = (Map.add (s.events_index) newEvent s.events) in
+      (([] : operation list), {s with events = newEvents})
+    )
+    else failwith ERRORS.event_creation_paused
   )
   else failwith ERRORS.not_manager
 
@@ -77,12 +102,38 @@ let updateEvent (updatedEventID : nat)(updatedEvent : TYPES.eventType)(s : TYPES
   )
   else failwith ERRORS.not_manager
 
+let addBet (requestedEventID : nat)(teamOneBet : bool)(s : TYPES.storage) : (operation list * TYPES.storage) =
+  let sender : address = Tezos.get_sender() in
+  let newstore : TYPES.storage = s in
+  if ((sender <> s.manager) && (sender <> s.oracleAddress))
+  then
+  ( 
+    if (Tezos.get_amount() > 0tez)
+    then
+    (
+      if (Tezos.get_amount() >= s.betConfig.minBetAmount)
+      then
+      (
+        let _requestedEvent = match Map.find_opt requestedEventID s.events with
+            Some event -> event
+          | None -> (failwith ERRORS.no_event_id)
+        in
+        // let newEventsMap : (nat, TYPES.eventType) map = Map.update requestedEventID (Some(updatedEvent)) s.events in
+        (([] : operation list), newstore)
+      )
+      else failwith ERRORS.bet_lower_than_minimum
+    )
+    else failwith ERRORS.bet_with_no_tez
+  )
+  else failwith ERRORS.bet_manager_or_oracle
+
 let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.storage) =
   let result =
     match params with
     | ChangeManager a -> changeManager a s
     | ChangeOracleAddress a -> changeOracleAddress a s
-    | SwitchPause _ -> switchPause s
+    | SwitchPauseBetting _ -> switchPauseBetting s
+    | SwitchPauseEventCreation _ -> switchPauseEventCreation s
     | AddEvent e -> addEvent e s
     | GetEvent p -> getEvent p.requestedEventID p.callback s
     | UpdateEvent p -> updateEvent p.updatedEventID p.updatedEvent s

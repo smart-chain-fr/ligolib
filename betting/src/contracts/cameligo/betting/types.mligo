@@ -13,15 +13,17 @@ type eventType =
   closedBetTime : timestamp;
   betsTeamOne : (address, tez) map;
   betsTeamOne_index : nat;
+  betsTeamOne_total : tez;
   betsTeamTwo : (address, tez) map;
   betsTeamTwo_index : nat;
+  betsTeamTwo_total : tez;
   closedTeamOneRate : nat option
 }
 
 type betConfigType = {
   isBettingPaused : bool;
   isEventCreationPaused : bool;
-  minBetAmount : nat;
+  minBetAmount : tez;
   minPeriodToBet : nat;
   maxBetDifference : nat;
   retainedProfitQuota : nat;
@@ -58,7 +60,8 @@ type callbackReturnedValue =
 type action =
   ChangeManager of address
   | ChangeOracleAddress of address
-  | SwitchPause of unit
+  | SwitchPauseBetting of unit
+  | SwitchPauseEventCreation of unit
   | AddEvent of eventType
   | GetEvent of callbackAskedParameter
   | UpdateEvent of updateEventParameter

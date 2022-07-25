@@ -1,40 +1,30 @@
-LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.45.0
+LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.47.0
 PROTOCOL_OPT=--protocol jakarta
 JSON_OPT=--michelson-format json
 
 help:
 	@echo  'Usage:'
 	@echo  '  all					- Removes Michelson files, recompile contracts and launch tests'
-	@echo  '  clean					- Removes generated Michelson files'
-	@echo  '  compile				- Compiles smart contract Callback, Oracle and Betting'
-	@echo  '  compile_callback		- Compiles smart contract Callback'
+	@echo  '  clean					- Removes all generated Michelson files'
+	@echo  '  compile				- Compiles all smart contracts'
 	@echo  '  compile_oracle		- Compiles smart contract Oracle'
 	@echo  '  compile_betting		- Compiles smart contract Betting'
-	@echo  '  test					- Runs integration tests in LIGO'
-	@echo  '  dry-run				- Simulates execution of entrypoints in LIGO'
-	@echo  '  deploy				- Deploys smart contracts Callback, Oracle and Betting with Taquito'
-	@echo  '  deploy_callback		- Deploys smart contracts Callback with Taquito'
+	@echo  '  test					- Runs all integration tests in LIGO'
+	@echo  '  test_oracle			- Runs integration tests for Oracle in LIGO'
+	@echo  '  test_betting			- Runs integration tests for Betting in LIGO'
+	@echo  '  deploy				- Deploys all smart contracts with Taquito'
 	@echo  '  deploy_oracle			- Deploys smart contracts Oracle with Taquito'
 	@echo  '  deploy_betting		- Deploys smart contracts Betting with Taquito'
+	@echo  '  dry-run				- Simulates execution of all entrypoints in LIGO'
 	@echo  ''
 
 all: clean compile test
 
-compile: compile_oracle compile_betting compile_callback
-
-compile_callback: callback.tz callback.json
+compile: compile_oracle compile_betting
 
 compile_oracle: oracle.tz oracle.json
 
 compile_betting: betting.tz betting.json
-
-callback.tz: contracts/cameligo/callback/main.mligo
-	@echo "Compiling Callback smart contract to Michelson"
-	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
-
-callback.json: contracts/cameligo/callback/main.mligo
-	@echo "Compiling Callback smart contract to Michelson in JSON format"
-	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
 
 oracle.tz: contracts/cameligo/oracle/main.mligo
 	@echo "Compiling Oracle smart contract to Michelson"
@@ -116,16 +106,12 @@ test_betting_event_get: test/betting/test.eventGet.mligo
 	@echo "Running betting GetEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-deploy: node_modules deploy_callback
+deploy: node_modules deploy_oracle deploy_betting
 	@echo "Deploying contracts"
 	
 node_modules:
 	@echo "Installing node modules"
 	@cd deploy && npm install
-
-deploy_callback:
-	@cd deploy && tsc deploy_callback --resolveJsonModule -esModuleInterop
-	@node deploy/deploy_callback.js
 
 deploy_oracle:
 	@cd deploy && tsc deploy_oracle --resolveJsonModule -esModuleInterop
@@ -137,14 +123,14 @@ deploy_betting:
 
 dry-run: dry-run_oracle dry-run_betting
 
-dry-run_oracle: oracle.mligo
-	$(LIGO) compile parameter contracts/oracle/main.mligo 'ExecuteAlgorithm(unit)' -e oracleMain $(PROTOCOL_OPT)
-	$(LIGO) compile parameter contracts/oracle/main.mligo 'ChangeAlgorithm(fun(i : int) -> False)' -e oracleMain $(PROTOCOL_OPT)
-	$(LIGO) run dry-run contracts/oracle/main.mligo  'ExecuteAlgorithm(unit)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT) 
-	$(LIGO) run dry-run contracts/oracle/main.mligo  'ChangeAlgorithm(fun(i : int) -> False)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT)
+dry-run_oracle: contracts/cameligo/oracle/main.mligo
+	$(LIGO) compile parameter $^ 'ExecuteAlgorithm(unit)' -e oracleMain $(PROTOCOL_OPT)
+	$(LIGO) compile parameter $^ 'ChangeAlgorithm(fun(i : int) -> False)' -e oracleMain $(PROTOCOL_OPT)
+	$(LIGO) run dry-run $^  'ExecuteAlgorithm(unit)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT) 
+	$(LIGO) run dry-run $^  'ChangeAlgorithm(fun(i : int) -> False)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT)
 
-dry-run_betting: betting.mligo
-	$(LIGO) compile parameter betting.mligo 'Increment(5)' -e bettingMain $(PROTOCOL_OPT)
-	$(LIGO) compile parameter betting.mligo 'Decrement(5)' -e bettingMain $(PROTOCOL_OPT)
-	$(LIGO) run dry-run betting.mligo  'Increment(5)' '37' -e bettingMain $(PROTOCOL_OPT)
-	$(LIGO) run dry-run betting.mligo  'Decrement(5)' '37' -e bettingMain $(PROTOCOL_OPT)
+dry-run_betting: contracts/cameligo/betting/main.mligo
+	$(LIGO) compile parameter $^ 'Increment(5)' -e bettingMain $(PROTOCOL_OPT)
+	$(LIGO) compile parameter $^ 'Decrement(5)' -e bettingMain $(PROTOCOL_OPT)
+	$(LIGO) run dry-run $^  'Increment(5)' '37' -e bettingMain $(PROTOCOL_OPT)
+	$(LIGO) run dry-run $^  'Decrement(5)' '37' -e bettingMain $(PROTOCOL_OPT)

@@ -57,8 +57,10 @@ let callbackInitStorage : CALLBACK.storage =
         closedBetTime = Tezos.get_now() + 1000;
         betsTeamOne = (Map.empty : (address, tez) map);
         betsTeamOne_index = 0n;
+        betsTeamOne_total = 0n;
         betsTeamTwo = (Map.empty : (address, tez) map);
         betsTeamTwo_index = 0n;
+        betsTeamTwo_total = 0n;
         closedTeamOneRate = None;
     }
 
