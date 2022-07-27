@@ -1,0 +1,56 @@
+#import "storage.jsligo" "Storage"
+
+export type sell_proposal_param = {
+    token_id : nat,
+    collectionContract : address,
+    price : tez,
+}
+
+export type buy_param = {
+    proposal_id : nat
+}
+
+export type saleId = nat
+
+export type set_bid_order_param = saleId
+export type finalize_auction_param = saleId
+export type set_fee_param = nat
+export type set_reserve_param = address
+export type set_royalties_param = address
+export type set_nft_auction_param = {
+    nftAddress : address,
+    tokenId : nat,
+    reservePrice : nat,
+    auctionBiddingPeriod : nat,
+    auctionExpirationPeriod : nat,
+    assetClass : Storage.auctionAssetClass,
+    tokenAmount : nat,
+}
+export type cancel_nft_auction_param = nat
+export type admin_cancel_nft_auction_param = {
+    saleId : saleId,
+    reason : string,
+}
+export type update_periods_param = {
+    saleId : saleId,
+    auctionBiddingPeriod : nat,
+    auctionExpirationPeriod : nat,
+}
+export type update_price_param = {
+    saleId : saleId,
+    reservePrice : nat,
+}
+export type pause_param = bool
+
+export type t = 
+| ["SetBidOrder", set_bid_order_param]
+| ["FinalizeAuction", finalize_auction_param]
+| ["SetCommissionFee", set_fee_param]
+| ["SetReserveAddress", set_reserve_param]
+| ["SetRoyaltiesStorageAddress", set_royalties_param]
+| ["SetNftAuction", set_nft_auction_param]
+| ["CancelNftAuction", cancel_nft_auction_param]
+| ["AdminCancelNftAuction", admin_cancel_nft_auction_param]
+| ["UpdateNftAuctionPeriods", update_periods_param]
+| ["UpdateReservePriceNftAuction", update_price_param]
+| ["EmergencyPause", pause_param]

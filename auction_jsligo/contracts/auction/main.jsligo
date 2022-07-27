@@ -1,0 +1,257 @@
+#import "storage.jsligo" "Storage"
+#import "errors.jsligo" "Errors"
+#import "parameter.jsligo" "Parameter"
+#import "common.jsligo" "Common"
+#import "assert.jsligo" "Assert"
+
+export type storage = Storage.t
+export type parameter = Parameter.t
+export type return_ = [list<operation>, storage]
+
+
+let setCommissionFee = ([param, store] : [Parameter.set_fee_param, Storage.t]) : return_ => {
+    let _check_admin : unit = Assert.assert_only_admin(store);
+    let _check_between_0_and_100 : unit = assert_with_error((param >= (0 as nat) && param <= (100 as nat)), Errors.not_between_0_and_100);
+    [list([]) as list<operation>, {...store, commissionFee: param}]
+}
+
+let setReserveAddress = ([param, store] : [Parameter.set_reserve_param, Storage.t]) : return_ => {
+    let _check_admin : unit = Assert.assert_only_admin(store);
+    [list([]) as list<operation>, {...store, reserveAddress: param}]
+}
+let setRoyaltiesStorageAddress = ([param, store] : [Parameter.set_royalties_param, Storage.t]) : return_ => {
+    let _check_admin : unit = Assert.assert_only_admin(store);
+    [list([]) as list<operation>, {...store, royaltiesStorage: param}]
+}
+let emergencyPause = ([param, store] : [Parameter.pause_param, Storage.t]) : return_ => {
+    let _check_admin : unit = Assert.assert_only_admin(store);
+    [list([]) as list<operation>, {...store, isPaused: param}]
+}
+let setBidOrder = ([param, store] : [Parameter.set_bid_order_param, Storage.t]) : return_ => {
+    let sender = Tezos.get_sender();
+    let _check_is_not_paused : unit = Assert.assert_is_not_paused(store);
+    let currentAuction : Storage.nftauction = match(Big_map.find_opt(param, store.auctionIdToAuction), {
+        None: () => failwith(Errors.unknown_auction_id),
+        Some: (x: Storage.nftauction) => x 
+    });
+    let _check_reserve_auction : unit = Assert.assert_auction_reserve_price_not_zero(currentAuction);
+    // case first bid
+    let _check_is_not_expired : unit = Assert.assert_is_not_expired(currentAuction);
+    let tx_amount = Tezos.get_amount(); 
+    let tx_sender = Tezos.get_sender();
+    let tx_now = Tezos.get_now();
+    if (currentAuction.endTime == (None() as option<timestamp>)) {
+        let _check_amount_higher_than_reserve_price : unit = assert_with_error((currentAuction.reservePrice * (1 as mutez) <= tx_amount), Errors.amount_lower_than_reserve_price);
+        let modified_endtime = Some(tx_now +int(currentAuction.biddingPeriod));
+        let modified_auction = {...currentAuction, auctionPrice:tx_amount / (1 as mutez), bidderAddress:Some(tx_sender), endTime:modified_endtime };
+        return [list([]) as list<operation>, {...store, auctionIdToAuction: Big_map.update(param, (Some(modified_auction)), store.auctionIdToAuction)}]
+    } else {
+        // case not first bid
+        let _check_auction_is_over : unit = Assert.assert_auction_is_not_over(currentAuction);
+        let _check_auction_no_double_bid : unit = Assert.assert_no_twice_bidding(currentAuction);
+        let _check_assert_bid_is_enough : unit = Assert.assert_bid_is_enough(currentAuction, store);
+               let old_bidder = match (currentAuction.bidderAddress, {
+            None: () => failwith(Errors.missing_bidder_address),
+            Some: (addr: address) => addr
+        });
+        let old_amount = currentAuction.auctionPrice;
+        let destination : contract<unit> = match((Tezos.get_contract_opt(old_bidder) as option<contract<unit>>),{ 
+            None: () => (failwith(Errors.missing_contract_bidder_address) as contract<unit>),
+            Some: (dest: contract<unit>) => dest
+        });
+        let op : operation = Tezos.transaction(unit, (old_amount * (1 as mutez)), destination);
+        let ops : list<operation> = list([ op ]);
+        if (Option.unopt(currentAuction.endTime) < tx_now + int(store.extension_duration)){
+            let modified_endtime = Some(tx_now + int(store.extension_duration));
+            let modified_auction = {...currentAuction, auctionPrice:tx_amount / (1 as mutez), bidderAddress:Some(tx_sender), endTime:modified_endtime };
+            return [ops, {...store, auctionIdToAuction: Big_map.update(param, (Some(modified_auction)), store.auctionIdToAuction)}]
+
+        } else {
+            let modified_endtime = currentAuction.endTime;
+            let modified_auction = {...currentAuction, auctionPrice:tx_amount / (1 as mutez), bidderAddress:Some(tx_sender), endTime:modified_endtime };
+            return [ops, {...store, auctionIdToAuction: Big_map.update(param, (Some(modified_auction)), store.auctionIdToAuction)}]
+        };
+    };
+    
+}
+
+let finalizeAuction = ([param, store] : [Parameter.finalize_auction_param, Storage.t]) : return_ => {
+    let currentAuction : Storage.nftauction = match(Big_map.find_opt(param, store.auctionIdToAuction), {
+        None: () => failwith(Errors.unknown_auction_id),
+        Some: (x: Storage.nftauction) => x
+    });
+    let _check_auction_not_started : unit = Assert.assert_auction_is_started(currentAuction);
+    let _check_auction_not_ended : unit = Assert.assert_auction_is_not_ended(currentAuction);
+
+    let modified_auctions = Big_map.remove(param, store.auctionIdToAuction);
+
+    let bidderAddress : address = match (currentAuction.bidderAddress, {
+        None: () => (failwith(Errors.missing_bidder_address) as address),
+        Some: (addr: address) => addr
+    });
+    let op_nft : operation = Common.transferAsset(
+        currentAuction.assetClass,
+        currentAuction.nftAddress,
+        bidderAddress,
+        currentAuction.tokenId,
+        currentAuction.tokenAmount
+    );
+
+    let _check_fee : unit = assert_with_error((store.commissionFee <= (10000 as nat)), Errors.fee_out_of_bound);
+    let fee = (currentAuction.auctionPrice * store.commissionFee) / (10000 as nat);
+    let amountLeft = abs(currentAuction.auctionPrice - fee);
+
+    let destination_fee : contract<unit> = match((Tezos.get_contract_opt(store.reserveAddress) as option<contract<unit>>), { 
+        None: () => (failwith(Errors.missing_contract_reserve_address) as contract<unit>),
+        Some: (dest : contract<unit>) => dest
+    });
+    let op_fee : operation = Tezos.transaction(unit, (fee * (1 as mutez)), destination_fee);
+    let destination_seller : contract<unit> = match((Tezos.get_contract_opt(currentAuction.sellerAddress) as option<contract<unit>>), { 
+        None: () => (failwith(Errors.missing_contract_seller_address) as contract<unit>),
+        Some: (dest: contract<unit>) => dest
+    });
+    let op_seller : operation = Tezos.transaction(unit, (amountLeft * (1 as mutez)), destination_seller);
+
+    let ops : list<operation> = list([ op_seller, op_nft, op_fee ]); 
+    [ops, {...store, auctionIdToAuction: modified_auctions}];
+}
+
+let setNftAuction = ([param, store] : [Parameter.set_nft_auction_param, Storage.t]) : return_ => {
+    let sender = Tezos.get_sender();
+    let _check_is_not_paused : unit = Assert.assert_is_not_paused(store);
+    let _check_nft_address : unit = Assert.assert_nft_contract_exist(param.nftAddress, param.assetClass);
+    let _check_bidding_period_not_zero : unit = Assert.assert_bidding_period_not_zero(param.auctionBiddingPeriod);
+    let _check_expiration_period_not_zero : unit = Assert.assert_expiration_period_not_zero(param.auctionExpirationPeriod);
+    let _check_reserve_price_not_zero : unit = Assert.assert_reserve_price_not_zero(param.reservePrice);
+
+    let op : operation = Common.transferAssetToAuctionContract(param.assetClass, param.nftAddress, param.tokenId, Tezos.get_sender(), Tezos.get_self_address(), param.tokenAmount);
+    let ops : list<operation> = list([op]);
+    let expirationtimestamp : timestamp = Tezos.get_now() + int(param.auctionExpirationPeriod);
+    let new_auction : Storage.nftauction = {
+        saleId: store.nftSaleId,
+        nftAddress: param.nftAddress,
+        tokenId: param.tokenId,
+        sellerAddress: Tezos.get_sender(),
+        bidderAddress: (None() as option<address>),
+        reservePrice: param.reservePrice,
+        auctionPrice: (0 as nat),
+        biddingPeriod: param.auctionBiddingPeriod,
+        expirationTime: Some(expirationtimestamp),
+        endTime: (None() as option<timestamp>),
+        assetClass: param.assetClass,
+        tokenAmount: param.tokenAmount,
+    };
+    let modified_auctions = Big_map.add(store.nftSaleId, new_auction, store.auctionIdToAuction);
+    [ops, {...store, auctionIdToAuction: modified_auctions, nftSaleId: store.nftSaleId + (1 as nat) }]
+}
+
+let cancelNftAuction = ([param, store] : [Parameter.cancel_nft_auction_param, Storage.t]) : return_ => {
+    let sender = Tezos.get_sender();
+    let _check_is_not_paused : unit = Assert.assert_is_not_paused(store);
+    let currentAuction : Storage.nftauction = match(Big_map.find_opt(param, store.auctionIdToAuction), {
+        None: () => failwith(Errors.unknown_auction_id),
+        Some: (x: Storage.nftauction) => x
+    });
+    let _check_sender_owns_auction : unit = assert_with_error((sender == currentAuction.sellerAddress), Errors.not_owner_auction);
+    let _check_auction_not_started : unit = Assert.assert_auction_is_not_started(currentAuction);
+
+    let modified_auctions = Big_map.remove(param, store.auctionIdToAuction);
+    let op_nft : operation = Common.transferAsset(
+            currentAuction.assetClass,
+            currentAuction.nftAddress,
+            currentAuction.sellerAddress,
+            currentAuction.tokenId,
+            currentAuction.tokenAmount
+        );
+    let ops : list<operation> = list([ op_nft ]);
+    [ops, {...store, auctionIdToAuction: modified_auctions}]
+}
+
+let adminCancelNftAuction = ([param, store] : [Parameter.admin_cancel_nft_auction_param, Storage.t]) : return_ => {
+    let _check_admin : unit = Assert.assert_only_admin(store);
+    let _check_reason : unit = Assert.assert_reason_is_given(param.reason);
+    let currentAuction : Storage.nftauction = match(Big_map.find_opt(param.saleId, store.auctionIdToAuction), {
+        None: () => failwith(Errors.unknown_auction_id),
+        Some: (x: Storage.nftauction) => x
+    });
+    let _check_reserve_price : unit = Assert.assert_auction_reserve_price_not_zero(currentAuction);
+    let modified_auctions = Big_map.remove(param.saleId, store.auctionIdToAuction);
+
+    let op_nft : operation = Common.transferAsset(
+            currentAuction.assetClass,
+            currentAuction.nftAddress,
+            currentAuction.sellerAddress,
+            currentAuction.tokenId,
+            currentAuction.tokenAmount
+        );
+    if (currentAuction.auctionPrice != (0 as nat)) {
+        let bidderAddress : address = match (currentAuction.bidderAddress, {
+            None: () => (failwith(Errors.missing_bidder_address) as address),
+            Some: (addr: address) => addr
+        });
+        let destination : contract<unit> = match( (Tezos.get_contract_opt(bidderAddress) as option<contract<unit>>), { 
+            None: () => (failwith(Errors.missing_contract_bidder_address) as contract<unit>),
+            Some: (dest: contract<unit>) => dest
+        });
+        let op : operation = Tezos.transaction(unit, (currentAuction.auctionPrice * (1 as mutez)), destination);
+        return [list([ op, op_nft ]), {...store, auctionIdToAuction: modified_auctions}]
+    } else {
+        return [list([ op_nft ]), {...store, auctionIdToAuction: modified_auctions}]
+    };
+}
+
+let updateNftAuctionPeriods = ([param, store] : [Parameter.update_periods_param, Storage.t]) : return_ => {
+    let sender = Tezos.get_sender();
+    let _check_is_not_paused : unit = Assert.assert_is_not_paused(store);
+    let _check_bidding_period_not_zero : unit = Assert.assert_bidding_period_not_zero(param.auctionBiddingPeriod);
+    let currentAuction : Storage.nftauction = match(Big_map.find_opt(param.saleId, store.auctionIdToAuction), {
+        None: () => failwith(Errors.unknown_auction_id),
+        Some: (x: Storage.nftauction) => x
+    });
+    let _check_sender_owns_auction : unit = assert_with_error((sender == currentAuction.sellerAddress), Errors.not_owner_auction);
+    let _check_auction_not_started : unit = Assert.assert_auction_is_not_started(currentAuction);
+
+    // TO-DO: instead of adding `Tezos.get_now()`, we could instead add the previous `expirationTime`
+    let modified_auction = {...currentAuction, biddingPeriod:param.auctionBiddingPeriod, expirationTime:(Some(Tezos.get_now() + int(param.auctionExpirationPeriod))) };
+    let modified_auctions = Big_map.update(param.saleId, (Some(modified_auction)), store.auctionIdToAuction);
+    [list([]) as list<operation>, {...store, auctionIdToAuction: modified_auctions}]
+}
+
+let updateReservePriceNftAuction = ([param, store] : [Parameter.update_price_param, Storage.t]) : return_ => {
+    let sender = Tezos.get_sender();
+    let _check_is_not_paused : unit = Assert.assert_is_not_paused(store);
+    let _check_reserve_price_not_zero : unit = Assert.assert_reserve_price_not_zero(param.reservePrice);
+    let currentAuction : Storage.nftauction = match(Big_map.find_opt(param.saleId, store.auctionIdToAuction), {
+        None: () => failwith(Errors.unknown_auction_id),
+        Some: (x: Storage.nftauction) => x
+    });
+    let _check_sender_owns_auction : unit = assert_with_error((sender == currentAuction.sellerAddress), Errors.not_owner_auction);
+    let _check_auction_not_started : unit = Assert.assert_auction_is_not_started(currentAuction);
+    
+    let modified_auction = {...currentAuction, reservePrice: param.reservePrice};
+    let modified_auctions = Big_map.update(param.saleId, (Some(modified_auction)), store.auctionIdToAuction);  
+    [list([]) as list<operation>, {...store, auctionIdToAuction: modified_auctions}]
+}
+
+export let main = ([ep, store] : [parameter, storage]) : return_ => {
+    return match (ep, { 
+        SetBidOrder: (p: set_bid_order_param) => setBidOrder(p, store),
+        FinalizeAuction: (p: finalize_auction_param) => finalizeAuction(p, store),
+        SetNftAuction: (p: set_nft_auction_param) => setNftAuction(p, store),
+        CancelNftAuction: (p: cancel_nft_auction_param) => cancelNftAuction(p, store),
+        AdminCancelNftAuction: (p: admin_cancel_nft_auction_param) => adminCancelNftAuction(p, store),
+        UpdateNftAuctionPeriods: (p: update_periods_param) => updateNftAuctionPeriods(p, store),
+        UpdateReservePriceNftAuction: (p: update_price_param) => updateReservePriceNftAuction(p, store),
+        SetCommissionFee: (p: set_fee_param) => setCommissionFee(p, store),
+        SetReserveAddress: (p: set_reserve_param) => setReserveAddress(p, store),
+        SetRoyaltiesStorageAddress: (p: set_royalties_param) => setRoyaltiesStorageAddress(p, store),
+        EmergencyPause: (p: pause_param) => emergencyPause(p, store),
+    });
+};
+
+[@view] let get_auction_item = ([saleId, s] : [nat, storage]) : Storage.nftauction => {
+    match(Big_map.find_opt(saleId, s.auctionIdToAuction), {
+        None: () => (failwith(Errors.unknown_auction_id) as Storage.nftauction),
+        Some: (item: Storage.nftauction) => item 
+    });
+};
