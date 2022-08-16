@@ -1,4 +1,4 @@
-LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.47.0
+LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.48.1
 PROTOCOL_OPT=--protocol jakarta
 JSON_OPT=--michelson-format json
 
@@ -10,12 +10,12 @@ help:
 	@echo  '  compile_oracle		- Compiles smart contract Oracle'
 	@echo  '  compile_betting		- Compiles smart contract Betting'
 	@echo  '  test					- Runs all integration tests in LIGO'
-	@echo  '  test_oracle			- Runs integration tests for Oracle in LIGO'
-	@echo  '  test_betting			- Runs integration tests for Betting in LIGO'
+	@echo  '  test_oracle			- Runs integration LIGO tests for Oracle'
+	@echo  '  test_betting			- Runs integration LIGO tests for Betting'
 	@echo  '  deploy				- Deploys all smart contracts with Taquito'
-	@echo  '  deploy_oracle			- Deploys smart contracts Oracle with Taquito'
-	@echo  '  deploy_betting		- Deploys smart contracts Betting with Taquito'
-	@echo  '  dry-run				- Simulates execution of all entrypoints in LIGO'
+	@echo  '  deploy_oracle			- Deploys smart contracts with Taquito for Oracle'
+	@echo  '  deploy_betting		- Deploys smart contracts with Taquito for Betting'
+	# @echo  '  dry-run				- Simulates execution of all entrypoints in LIGO'
 	@echo  ''
 
 all: clean compile test
@@ -121,16 +121,16 @@ deploy_betting:
 	@cd deploy && tsc deploy_betting --resolveJsonModule -esModuleInterop
 	@node deploy/deploy_betting.js
 
-dry-run: dry-run_oracle dry-run_betting
+# dry-run: dry-run_oracle dry-run_betting
 
-dry-run_oracle: contracts/cameligo/oracle/main.mligo
-	$(LIGO) compile parameter $^ 'ExecuteAlgorithm(unit)' -e oracleMain $(PROTOCOL_OPT)
-	$(LIGO) compile parameter $^ 'ChangeAlgorithm(fun(i : int) -> False)' -e oracleMain $(PROTOCOL_OPT)
-	$(LIGO) run dry-run $^  'ExecuteAlgorithm(unit)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT) 
-	$(LIGO) run dry-run $^  'ChangeAlgorithm(fun(i : int) -> False)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT)
+# dry-run_oracle: contracts/cameligo/oracle/main.mligo
+# 	$(LIGO) compile parameter $^ 'ExecuteAlgorithm(unit)' -e oracleMain $(PROTOCOL_OPT)
+# 	$(LIGO) compile parameter $^ 'ChangeAlgorithm(fun(i : int) -> False)' -e oracleMain $(PROTOCOL_OPT)
+# 	$(LIGO) run dry-run $^  'ExecuteAlgorithm(unit)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT) 
+# 	$(LIGO) run dry-run $^  'ChangeAlgorithm(fun(i : int) -> False)' '{bettingAddress=("KT1D99kSAsGuLNmT1CAZWx51vgvJpzSQuoZn" : address); algorithm=(fun(i : int) -> if i < 10 then True else False); result=False}' -e oracleMain $(PROTOCOL_OPT)
 
-dry-run_betting: contracts/cameligo/betting/main.mligo
-	$(LIGO) compile parameter $^ 'Increment(5)' -e bettingMain $(PROTOCOL_OPT)
-	$(LIGO) compile parameter $^ 'Decrement(5)' -e bettingMain $(PROTOCOL_OPT)
-	$(LIGO) run dry-run $^  'Increment(5)' '37' -e bettingMain $(PROTOCOL_OPT)
-	$(LIGO) run dry-run $^  'Decrement(5)' '37' -e bettingMain $(PROTOCOL_OPT)
+# dry-run_betting: contracts/cameligo/betting/main.mligo
+# 	$(LIGO) compile parameter $^ 'Increment(5)' -e bettingMain $(PROTOCOL_OPT)
+# 	$(LIGO) compile parameter $^ 'Decrement(5)' -e bettingMain $(PROTOCOL_OPT)
+# 	$(LIGO) run dry-run $^  'Increment(5)' '37' -e bettingMain $(PROTOCOL_OPT)
+# 	$(LIGO) run dry-run $^  'Decrement(5)' '37' -e bettingMain $(PROTOCOL_OPT)

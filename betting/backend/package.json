@@ -11,6 +11,6 @@
   "author": "Charaf ZELLOU",
   "license": "ISC",
   "dependencies": {
-    "api": "^4.5.1"
+    "api": "^4.5.2"
   }
 }

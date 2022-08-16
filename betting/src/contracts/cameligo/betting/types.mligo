@@ -1,3 +1,12 @@
+type betConfigType = {
+  isBettingPaused : bool;
+  isEventCreationPaused : bool;
+  minBetAmount : tez;
+  minPeriodToBet : nat;
+  maxBetDifference : nat;
+  retainedProfitQuota : nat;
+}
+
 type eventType = 
   [@layout:comb] {
   name : string;
@@ -20,15 +29,6 @@ type eventType =
   closedTeamOneRate : nat option
 }
 
-type betConfigType = {
-  isBettingPaused : bool;
-  isEventCreationPaused : bool;
-  minBetAmount : tez;
-  minPeriodToBet : nat;
-  maxBetDifference : nat;
-  retainedProfitQuota : nat;
-}
-
 type storage = {
   manager : address;
   oracleAddress : address;
@@ -39,11 +39,25 @@ type storage = {
   metadata : (string, bytes) map;
 }
 
+type getEventParameter =
+  [@layout:comb] {
+  requestedEventID : nat;
+  callback : address
+}
+
 type updateEventParameter =
   [@layout:comb] {
   updatedEventID : nat;
   updatedEvent : eventType;
 }
+
+type addBetParameter =
+  [@layout:comb] {
+  requestedEventID : nat;
+  teamOneBet : bool
+}
+
+type finalizeBetParameter = nat
 
 type callbackAskedParameter =
   [@layout:comb] {
@@ -63,5 +77,7 @@ type action =
   | SwitchPauseBetting of unit
   | SwitchPauseEventCreation of unit
   | AddEvent of eventType
-  | GetEvent of callbackAskedParameter
+  | GetEvent of getEventParameter
   | UpdateEvent of updateEventParameter
+  | AddBet of addBetParameter
+  | FinalizeBet of finalizeBetParameter

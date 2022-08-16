@@ -11,15 +11,15 @@ let primaryEvent : TYPES.eventType =
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
         isFinished = false;
-        isDraw = None;
-        isTeamOneWin = None;
+        isDraw = None : bool option;
+        isTeamOneWin = None : bool option;
         startBetTime = Tezos.get_now();
         closedBetTime = Tezos.get_now() + 1000;
         betsTeamOne = (Map.empty : (address, tez) map);
         betsTeamOne_index = 0n;
         betsTeamTwo = (Map.empty : (address, tez) map);
         betsTeamTwo_index = 0n;
-        closedTeamOneRate = None;
+        closedTeamOneRate = None : nat option;
     }
 
 let secondaryEvent : TYPES.eventType =
@@ -31,15 +31,15 @@ let secondaryEvent : TYPES.eventType =
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team THREE"; teamTwo = "Team FOUR"};
         isFinished = false;
-        isDraw = None;
-        isTeamOneWin = None;
+        isDraw = None : bool option;
+        isTeamOneWin = None : bool option;
         startBetTime = Tezos.get_now();
         closedBetTime = Tezos.get_now() + 1000;
         betsTeamOne = (Map.empty : (address, tez) map);
         betsTeamOne_index = 0n;
         betsTeamTwo = (Map.empty : (address, tez) map);
         betsTeamTwo_index = 0n;
-        closedTeamOneRate = None;
+        closedTeamOneRate = None : nat option;
     }
 
 let callbackInitStorage : CALLBACK.storage =
