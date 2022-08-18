@@ -17,37 +17,37 @@ all: clean compile test
 
 compile: fa2_nft.tz nft_multi.tz factory auction
 
-fa2_nft.tz: contracts/generic_fa2/core/instance/NFT.mligo
+fa2_nft.tz: test/contracts/generic_fa2/core/instance/NFT.mligo
 	@echo "Compiling smart contract FA2 to Michelson"
-	@mkdir -p contracts/generic_fa2/compiled
-	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/generic_fa2/compiled/$@
+	@mkdir -p test/contracts/generic_fa2/compiled
+	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > test/contracts/generic_fa2/compiled/$@
 
-nft_multi.tz: contracts/nft_multi/core/instance/NFT.mligo
+nft_multi.tz: test/contracts/nft_multi/core/instance/NFT.mligo
 	@echo "Compiling smart contract NFT_MULTI to Michelson"
-	@mkdir -p contracts/nft_multi/compiled
-	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/nft_multi/compiled/$@
+	@mkdir -p test/contracts/nft_multi/compiled
+	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > test/contracts/nft_multi/compiled/$@
 
 
 factory: factory.tz factory.json
 
-factory.tz: contracts/factory/main.mligo
+factory.tz: test/contracts/factory/main.mligo
 	@echo "Compiling smart contract Factory to Michelson"
-	@mkdir -p contracts/factory/compiled
-	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/factory/compiled/$@
+	@mkdir -p test/contracts/factory/compiled
+	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > test/contracts/factory/compiled/$@
 
-factory.json: contracts/factory/main.mligo
+factory.json: test/contracts/factory/main.mligo
 	@echo "Compiling smart contract Factory to Michelson in JSON format"
-	@mkdir -p contracts/factory/compiled
-	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/factory/compiled/$@
+	@mkdir -p test/contracts/factory/compiled
+	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > test/contracts/factory/compiled/$@
 
 auction: auction.tz auction.json
 
-auction.tz: contracts/auction/main.mligo
+auction.tz: contracts/auction/main.jsligo
 	@echo "Compiling smart contract Auction to Michelson"
 	@mkdir -p contracts/auction/compiled
 	@$(ligo_compiler) compile contract $^ -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/auction/compiled/$@
 
-auction.json: contracts/auction/main.mligo
+auction.json: contracts/auction/main.jsligo
 	@echo "Compiling smart contract Auction to Michelson"
 	@mkdir -p contracts/auction/compiled
 	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) $(PROJECTROOT_OPT) > contracts/auction/compiled/$@
