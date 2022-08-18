@@ -15,9 +15,14 @@ let trscChangeOracleAddress(contr, from, new_ : TYPES.action contract * address 
     let result : test_exec_result = Test.transfer_to_contract contr (ChangeOracleAddress new_) 0tez in
     result
 
-let trscSwitchPause(contr, from : TYPES.action contract * address) =
+let trscSwitchPauseBetting(contr, from : TYPES.action contract * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPause) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseBetting) 0tez in
+    result
+
+let trscSwitchPauseEventCreation(contr, from : TYPES.action contract * address) =
+    let () = Test.set_source from in
+    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseEventCreation) 0tez in
     result
 
 let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.eventType) =

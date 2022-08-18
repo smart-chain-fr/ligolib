@@ -1,7 +1,9 @@
 .env
-*.pyc
-package-lock.json
-__pycache__
 node_modules
+package-lock.json
 
+*.pyc
+__pycache__
+
+src/deploy/*.js
 src/compiled/*

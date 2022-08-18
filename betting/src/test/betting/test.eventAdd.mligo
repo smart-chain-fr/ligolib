@@ -1,8 +1,8 @@
-#import "../../contracts/cameligo/betting/main.mligo" "ORACLE"
+#import "../../contracts/cameligo/betting/main.mligo" "BETTING"
 #import "../../contracts/cameligo/betting/types.mligo" "TYPES"
-#import "./helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "./helpers/helper.mligo" "HELPER"
-#import "./helpers/assert.mligo" "ASSERT"
+#import "helpers/bootstrap.mligo" "BOOTSTRAP"
+#import "helpers/helper.mligo" "HELPER"
+#import "helpers/assert.mligo" "ASSERT"
 
 let () = Test.log("___ TEST addEvent STARTED ___")
 
@@ -20,7 +20,7 @@ let () = HELPER.trscAddEvent (betting_contract, alice, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress emptyMap
 
 let oneEventMap : (nat, TYPES.eventType) map = Map.literal [
-    (1n, BOOTSTRAP.primaryEvent)
+    (0n, BOOTSTRAP.primaryEvent)
     ]
 
 let () = Test.log("-> Adding an Event from Manager")
@@ -28,12 +28,12 @@ let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress oneEventMap
 
 let doubleEventMap : (nat, TYPES.eventType) map = Map.literal [
-    (1n, BOOTSTRAP.primaryEvent);
-    (2n, BOOTSTRAP.primaryEvent)
+    (0n, BOOTSTRAP.primaryEvent);
+    (1n, BOOTSTRAP.secondaryEvent)
     ]
 
-let () = Test.log("-> Adding an Event from Oracle")
-let () = HELPER.trscAddEvent (betting_contract, jeff, BOOTSTRAP.primaryEvent)
+let () = Test.log("-> Adding an Event from BETTING")
+let () = HELPER.trscAddEvent (betting_contract, jeff, BOOTSTRAP.secondaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress doubleEventMap
 
 // let () = Test.log("-> Changing Manager of the contract from original Manager")

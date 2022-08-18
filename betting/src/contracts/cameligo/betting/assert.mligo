@@ -1,5 +1,5 @@
-#import "./types.mligo" "TYPES"
-#import "./errors.mligo" "ERRORS"
+#import "types.mligo" "TYPES"
+#import "errors.mligo" "ERRORS"
 
 // --------------------------------------
 //       CONFIG RELATED ASSERTIONS

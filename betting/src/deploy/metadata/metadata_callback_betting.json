@@ -1,0 +1,14 @@
+{
+    "name": "Callback for Betting Contract",
+    "description": "Callback for Betting Contract",
+    "version": "beta",
+    "license": {
+        "name": "MIT"
+    },
+    "authors": [
+        "smart-chain <tezos@smart-chain.fr>"
+    ],
+    "homepage": "https://www.smart-chain.fr",
+    "interfaces": [
+    ]
+}

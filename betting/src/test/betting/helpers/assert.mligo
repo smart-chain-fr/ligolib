@@ -26,18 +26,26 @@ let assert_manager (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (ex
         then Test.log("OK", ctr_value)
         else Test.failwith("NOT OK", ctr_value)
 
-(* Assert Oracle parameter with expected result *)
-let assert_oracle (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
+(* Assert BETTING parameter with expected result *)
+let assert_BETTING (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : address = (ctr_storage.oracleAddress) in
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else Test.failwith("NOT OK", ctr_value)
 
-(* Assert isPaused parameter with expected result *)
-let assert_ispaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
+(* Assert isBettingPaused parameter with expected result *)
+let assert_isBettingPaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : bool = (ctr_storage.betConfig.isBettingPaused) in
+    if (ctr_value = expected)
+        then Test.log("OK", ctr_value)
+        else Test.failwith("NOT OK", ctr_value)
+
+(* Assert isPauseisEventCreationPausedd parameter with expected result *)
+let assert_isEventCreationPaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
+    let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
+    let ctr_value : bool = (ctr_storage.betConfig.isEventCreationPaused) in
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else Test.failwith("NOT OK", ctr_value)

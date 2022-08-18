@@ -1,8 +1,8 @@
 #import "../../contracts/cameligo/oracle/main.mligo" "ORACLE"
 #import "../../contracts/cameligo/oracle/types.mligo" "TYPES"
-#import "./helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "./helpers/helper.mligo" "HELPER"
-#import "./helpers/assert.mligo" "ASSERT"
+#import "helpers/bootstrap.mligo" "BOOTSTRAP"
+#import "helpers/helper.mligo" "HELPER"
+#import "helpers/assert.mligo" "ASSERT"
 
 let () = Test.log("___ TEST addEvent STARTED ___")
 

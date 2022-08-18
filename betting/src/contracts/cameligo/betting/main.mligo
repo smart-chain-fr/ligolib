@@ -1,8 +1,8 @@
 // Betting & Predictive Market - CameLIGO contract
 
-#import "./types.mligo" "TYPES"
-#import "./errors.mligo" "ERRORS"
-#import "./assert.mligo" "ASSERT"
+#import "types.mligo" "TYPES"
+#import "errors.mligo" "ERRORS"
+#import "assert.mligo" "ASSERT"
 
 // --------------------------------------
 //      CONFIGURATION INTERACTIONS
@@ -120,35 +120,12 @@ let addBet (pRequestedEventID : nat)(teamOneBet : bool)(s : TYPES.storage) : (op
   let newEventsMap : (nat, TYPES.eventType) map = (Map.update pRequestedEventID (Some(updatedEvent)) s.events) in
   (([] : operation list), {s with events = newEventsMap;})
 
-// let rewardBetWinners (pListWinners : (address, tez) map) =
-//   let trscRewardBetWinners = fun (i,j : address * tez) -> Tezos.transaction((), 1tez, i) in
-//   Map.map trscRewardBetWinners pListWinners 
-
-// let rewardBetWinners (pListWinners : (address, tez) map) =
-//   let trscRewardBetWinners (addr : address) = Tezos.transaction((), 1tez, addr) in
-//   Map.fold trscRewardBetWinners pListWinners
-
-// let rewardBetWinners (pListWinners : (address, tez) map) =
-//   let trscRewardBetWinners =
-//     fun (i, j : address * tez) -> Tezos.transaction((), 1tez, i)
-//   in
-//   let _ = Map.iter trscRewardBetWinners pListWinners in
-//   ()
-
-// let trscRewardBetWinners (i, j : address * tez) = 
-//     let _ = Tezos.transaction((), 1tez, i) in
-//     ()
-
-// let rewardBetWinners (pListWinners : (address, tez) map) =
-//   let _ = Map.iter trscRewardBetWinners pListWinners in
-//   ()
-
-let trsRewardBetWinners (pWinner : address)(pBetAmount : tez) : unit =
-  let _ = Tezos.transaction((), pBetAmount, pWinner) in
+let trsRewardBetWinners (pWinner : address)(pBetAmount : tez)(s : TYPES.storage) : unit =
+  let _ = Tezos.transaction((), (pBetAmount - (pBetAmount * s.betConfig.retainedProfitQuota) / 100n), pWinner) in
   ()
 
-let rewardBetWinners (pWinnersMap : (address, tez) map) =
-  let predicate = fun (iWinner, jBetAmount : address * tez) -> trsRewardBetWinners iWinner jBetAmount in
+let rewardBetWinners (pWinnersMap : (address, tez) map)(s : TYPES.storage) =
+  let predicate = fun (iWinner, jBetAmount : address * tez) -> trsRewardBetWinners iWinner jBetAmount s in
   let _ = Map.iter predicate pWinnersMap in
   ()
 
@@ -166,8 +143,8 @@ let finalizeBet (pRequestedEventID : nat)(s : TYPES.storage) : (operation list *
     | None -> failwith ERRORS.bet_no_event_outcome
   in
   let _ = if (outcomeTeamOneWin)
-    then ( rewardBetWinners updatedEvent.betsTeamOne )
-    else ( rewardBetWinners updatedEvent.betsTeamTwo )
+    then ( rewardBetWinners updatedEvent.betsTeamOne s )
+    else ( rewardBetWinners updatedEvent.betsTeamTwo s )
   in
   let newEventsMap : (nat, TYPES.eventType) map = (Map.update pRequestedEventID (Some(updatedEvent)) s.events) in
   (([] : operation list), {s with events = newEventsMap;})
@@ -180,8 +157,8 @@ let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.st
   let result = match params with
     | ChangeManager a -> changeManager a s
     | ChangeOracleAddress a -> changeOracleAddress a s
-    | SwitchPauseBetting _ -> switchPauseBetting s
-    | SwitchPauseEventCreation _ -> switchPauseEventCreation s
+    | SwitchPauseBetting -> switchPauseBetting s
+    | SwitchPauseEventCreation -> switchPauseEventCreation s
     | AddEvent e -> addEvent e s
     | GetEvent p -> getEvent p.requestedEventID p.callback s
     | UpdateEvent p -> updateEvent p.updatedEventID p.updatedEvent s

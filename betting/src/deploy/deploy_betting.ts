@@ -17,8 +17,23 @@ Tezos.tz
     .then((balance) => console.log(`Signer balance : ${balance.toNumber() / 1000000} ꜩ`))
     .catch((error) => console.log(JSON.stringify(error)));
 
+let init_betConfigType = {
+    'isBettingPaused': false,
+    'isEventCreationPaused': false,
+    'minBetAmount': 1,
+    'minPeriodToBet': 1,
+    'maxBetDifference': 1,
+    'retainedProfitQuota': 0,
+}
+
 let store = {
-    '' : ''
+    'manager': process.env.ADMIN_ADDRESS,
+    'oracleAddress': process.env.ORACLE_ADDRESS,
+    // 'retainedProfits' : 0,
+    'betConfig': init_betConfigType,
+    'events': (new (MichelsonMap)),
+    'events_index': 0,
+    'metadata': (new (MichelsonMap)),
 };
 
 async function orig() {

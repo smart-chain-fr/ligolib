@@ -1,0 +1,14 @@
+{
+    "name": "Oracle Contract",
+    "description": "Oracle Contract",
+    "version": "beta",
+    "license": {
+        "name": "MIT"
+    },
+    "authors": [
+        "smart-chain <tezos@smart-chain.fr>"
+    ],
+    "homepage": "https://www.smart-chain.fr",
+    "interfaces": [
+    ]
+}

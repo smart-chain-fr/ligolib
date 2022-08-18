@@ -1,5 +1,5 @@
-#import "./types.mligo" "TYPES"
-#import "./errors.mligo" "ERRORS"
+#import "types.mligo" "TYPES"
+#import "errors.mligo" "ERRORS"
 
 let changeManager (newManager : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
   let sender = Tezos.get_sender() in
@@ -82,7 +82,7 @@ let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.st
     match params with
     | ChangeManager a -> changeManager a s
     | ChangeSigner a -> changeSigner a s
-    | SwitchPause _ -> switchPause s
+    | SwitchPause -> switchPause s
     | AddEvent e -> addEvent e s
     | GetEvent p -> getEvent p.requestedEventID p.callback s
     | UpdateEvent p -> updateEvent p.updatedEventID p.updatedEvent s

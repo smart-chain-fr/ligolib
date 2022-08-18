@@ -41,7 +41,7 @@ type callbackReturnedValue =
 type action =
   ChangeManager of address
   | ChangeSigner of address
-  | SwitchPause of unit
+  | SwitchPause
   | AddEvent of eventType
   | GetEvent of callbackAskedParameter
   | UpdateEvent of updateEventParameter

@@ -26,13 +26,13 @@ type eventType =
   betsTeamTwo : (address, tez) map;
   betsTeamTwo_index : nat;
   betsTeamTwo_total : tez;
-  closedTeamOneRate : nat option
+  closedTeamOneRate : nat option;
 }
 
 type storage = {
   manager : address;
   oracleAddress : address;
-  retainedProfits : tez;
+  // retainedProfits : tez;
   betConfig : betConfigType;
   events : (nat, eventType) map;
   events_index : nat;
@@ -42,7 +42,7 @@ type storage = {
 type getEventParameter =
   [@layout:comb] {
   requestedEventID : nat;
-  callback : address
+  callback : address;
 }
 
 type updateEventParameter =
@@ -74,8 +74,8 @@ type callbackReturnedValue =
 type action =
   ChangeManager of address
   | ChangeOracleAddress of address
-  | SwitchPauseBetting of unit
-  | SwitchPauseEventCreation of unit
+  | SwitchPauseBetting
+  | SwitchPauseEventCreation
   | AddEvent of eventType
   | GetEvent of getEventParameter
   | UpdateEvent of updateEventParameter

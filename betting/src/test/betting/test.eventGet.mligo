@@ -1,13 +1,13 @@
-#import "../../contracts/cameligo/betting/main.mligo" "ORACLE"
+#import "../../contracts/cameligo/betting/main.mligo" "BETTING"
 #import "../../contracts/cameligo/betting/types.mligo" "TYPES"
-#import "./helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "./helpers/helper.mligo" "HELPER"
-#import "./helpers/assert.mligo" "ASSERT"
+#import "helpers/bootstrap.mligo" "BOOTSTRAP"
+#import "helpers/helper.mligo" "HELPER"
+#import "helpers/assert.mligo" "ASSERT"
 
 let () = Test.log("___ TEST getEvent STARTED ___")
 
 let _oneEventMap : (nat, TYPES.eventType) map = Map.literal [
-    (1n, BOOTSTRAP.secondaryEvent)
+    (0n, BOOTSTRAP.secondaryEvent)
     ]
 
 let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
@@ -15,7 +15,7 @@ let (callback_contract, callback_taddr, callback_addr) = BOOTSTRAP.bootstrap_cal
 let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.secondaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress _oneEventMap
 
-let () = HELPER.trscGetEvent (betting_contract, elon, callback_addr, 1n)
+let () = HELPER.trscGetEvent (betting_contract, elon, callback_addr, 0n)
 
 // let () = Test.get_storage(callback_taddr)
 

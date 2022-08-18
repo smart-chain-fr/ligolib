@@ -12,6 +12,7 @@
     "dependencies": {
         "@taquito/signer": "^13.0.1",
         "@taquito/taquito": "^13.0.1",
+        "@taquito/michelson-encoder": "^13.0.1",
         "dotenv": "^16.0.1"
     },
     "devDependencies": {

@@ -60,7 +60,7 @@ let bootstrap =
     } in
 
     (* Boostrapping Oracle contract *)
-    let oraclePath = "./contracts/cameligo/oracle/main.mligo" in
+    let oraclePath = "contracts/cameligo/oracle/main.mligo" in
     let iBis = Test.run (fun (x : TYPES.storage) -> x) init_storage in
     let (oracle_address, _, _) = Test.originate_from_file oraclePath "main" (["getManager"; "getSigner"; "getStatus"] : string list) iBis 0tez in
     let oracle_taddress = (Test.cast_address oracle_address : (TYPES.action,TYPES.storage) typed_address) in
@@ -69,7 +69,7 @@ let bootstrap =
     (oracle_contract, oracle_taddress, elon, jeff, alice, bob, james)
 
 let bootstrap_callback =
-    let oraclePath = "./contracts/cameligo/oracle/callback/main.mligo" in
+    let oraclePath = "contracts/cameligo/oracle/callback/main.mligo" in
     let iTres = Test.run (fun (x : CALLBACK.storage) -> x) callbackInitStorage in
     let (callback_addr, _, _) = Test.originate_from_file oraclePath "main" ([] : string list) iTres 0tez in
     let callback_taddress = (Test.cast_address callback_addr : (CALLBACK.action, CALLBACK.storage) typed_address) in

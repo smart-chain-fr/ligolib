@@ -1,7 +1,7 @@
-#import "../../contracts/cameligo/betting/main.mligo" "ORACLE"
-#import "./helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "./helpers/helper.mligo" "HELPER"
-#import "./helpers/assert.mligo" "ASSERT"
+#import "../../contracts/cameligo/betting/main.mligo" "BETTING"
+#import "helpers/bootstrap.mligo" "BOOTSTRAP"
+#import "helpers/helper.mligo" "HELPER"
+#import "helpers/assert.mligo" "ASSERT"
 
 let () = Test.log("___ TEST ChangeManager STARTED ___")
 
