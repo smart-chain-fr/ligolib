@@ -1,8 +1,9 @@
+import { char2Bytes } from "@taquito/utils";
 import { InMemorySigner } from '@taquito/signer';
 import { TezosToolkit, MichelsonMap } from '@taquito/taquito';
-import compiled from '../compiled/oracle.json';
-import metadataJson from "metadata/metadata_oracle.json";
 import * as dotenv from 'dotenv'
+import compiled from '../compiled/oracle.json';
+import metadataJson from "./metadata/metadata_oracle.json";
 
 dotenv.config(({ path: __dirname + '/.env' }))
 
@@ -26,7 +27,7 @@ let store = {
     'events_index': 0,
     'metadata': (MichelsonMap.fromLiteral({
         '': char2Bytes("tezos-storage:contents"),
-        'contents': char2Bytes(JSON.stringify(metadataJson)),
+        'contents': char2Bytes(JSON.stringify(metadataJson))
     }))
 };
 

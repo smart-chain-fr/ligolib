@@ -18,6 +18,7 @@ type storage =
   betsTeamTwo_index : nat;
   betsTeamTwo_total : tez;
   closedTeamOneRate : nat option;
+  metadata : (string, bytes) map;
   }
 
 type action = nat

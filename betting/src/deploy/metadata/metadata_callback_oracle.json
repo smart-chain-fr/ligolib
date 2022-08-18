@@ -10,5 +10,6 @@
     ],
     "homepage": "https://www.smart-chain.fr",
     "interfaces": [
+        "TZIP-016"
     ]
 }

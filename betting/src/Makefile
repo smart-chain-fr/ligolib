@@ -165,3 +165,13 @@ deploy_callback_oracle:
 deploy_callback_betting:
 	@cd deploy && tsc deploy_callback_betting --resolveJsonModule -esModuleInterop
 	@node deploy/deploy_callback_betting.js
+
+# -------------------------
+#         FLEXTESA
+# -------------------------
+
+flextesa-start:
+	@./deploy/run-flextesa.sh
+
+flextesa-stop:
+	@docker stop flextesa

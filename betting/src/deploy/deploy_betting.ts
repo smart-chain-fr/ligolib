@@ -1,7 +1,9 @@
+import { char2Bytes } from "@taquito/utils";
 import { InMemorySigner } from '@taquito/signer';
 import { TezosToolkit, MichelsonMap } from '@taquito/taquito';
-import compiled from '../compiled/betting.json';
 import * as dotenv from 'dotenv'
+import compiled from '../compiled/betting.json';
+import metadataJson from "./metadata/metadata_betting.json";
 
 dotenv.config(({ path: __dirname + '/.env' }))
 
@@ -33,7 +35,10 @@ let store = {
     'betConfig': init_betConfigType,
     'events': (new (MichelsonMap)),
     'events_index': 0,
-    'metadata': (new (MichelsonMap)),
+    'metadata': (MichelsonMap.fromLiteral({
+        '': char2Bytes("tezos-storage:contents"),
+        'contents': char2Bytes(JSON.stringify(metadataJson))
+    }))
 };
 
 async function orig() {

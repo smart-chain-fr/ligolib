@@ -9,6 +9,7 @@ type storage =
   isFinished : bool;
   isDraw : bool option;
   isTeamOneWin : bool option;
+  metadata : (string, bytes) map;
   }
 
 type action = nat
