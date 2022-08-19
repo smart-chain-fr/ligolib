@@ -105,7 +105,7 @@ let addBetTeamTwo (pRequestedEventID : TYPES.eventType) : TYPES.eventType =
 
 let addBet (pRequestedEventID : nat)(teamOneBet : bool)(s : TYPES.storage) : (operation list * TYPES.storage) =
   // TO DO : verify the state of the bet (Finished, Paused, Bet Period)
-  let _ = ASSERT.assertManagerOracle (Tezos.get_sender()) s.manager s.oracleAddress in
+  let _ = ASSERT.assertNotManagerNorOracle (Tezos.get_sender()) s.manager s.oracleAddress in
   let _ = ASSERT.assertNoTez (Tezos.get_amount()) in
   let _ = ASSERT.assertTezLowerThanMin (Tezos.get_amount()) s.betConfig.minBetAmount in
   let requestedEvent : TYPES.eventType = match (Map.find_opt pRequestedEventID s.events) with
