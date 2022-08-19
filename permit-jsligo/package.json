@@ -1,0 +1,27 @@
+{
+  "name": "permit-cameligo",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "An example of permit contract (TZIP-17) written in cameligo",
+  "devDependencies": {
+    "@taquito/signer": "^13.0.1",
+    "@taquito/taquito": "^13.0.1",
+    "dotenv": "^16.0.0",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "eslint": "^8.12.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ligolang/permit-cameligo/issues"
+  },
+  "homepage": "https://github.com/ligolang/permit-cameligo#readme",
+  "keywords": [
+    "tezos",
+    "ligo",
+    "blockchain"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "checksum": "c3d4f260318c49c50c7c0539405889d2",
+  "root": "permit-jsligo@link-dev:./esy.json",
+  "node": {
+    "permit-jsligo@link-dev:./esy.json": {
+      "id": "permit-jsligo@link-dev:./esy.json",
+      "name": "permit-jsligo",
+      "version": "link-dev:./esy.json",
+      "source": { "type": "link-dev", "path": ".", "manifest": "esy.json" },
+      "overrides": [],
+      "dependencies": [ "ligo-generic-fa2@1.0.2@d41d8cd9" ],
+      "devDependencies": []
+    },
+    "ligo-generic-fa2@1.0.2@d41d8cd9": {
+      "id": "ligo-generic-fa2@1.0.2@d41d8cd9",
+      "name": "ligo-generic-fa2",
+      "version": "1.0.2",
+      "source": {
+        "type": "install",
+        "source": [
+          "archive:https://registry.npmjs.org/ligo-generic-fa2/-/ligo-generic-fa2-1.0.2.tgz#sha1:940c20f0cf9a94214740acd2d97cda6bf9799527"
+        ]
+      },
+      "overrides": [],
+      "dependencies": [],
+      "devDependencies": []
+    }
+  }
+}
