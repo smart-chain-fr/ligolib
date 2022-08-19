@@ -41,7 +41,7 @@ async function orig() {
         console.log(`Waiting for oracle origination ${oracle_originated.contractAddress} to be confirmed...`);
         await oracle_originated.confirmation(2);
         console.log('Confirmed oracle origination : ', oracle_originated.contractAddress);
-        console.log('tezos-client remember contract betting_oracle ', oracle_originated.contractAddress)
+        console.log('tezos-client remember contract betting_oracle ', oracle_originated.contractAddress, ' --force')
     } catch (error: any) {
         console.log(error)
     }

@@ -45,7 +45,7 @@ async function orig() {
         console.log(`Waiting for callback_oracle origination ${callback_oracle_originated.contractAddress} to be confirmed...`);
         await callback_oracle_originated.confirmation(2);
         console.log('Confirmed callback_oracle origination : ', callback_oracle_originated.contractAddress);
-        console.log('tezos-client remember contract callback_oracle ', callback_oracle_originated.contractAddress)
+        console.log('tezos-client remember contract callback_oracle ', callback_oracle_originated.contractAddress, ' --force')
     } catch (error: any) {
         console.log(error)
     }

@@ -1,4 +1,4 @@
-LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.48.1
+LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0
 PROTOCOL_OPT=--protocol jakarta
 JSON_OPT=--michelson-format json
 
@@ -27,7 +27,7 @@ all-deploy: clean compile test deploy
 
 clean:
 	@echo "Removing Michelson files..."
-	@rm compiled/*.tz compiled/*.json
+	@rm -f compiled/*.tz compiled/*.json
 
 # -------------------------
 # 		LIGO SECTION

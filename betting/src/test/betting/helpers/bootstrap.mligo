@@ -66,6 +66,7 @@ let callbackInitStorage : CALLBACK.storage =
         betsTeamTwo_index = 0n;
         betsTeamTwo_total = 0tez;
         closedTeamOneRate = (None : nat option);
+        metadata = (Map.empty : (string, bytes) map);
     }
 
 let bootstrap =

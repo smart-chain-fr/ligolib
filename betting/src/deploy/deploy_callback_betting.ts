@@ -54,7 +54,7 @@ async function orig() {
         console.log(`Waiting for callback_betting origination ${callback_betting_originated.contractAddress} to be confirmed...`);
         await callback_betting_originated.confirmation(2);
         console.log('Confirmed callback_betting origination : ', callback_betting_originated.contractAddress);
-        console.log('tezos-client remember contract callback_betting ', callback_betting_originated.contractAddress)
+        console.log('tezos-client remember contract callback_betting ', callback_betting_originated.contractAddress, ' --force')
     } catch (error: any) {
         console.log(error)
     }

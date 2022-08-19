@@ -11,8 +11,8 @@ let primaryEvent : TYPES.eventType =
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
         isFinished = false;
-        isDraw = None;
-        isTeamOneWin = None;
+        isDraw = (None : bool option);
+        isTeamOneWin = (None : bool option);
     }
 
 let secondaryEvent : TYPES.eventType =
@@ -24,8 +24,8 @@ let secondaryEvent : TYPES.eventType =
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team THREE"; teamTwo = "Team FOUR"};
         isFinished = false;
-        isDraw = None;
-        isTeamOneWin = None;
+        isDraw = (None : bool option);
+        isTeamOneWin = (None : bool option);
     }
 
 let callbackInitStorage : CALLBACK.storage =
@@ -37,8 +37,9 @@ let callbackInitStorage : CALLBACK.storage =
         modified_at= Tezos.get_now();
         opponents = { teamOne = ""; teamTwo = ""};
         isFinished = false;
-        isDraw = None;
-        isTeamOneWin = None;
+        isDraw = (None : bool option);
+        isTeamOneWin = (None : bool option);
+        metadata = (Map.empty : (string, bytes) map);
     }
 
 let bootstrap =
@@ -57,6 +58,7 @@ let bootstrap =
         signer = jeff;
         events = (Map.empty : (nat, TYPES.eventType) map);
         events_index = 0n;
+        metadata = (Map.empty : (string, bytes) map);
     } in
 
     (* Boostrapping Oracle contract *)
