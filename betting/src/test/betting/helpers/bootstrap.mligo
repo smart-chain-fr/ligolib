@@ -10,6 +10,7 @@ let primaryEvent : TYPES.eventType =
         end_at= Tezos.get_now() + 4096;
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
+        isFinalized = false;
         isFinished = false;
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
@@ -32,6 +33,7 @@ let secondaryEvent : TYPES.eventType =
         end_at= Tezos.get_now() + 4096;
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team THREE"; teamTwo = "Team FOUR"};
+        isFinalized = false;
         isFinished = false;
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
@@ -54,6 +56,7 @@ let callbackInitStorage : CALLBACK.storage =
         end_at= Tezos.get_now() + 4096;
         modified_at= Tezos.get_now();
         opponents = { teamOne = ""; teamTwo = ""};
+        isFinalized = false;
         isFinished = false;
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
@@ -92,7 +95,7 @@ let bootstrap =
         manager = elon;
         oracleAddress = jeff;
         betConfig = initBetConfig;
-        // retainedProfits = 0tez;
+        retainedProfits = 0tez;
         events = (Map.empty : (nat, TYPES.eventType) map);
         events_index = 0n;
         metadata = (Map.empty : (string, bytes) map);
@@ -101,7 +104,7 @@ let bootstrap =
     (* Boostrapping BETTING contract *)
     let bettingPath = "contracts/cameligo/betting/main.mligo" in
     let iBis = Test.run (fun (x : TYPES.storage) -> x) init_storage in
-    let (betting_address, _, _) = Test.originate_from_file bettingPath "main" (["getManager"; "getOracleAddress"; "getStatus"] : string list) iBis 0tez in
+    let (betting_address, _, _) = Test.originate_from_file bettingPath "main" (["getManager"; "getOracleAddress"; "getBettingStatus"; "getEventCreationStatus"; "getEvent"] : string list) iBis 0tez in
     let betting_taddress = (Test.cast_address betting_address : (TYPES.action,TYPES.storage) typed_address) in
     let betting_contract = Test.to_contract betting_taddress in
     

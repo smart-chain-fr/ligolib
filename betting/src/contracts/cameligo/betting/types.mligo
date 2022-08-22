@@ -15,6 +15,7 @@ type eventType =
   end_at : timestamp;
   modified_at : timestamp;
   opponents : { teamOne : string; teamTwo : string};
+  isFinalized : bool;
   isFinished : bool;
   isDraw : bool option;
   isTeamOneWin : bool option;
@@ -32,7 +33,7 @@ type eventType =
 type storage = {
   manager : address;
   oracleAddress : address;
-  // retainedProfits : tez;
+  retainedProfits : tez;
   betConfig : betConfigType;
   events : (nat, eventType) map;
   events_index : nat;

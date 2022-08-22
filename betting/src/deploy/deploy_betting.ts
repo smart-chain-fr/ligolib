@@ -31,7 +31,7 @@ let init_betConfigType = {
 let store = {
     'manager': process.env.ADMIN_ADDRESS,
     'oracleAddress': process.env.ORACLE_ADDRESS,
-    // 'retainedProfits' : 0,
+    'retainedProfits' : 0,
     'betConfig': init_betConfigType,
     'events': (new (MichelsonMap)),
     'events_index': 0,

@@ -6,6 +6,7 @@ type eventType =
   end_at : timestamp;
   modified_at : timestamp;
   opponents : { teamOne : string; teamTwo : string};
+  isFinalized : bool;
   isFinished : bool;
   isDraw : bool option;
   isTeamOneWin : bool option;

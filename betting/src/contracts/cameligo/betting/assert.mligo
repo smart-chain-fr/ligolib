@@ -43,11 +43,7 @@ let assertBettingNotPaused (pBettingPaused : bool) : unit =
 
 let assertBettingNotFinished (pBettingFinished : bool) : unit =
   if (pBettingFinished)
-    then failwith ERRORS.bet_creation_paused
-
-let assertBettingNotEnded (pBettingPaused : bool) : unit =
-  if (pBettingPaused)
-    then failwith ERRORS.bet_creation_paused
+    then failwith ERRORS.bet_not_finished
 
 let assertBetDraw (pAssertedAmount : tez) : unit =
   if (pAssertedAmount = 0tez)

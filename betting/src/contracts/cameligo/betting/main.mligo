@@ -180,5 +180,17 @@ let getOracleAddress (_, s : unit * TYPES.storage) : timestamp * address =
   (Tezos.get_now(), s.oracleAddress)
 
 [@view]
-let getStatus (_, s : unit * TYPES.storage) : timestamp * bool =
+let getBettingStatus (_, s : unit * TYPES.storage) : timestamp * bool =
   (Tezos.get_now(), s.betConfig.isBettingPaused)
+
+[@view]
+let getEventCreationStatus (_, s : unit * TYPES.storage) : timestamp * bool =
+  (Tezos.get_now(), s.betConfig.isEventCreationPaused)
+
+[@view]
+let getEvent (pRequestedEventID, s : nat * TYPES.storage) : timestamp * TYPES.eventType =
+  let requestedEvent : TYPES.eventType = match (Map.find_opt pRequestedEventID s.events) with
+    | Some event -> event
+    | None -> failwith ERRORS.no_event_id
+  in
+  (Tezos.get_now(), requestedEvent)

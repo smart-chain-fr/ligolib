@@ -10,6 +10,7 @@ let primaryEvent : TYPES.eventType =
         end_at= Tezos.get_now() + 4000;
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
+        isFinalized = false;
         isFinished = false;
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
@@ -23,6 +24,7 @@ let secondaryEvent : TYPES.eventType =
         end_at= Tezos.get_now() + 4000;
         modified_at= Tezos.get_now();
         opponents = { teamOne = "Team THREE"; teamTwo = "Team FOUR"};
+        isFinalized = false;
         isFinished = false;
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
@@ -36,6 +38,7 @@ let callbackInitStorage : CALLBACK.storage =
         end_at= Tezos.get_now() + 4000;
         modified_at= Tezos.get_now();
         opponents = { teamOne = ""; teamTwo = ""};
+        isFinalized = false;
         isFinished = false;
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);

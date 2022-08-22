@@ -26,5 +26,6 @@ let bet_lower_than_minimum : string = "Your bet cannot be lower than the minimum
 let bet_before_event_start : string = "You can not bet before the start of the Betting period"
 let bet_after_event_end : string = "You can not bet after the end of the Betting period"
 let bet_finished : string = "Bet is marked as finalized"
+let bet_not_finished : string = "Bet is marked as finalized"
 let bet_window_finished : string = "Betting period is marked as finalized"
 let bet_no_event_outcome : string = "Bet does not have an outcome on which team won"

@@ -26,6 +26,7 @@ let store = {
     'end_at': 1660741034 + 3600,
     'modified_at': 1660741034,
     'opponents': { 'teamOne': '', 'teamTwo': '' },
+    'isFinalized' : false,
     'isFinished': false,
     'isDraw': false,
     'isTeamOneWin': false,
