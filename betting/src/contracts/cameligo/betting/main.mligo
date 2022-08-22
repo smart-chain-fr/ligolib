@@ -69,6 +69,27 @@ let updateEvent (updatedEventID : nat)(updatedEvent : TYPES.eventType)(s : TYPES
     | Some event -> event
     | None -> (failwith ERRORS.no_event_id)
   in
+  // let updatedEvent : TYPES.eventType = {
+  //   name : string = '';
+  //   videogame : string = '';
+  //   begin_at : timestamp = '';
+  //   end_at : timestamp = '';
+  //   modified_at : timestamp = '';
+  //   opponents : { teamOne : string = ''; teamTwo : string = '';};
+  //   isFinalized : bool = '';
+  //   isFinished : bool = '';
+  //   isDraw : bool option = '';
+  //   isTeamOneWin : bool option = '';
+  //   startBetTime : timestamp = '';
+  //   closedBetTime : timestamp = '';
+  //   betsTeamOne : (address, tez) map = '';
+  //   betsTeamOne_index : nat = '';
+  //   betsTeamOne_total : tez = '';
+  //   betsTeamTwo : (address, tez) map = '';
+  //   betsTeamTwo_index : nat = '';
+  //   betsTeamTwo_total : tez = '';
+  //   closedTeamOneRate : nat option = '';
+  // }
   let newEvents : (nat, TYPES.eventType) map = Map.update updatedEventID (Some(updatedEvent)) s.events in
   (([] : operation list), {s with events = newEvents})
 
@@ -121,16 +142,17 @@ let addBet (pRequestedEventID : nat)(teamOneBet : bool)(s : TYPES.storage) : (op
   (([] : operation list), {s with events = newEventsMap;})
 
 let trsRewardBetWinners (pWinner : address)(pBetAmount : tez)(s : TYPES.storage) : unit =
+  // TO DO : Make sure the rewards match the expected amount + Updated retainedProfits in Storage
   let _ = Tezos.transaction((), (pBetAmount - (pBetAmount * s.betConfig.retainedProfitQuota) / 100n), pWinner) in
   ()
 
 let rewardBetWinners (pWinnersMap : (address, tez) map)(s : TYPES.storage) =
-  let predicate = fun (iWinner, jBetAmount : address * tez) -> trsRewardBetWinners iWinner jBetAmount s in
+// TO DO : Make sure the rewards match the expected amount + Updated retainedProfits in Storage  let predicate = fun (iWinner, jBetAmount : address * tez) -> trsRewardBetWinners iWinner jBetAmount s in
   let _ = Map.iter predicate pWinnersMap in
   ()
 
 let finalizeBet (pRequestedEventID : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
-  // TO DO : verify the state of the bet (Finished, Paused, Bet Period) and pay users
+  // TO DO : verify the state of the bet (Finished, Paused, Bet Period) and rewards users accordingly
   let _ = ASSERT.assertManager (Tezos.get_sender()) s.manager in
   let requestedEvent : TYPES.eventType = match (Map.find_opt pRequestedEventID s.events) with
     | Some event -> event
