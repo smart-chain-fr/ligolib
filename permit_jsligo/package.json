@@ -1,5 +1,5 @@
 {
-  "name": "permit-cameligo",
+  "name": "permit-jsligo",
   "version": "1.0.0",
   "description": "A modular example permit contract on Tezos written in Ligolang.",
   "scripts": {
