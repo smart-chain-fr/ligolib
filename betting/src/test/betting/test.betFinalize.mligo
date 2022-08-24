@@ -4,7 +4,7 @@
 #import "helpers/helper.mligo" "HELPER"
 #import "helpers/assert.mligo" "ASSERT"
 
-let () = Test.log("___ TEST addEvent STARTED ___")
+let () = Test.log("___ TEST finalizeBet STARTED ___")
 
 let (betting_contract, betting_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap
 
@@ -17,12 +17,5 @@ let () = Test.log("-> Adding an Event from unauthorized address")
 let () = HELPER.trscAddEvent (betting_contract, alice, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.emptyMap
 
-let () = Test.log("-> Adding an Event from Manager")
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
-let () = Test.log("-> Adding an Event from BETTING")
-let () = HELPER.trscAddEvent (betting_contract, jeff, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap betting_taddress HELPER.doubleEventMap
-
-let () = Test.log("___ TEST addEvent ENDED ___")
+let () = Test.log("___ TEST finalizeBet ENDED ___")

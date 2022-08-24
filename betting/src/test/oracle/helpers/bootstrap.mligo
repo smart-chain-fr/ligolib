@@ -2,13 +2,15 @@
 #import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
 #import "../../../contracts/cameligo/oracle/callback/main.mligo" "CALLBACK"
 
+let plainTimestamp : timestamp = ("2022-08-08t10:10:10Z" : timestamp)
+
 let primaryEvent : TYPES.eventType =
     {
         name = "First Event";
-        videogame= "Videogame ONE";
-        begin_at= Tezos.get_now() + 2000;
-        end_at= Tezos.get_now() + 4000;
-        modified_at= Tezos.get_now();
+        videogame = "Videogame ONE";
+        begin_at = plainTimestamp + 2000;
+        end_at = plainTimestamp + 4000;
+        modified_at = plainTimestamp;
         opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
         isFinalized = false;
         isFinished = false;
@@ -19,10 +21,10 @@ let primaryEvent : TYPES.eventType =
 let secondaryEvent : TYPES.eventType =
     {
         name = "Secondary Event";
-        videogame= "Videogame TWO";
-        begin_at= Tezos.get_now() + 2000;
-        end_at= Tezos.get_now() + 4000;
-        modified_at= Tezos.get_now();
+        videogame = "Videogame TWO";
+        begin_at = plainTimestamp + 2000;
+        end_at = plainTimestamp + 4000;
+        modified_at = plainTimestamp;
         opponents = { teamOne = "Team THREE"; teamTwo = "Team FOUR"};
         isFinalized = false;
         isFinished = false;
@@ -33,10 +35,10 @@ let secondaryEvent : TYPES.eventType =
 let callbackInitStorage : CALLBACK.storage =
     {
         name = "";
-        videogame= "";
-        begin_at= Tezos.get_now() + 2000;
-        end_at= Tezos.get_now() + 4000;
-        modified_at= Tezos.get_now();
+        videogame = "";
+        begin_at = plainTimestamp + 2000;
+        end_at = plainTimestamp + 4000;
+        modified_at = plainTimestamp;
         opponents = { teamOne = ""; teamTwo = ""};
         isFinalized = false;
         isFinished = false;

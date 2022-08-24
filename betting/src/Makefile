@@ -110,7 +110,7 @@ test_oracle_event_get: test/oracle/test.eventGet.mligo
 	@echo "Running Oracle GetEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_betting: test_betting_manager test_betting_oracle test_betting_pause test_betting_events
+test_betting: test_betting_manager test_betting_oracle test_betting_pause test_betting_events test_betting_bet
 
 test_betting_manager: test/betting/test.manager.mligo
 	@echo "Running Betting (ChangeManager) tests..." 
@@ -139,11 +139,22 @@ test_betting_event_get: test/betting/test.eventGet.mligo
 	@echo "Running betting GetEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
+test_betting_bet: test_betting_bet_add test_betting_bet_finalize
+	@echo "Running Betting Bets tests..."
+
+test_betting_bet_add: test/betting/test.betAdd.mligo
+	@echo "Running betting AddBet tests..." 
+	@$(LIGO) run test $^ $(PROTOCOL_OPT)
+
+test_betting_bet_finalize: test/betting/test.betFinalize.mligo
+	@echo "Running betting FinalizeBet tests..." 
+	@$(LIGO) run test $^ $(PROTOCOL_OPT)
+
 # -------------------------
 # 		DEPLOY SECTION
 # -------------------------
 
-deploy: node_modules deploy_callback_oracle deploy_oracle deploy_callback_betting deploy_betting
+deploy: node_modules deploy_oracle deploy_betting
 	@echo "Deploying contracts..."
 
 node_modules:

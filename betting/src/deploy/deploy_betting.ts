@@ -22,18 +22,16 @@ Tezos.tz
 let init_betConfigType = {
     'isBettingPaused': false,
     'isEventCreationPaused': false,
-    'minBetAmount': 1,
-    'minPeriodToBet': 1,
-    'maxBetDifference': 1,
-    'retainedProfitQuota': 0,
+    'minBetAmount': 1000000,
+    'retainedProfitQuota': 10,
 }
 
 let store = {
     'manager': process.env.ADMIN_ADDRESS,
     'oracleAddress': process.env.ORACLE_ADDRESS,
-    'retainedProfits' : 0,
     'betConfig': init_betConfigType,
     'events': (new (MichelsonMap)),
+    'events_bets': (new (MichelsonMap)),
     'events_index': 0,
     'metadata': (MichelsonMap.fromLiteral({
         '': char2Bytes("tezos-storage:contents"),

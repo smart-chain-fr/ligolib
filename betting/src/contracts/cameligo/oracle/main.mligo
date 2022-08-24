@@ -34,18 +34,13 @@ let changeSigner (newSigner : address)( s : TYPES.storage) : (operation list * T
   )
   else failwith ERRORS.not_manager
 
-let incrementEventIndex (s : TYPES.storage) : (operation list * TYPES.storage) =
-  let new_events_index : nat = s.events_index + 1n in
-  (([] : operation list), {s with events_index = new_events_index})
-
 let addEvent (newEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let sender = Tezos.get_sender() in
   if ((sender = s.manager) || (sender = s.signer) )
   then
   (
-    let ( _ , s) = incrementEventIndex(s) in
     let newEvents : (nat, TYPES.eventType) map = (Map.add (s.events_index) newEvent s.events) in
-    (([] : operation list), {s with events = newEvents})
+    (([] : operation list), {s with events = newEvents; events_index = (s.events_index + 1n)})
   )
   else failwith ERRORS.not_manager
 

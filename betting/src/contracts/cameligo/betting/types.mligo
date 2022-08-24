@@ -1,9 +1,11 @@
 type betConfigType = {
+  // is betting on events paused (true), or is it allowed (false)
   isBettingPaused : bool;
+  // is creating new events paused (true), or is it allowed (false)
   isEventCreationPaused : bool;
+  // what is the minimum amount to bet on an event in one transaction
   minBetAmount : tez;
-  minPeriodToBet : nat;
-  maxBetDifference : nat;
+  // what is the quota to be retained from bet profits (deduced as operating gains to the contract, shown as percentage, theorical max is 100)
   retainedProfitQuota : nat;
 }
 
@@ -21,6 +23,10 @@ type eventType =
   isTeamOneWin : bool option;
   startBetTime : timestamp;
   closedBetTime : timestamp;
+}
+
+type eventBets =
+  [@layout:comb] {
   betsTeamOne : (address, tez) map;
   betsTeamOne_index : nat;
   betsTeamOne_total : tez;
@@ -28,14 +34,14 @@ type eventType =
   betsTeamTwo_index : nat;
   betsTeamTwo_total : tez;
   closedTeamOneRate : nat option;
-}
+  }
 
 type storage = {
   manager : address;
   oracleAddress : address;
-  retainedProfits : tez;
   betConfig : betConfigType;
   events : (nat, eventType) map;
+  events_bets : (nat, eventBets) map;
   events_index : nat;
   metadata : (string, bytes) map;
 }
@@ -60,6 +66,29 @@ type addBetParameter =
 
 type finalizeBetParameter = nat
 
+type callbackEventParameter = 
+  [@layout:comb] {
+  name : string;
+  videogame : string;
+  begin_at : timestamp;
+  end_at : timestamp;
+  modified_at : timestamp;
+  opponents : { teamOne : string; teamTwo : string};
+  isFinalized : bool;
+  isFinished : bool;
+  isDraw : bool option;
+  isTeamOneWin : bool option;
+  startBetTime : timestamp;
+  closedBetTime : timestamp;
+  betsTeamOne : (address, tez) map;
+  betsTeamOne_index : nat;
+  betsTeamOne_total : tez;
+  betsTeamTwo : (address, tez) map;
+  betsTeamTwo_index : nat;
+  betsTeamTwo_total : tez;
+  closedTeamOneRate : nat option;
+  }
+
 type callbackAskedParameter =
   [@layout:comb] {
   requestedEventID : nat;
@@ -68,7 +97,7 @@ type callbackAskedParameter =
 
 type callbackReturnedValue =
   [@layout:comb] {
-  requestedEvent : eventType;
+  requestedEvent : callbackEventParameter;
   callback : address
 }
 

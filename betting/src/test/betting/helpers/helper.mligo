@@ -1,5 +1,25 @@
 #import "../../../contracts/cameligo/betting/main.mligo" "BETTING"
 #import "../../../contracts/cameligo/betting/types.mligo" "TYPES"
+#import "./bootstrap.mligo" "BOOTSTRAP"
+
+//  VARIABLES
+
+let emptyMap : (nat, TYPES.eventType) map = (Map.empty : (nat, TYPES.eventType) map)
+
+let oneEventMap : (nat, TYPES.eventType) map = Map.literal [
+    (0n, BOOTSTRAP.primaryEvent)
+    ]
+let doubleEventMap : (nat, TYPES.eventType) map = Map.literal [
+    (0n, BOOTSTRAP.primaryEvent);
+    (1n, BOOTSTRAP.primaryEvent)
+    ]
+let threeEventMap : (nat, TYPES.eventType) map = Map.literal [
+    (0n, BOOTSTRAP.primaryEvent);
+    (1n, BOOTSTRAP.primaryEvent);
+    (2n, BOOTSTRAP.primaryEvent)
+    ]
+
+//  FUNCTIONS
 
 let printStorage (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
@@ -51,16 +71,16 @@ let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * addr
     let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0tez in
     result_cbk
 
-// let get_balance_from_storage(anti_address, owner_address : (ANTI.parameter, ANTI.storage) typed_address * address) : nat =
-//     let anti_storage : ANTI.storage = Test.get_storage anti_address in
-//     let retrieved_balance_opt : nat option = Big_map.find_opt owner_address anti_storage.ledger in
-//     let retrieved_balance = match retrieved_balance_opt with    
-//         | Some x -> x
-//         | None -> 0n
-//     in
-//     retrieved_balance
+let trscAddBet  (contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : TYPES.action contract * address * nat * bool * tez) =
+    let () = Test.set_source from in
+    let addBetParam : TYPES.addBetParameter = {
+        requestedEventID = pRequestedEventID;
+        teamOneBet = pTeamOneBet
+    } in
+    let result_tx = Test.transfer_to_contract contr (AddBet addBetParam) pBetAmount in
+    result_tx
 
-// let transfer(contr, from_, to_, amount_ : ANTI.parameter contract * address * address * nat) =
-//     let () = Test.set_source from_ in
-//     let transfer_requests = ({address_from=from_; address_to=to_; value=amount_} : ANTI.transfer) in
-//     Test.transfer_to_contract contr (Transfer transfer_requests) 0tez
+let trscFinalizeBet(contr, from, pRequestedEventID : TYPES.action contract * address * nat) =
+    let () = Test.set_source from in
+    let result_tx = Test.transfer_to_contract contr (FinalizeBet pRequestedEventID) 0tez in
+    result_tx
