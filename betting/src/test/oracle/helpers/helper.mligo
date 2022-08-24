@@ -27,22 +27,22 @@ let printStorage (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) : uni
 
 let trscChangeManager(contr, from, new_ : TYPES.action contract * address * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new_) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new_) 0mutez in
     result
 
 let trscChangeSigner(contr, from, new_ : TYPES.action contract * address * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (ChangeSigner new_) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeSigner new_) 0mutez in
     result
 
 let trscSwitchPause(contr, from : TYPES.action contract * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPause) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPause) 0mutez in
     result
 
 let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.eventType) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0mutez in
     result
 
 let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * address * nat * TYPES.eventType) =
@@ -53,7 +53,7 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
         updatedEvent = event;
     }
     in
-    let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0mutez in
     result
 
 let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * address * address * nat) =
@@ -63,5 +63,5 @@ let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * addr
         requestedEventID = event_num;
         callback = cbk_addr
     } in
-    let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0tez in
+    let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0mutez in
     result_cbk

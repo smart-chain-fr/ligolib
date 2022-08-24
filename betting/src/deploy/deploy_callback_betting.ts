@@ -27,7 +27,6 @@ let store = {
     'modified_at': 1660741034,
     'opponents': { 'teamOne': '', 'teamTwo': '' },
     'isFinalized' : false,
-    'isFinished': false,
     'isDraw': false,
     'isTeamOneWin': false,
     'startBetTime': 1660741034 + 1200,
@@ -38,7 +37,6 @@ let store = {
     'betsTeamTwo': (new MichelsonMap()),
     'betsTeamTwo_index': 0,
     'betsTeamTwo_total': 0,
-    'closedTeamOneRate': 0,
     'metadata': (MichelsonMap.fromLiteral({
         '': char2Bytes("tezos-storage:contents"),
         'contents': char2Bytes(JSON.stringify(metadataJson))

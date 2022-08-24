@@ -21,7 +21,7 @@ let () = Test.log("-> Adding an Event from Manager")
 let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
-let () = Test.log("-> Adding an Event from BETTING")
+let () = Test.log("-> Adding an Event from Oracle")
 let () = HELPER.trscAddEvent (betting_contract, jeff, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.doubleEventMap
 

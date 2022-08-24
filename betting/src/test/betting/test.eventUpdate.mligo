@@ -17,7 +17,7 @@ let () = Test.log("-> Updating the first Event from Manager")
 let () = HELPER.trscUpdateEvent (betting_contract, elon, 0n, BOOTSTRAP.secondaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress updatedEventMap
 
-let () = Test.log("-> Updating the first Event from BETTING")
+let () = Test.log("-> Updating the first Event from Oracle")
 let () = HELPER.trscUpdateEvent (betting_contract, jeff, 0n, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
@@ -34,7 +34,7 @@ let () = Test.log("-> Updating the third Event from Manager")
 let () = HELPER.trscUpdateEvent (betting_contract, elon, 1n, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.threeEventMap
 
-let () = Test.log("-> Updating the third Event from BETTING")
+let () = Test.log("-> Updating the third Event from Oracle")
 let () = HELPER.trscUpdateEvent (betting_contract, jeff, 1n, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.threeEventMap
 

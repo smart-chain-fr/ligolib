@@ -18,7 +18,6 @@ type eventType =
   modified_at : timestamp;
   opponents : { teamOne : string; teamTwo : string};
   isFinalized : bool;
-  isFinished : bool;
   isDraw : bool option;
   isTeamOneWin : bool option;
   startBetTime : timestamp;
@@ -33,7 +32,6 @@ type eventBets =
   betsTeamTwo : (address, tez) map;
   betsTeamTwo_index : nat;
   betsTeamTwo_total : tez;
-  closedTeamOneRate : nat option;
   }
 
 type storage = {
@@ -75,7 +73,6 @@ type callbackEventParameter =
   modified_at : timestamp;
   opponents : { teamOne : string; teamTwo : string};
   isFinalized : bool;
-  isFinished : bool;
   isDraw : bool option;
   isTeamOneWin : bool option;
   startBetTime : timestamp;
@@ -86,7 +83,6 @@ type callbackEventParameter =
   betsTeamTwo : (address, tez) map;
   betsTeamTwo_index : nat;
   betsTeamTwo_total : tez;
-  closedTeamOneRate : nat option;
   }
 
 type callbackAskedParameter =

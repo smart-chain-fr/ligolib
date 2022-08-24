@@ -19,6 +19,8 @@ let threeEventMap : (nat, TYPES.eventType) map = Map.literal [
     (2n, BOOTSTRAP.primaryEvent)
     ]
 
+let emptyBetMap : (nat, TYPES.eventBets) map = (Map.empty : (nat, TYPES.eventBets) map)
+
 //  FUNCTIONS
 
 let printStorage (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) : unit =
@@ -27,27 +29,27 @@ let printStorage (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) : uni
 
 let trscChangeManager(contr, from, new_ : TYPES.action contract * address * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new_) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new_) 0mutez in
     result
 
 let trscChangeOracleAddress(contr, from, new_ : TYPES.action contract * address * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (ChangeOracleAddress new_) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeOracleAddress new_) 0mutez in
     result
 
 let trscSwitchPauseBetting(contr, from : TYPES.action contract * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseBetting) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseBetting) 0mutez in
     result
 
 let trscSwitchPauseEventCreation(contr, from : TYPES.action contract * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseEventCreation) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseEventCreation) 0mutez in
     result
 
 let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.eventType) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0mutez in
     result
 
 let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * address * nat * TYPES.eventType) =
@@ -58,7 +60,7 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
         updatedEvent = event;
     }
     in
-    let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0tez in
+    let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0mutez in
     result
 
 let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * address * address * nat) =
@@ -68,7 +70,7 @@ let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * addr
         requestedEventID = event_num;
         callback = cbk_addr
     } in
-    let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0tez in
+    let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0mutez in
     result_cbk
 
 let trscAddBet  (contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : TYPES.action contract * address * nat * bool * tez) =
@@ -82,5 +84,5 @@ let trscAddBet  (contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : TYPES
 
 let trscFinalizeBet(contr, from, pRequestedEventID : TYPES.action contract * address * nat) =
     let () = Test.set_source from in
-    let result_tx = Test.transfer_to_contract contr (FinalizeBet pRequestedEventID) 0tez in
+    let result_tx = Test.transfer_to_contract contr (FinalizeBet pRequestedEventID) 0mutez in
     result_tx

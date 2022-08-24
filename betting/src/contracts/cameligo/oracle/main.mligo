@@ -54,7 +54,7 @@ let getEvent (requestedEventID : nat)(callback : address)(s : TYPES.storage) : (
     requestedEvent = cbk_event;
     callback = callback;
   } in
-  let _operation = Tezos.transaction(returnedValue, 0tez, callback) in
+  let _operation = Tezos.transaction(returnedValue, 0mutez, callback) in
   (([] : operation list), s)
 
 let updateEvent (updatedEventID : nat)(updatedEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
