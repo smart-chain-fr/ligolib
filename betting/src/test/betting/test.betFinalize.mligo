@@ -52,7 +52,18 @@ let oneEventFinalizedMap : (nat, TYPES.eventType) map = Map.literal [ (0n, final
 
 let () = HELPER.trscUpdateEvent (betting_contract, elon, 0n, finalizedEvent)
 
+let () = Test.log("___ Balances Before Rewards ___")
+let () = Test.log("Alice",Test.get_balance(alice))
+let () = Test.log("Bob",Test.get_balance(bob))
+let () = Test.log("Mike",Test.get_balance(mike))
+
 let () = HELPER.trscFinalizeBet (betting_contract, elon, 0n)
 let () = ASSERT.assert_eventsMap betting_taddress oneEventFinalizedMap
+
+let () = Test.log("___ Balances After Rewards ___")
+let () = Test.log("Alice",Test.get_balance(alice))
+let () = Test.log("Bob",Test.get_balance(bob))
+let () = Test.log("Mike",Test.get_balance(mike))
+
 
 let () = Test.log("___ TEST finalizeBet ENDED ___")

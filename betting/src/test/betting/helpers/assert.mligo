@@ -18,6 +18,14 @@ let string_failure (res : test_exec_result) (expected : string) : unit =
     in
     Test.log("OK :", expected)
 
+
+(* Assert Manager parameter with expected result *)
+let assert_balance (p_address : address) (expected : tez) : unit =
+    let balance_value : tez = Test.get_balance(p_address) in
+    if (balance_value = expected)
+        then Test.log("OK", balance_value)
+        else failwith("NOT OK", balance_value)
+
 (* Assert Manager parameter with expected result *)
 let assert_manager (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
