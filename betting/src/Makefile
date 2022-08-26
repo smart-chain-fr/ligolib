@@ -28,6 +28,8 @@ all-deploy: clean compile test deploy
 clean:
 	@echo "Removing Michelson files..."
 	@rm -f compiled/*.tz compiled/*.json
+	@echo "Removing JS deploy files..."
+	@rm -f deploy/*.js
 
 # -------------------------
 # 		LIGO SECTION
