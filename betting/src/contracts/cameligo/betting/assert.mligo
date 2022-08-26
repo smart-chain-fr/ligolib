@@ -80,7 +80,7 @@ let assert_betting_after_period_end (pEnd_at : timestamp) : unit =
 let assert_finalizing_before_period_end (pEnd_at : timestamp) : unit =
   if (pEnd_at > (Tezos.get_now()) )
     then failwith ERRORS.bet_period_not_finished
-
+    
 let assert_bet_is_draw (pIsDraw : bool) : unit =
   if (pIsDraw)
     then failwith ERRORS.bet_ended_as_draw

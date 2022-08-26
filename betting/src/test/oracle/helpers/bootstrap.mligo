@@ -46,12 +46,14 @@ let callbackInitStorage : CALLBACK.storage =
 
 let bootstrap =
     (* Boostrapping accounts *)
-    let () = Test.reset_state 5n ([] : tez list) in
-    let elon: address = Test.nth_bootstrap_account 0 in
-    let jeff: address = Test.nth_bootstrap_account 1 in
-    let alice: address = Test.nth_bootstrap_account 2 in
-    let bob: address = Test.nth_bootstrap_account 3 in
-    let james: address = Test.nth_bootstrap_account 4 in
+    let () = Test.reset_state 6n ([] : tez list) in
+    let _baker: address = Test.nth_bootstrap_account 0 in
+    let elon: address = Test.nth_bootstrap_account 1 in
+    let jeff: address = Test.nth_bootstrap_account 2 in
+    let alice: address = Test.nth_bootstrap_account 3 in
+    let bob: address = Test.nth_bootstrap_account 4 in
+    let james: address = Test.nth_bootstrap_account 5 in
+
 
     (* Boostrapping storage *)
     let init_storage : TYPES.storage = {

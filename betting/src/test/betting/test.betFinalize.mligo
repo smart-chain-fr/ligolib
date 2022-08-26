@@ -33,7 +33,6 @@ let () = HELPER.trscAddBet (betting_contract, mike, 0n, (false : bool), 3000000m
 let () = HELPER.trscAddBet (betting_contract, bob, 0n, (false : bool), 7000000mutez)
 let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetLastMap
 
-
 let finalizedEvent : TYPES.event_type = {
     name = "First Event";
     videogame= "Videogame ONE";
@@ -41,9 +40,9 @@ let finalizedEvent : TYPES.event_type = {
     end_at= plainTimestamp + 4;
     modified_at= plainTimestamp;
     opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
-    isFinalized = (true : bool);
-    isDraw = (None : bool option);
-    isTeamOneWin = (None : bool option);
+    isFinalized = (false : bool);
+    isDraw = (Some(false) : bool option);
+    isTeamOneWin = (Some(true) : bool option);
     startBetTime = plainTimestamp + 1;
     closedBetTime = plainTimestamp + 2;
     }
@@ -57,13 +56,11 @@ let () = Test.log("Alice",Test.get_balance(alice))
 let () = Test.log("Bob",Test.get_balance(bob))
 let () = Test.log("Mike",Test.get_balance(mike))
 
-let () = HELPER.trscFinalizeBet (betting_contract, elon, 0n)
-let () = ASSERT.assert_eventsMap betting_taddress oneEventFinalizedMap
+let () = ASSERT.tx_success(HELPER.trscFinalizeBet (betting_contract, elon, 0n) )
 
 let () = Test.log("___ Balances After Rewards ___")
 let () = Test.log("Alice",Test.get_balance(alice))
 let () = Test.log("Bob",Test.get_balance(bob))
 let () = Test.log("Mike",Test.get_balance(mike))
-
 
 let () = Test.log("___ TEST finalizeBet ENDED ___")
