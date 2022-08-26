@@ -98,10 +98,11 @@ type callbackReturnedValue =
 }
 
 type action =
-  ChangeManager of address
+  | ChangeManager of address
   | ChangeOracleAddress of address
   | SwitchPauseBetting
   | SwitchPauseEventCreation
+  | UpdateConfigType of betConfigType
   | AddEvent of eventType
   | GetEvent of getEventParameter
   | UpdateEvent of updateEventParameter

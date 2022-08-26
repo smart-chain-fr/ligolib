@@ -2,24 +2,24 @@
 #import "assert.mligo" "ASSERT"
 #import "errors.mligo" "ERRORS"
 
-let changeManager (newManager : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
-  let _ = ASSERT.assertIsManager (Tezos.get_sender()) s.manager in
-  let _ = ASSERT.assertNotPreviousManager newManager s.manager in
+let change_manager (newManager : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
+  let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
+  let _ = ASSERT.assert_not_previous_manager newManager s.manager in
   (([] : operation list), {s with manager = newManager})
 
 let switchPause (s : TYPES.storage) : (operation list * TYPES.storage) =
-  let _ = ASSERT.assertIsManager (Tezos.get_sender()) s.manager in
+  let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
   if (s.isPaused)
     then (([] : operation list), {s with isPaused = false})
     else (([] : operation list), {s with isPaused = true})
 
 let changeSigner (newSigner : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
-  let _ = ASSERT.assertIsManagerOrSigner (Tezos.get_sender()) s.manager s.signer in
+  let _ = ASSERT.assert_is_managerOrSigner (Tezos.get_sender()) s.manager s.signer in
   let _ = ASSERT.assertNotPreviousSigner newSigner s.signer in
   (([] : operation list), {s with signer = newSigner})
 
 let addEvent (newEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
-  let _ = ASSERT.assertIsManagerOrSigner (Tezos.get_sender()) s.manager s.signer in
+  let _ = ASSERT.assert_is_managerOrSigner (Tezos.get_sender()) s.manager s.signer in
   let newEvents : (nat, TYPES.eventType) map = (Map.add (s.events_index) newEvent s.events) in
   (([] : operation list), {s with events = newEvents; events_index = (s.events_index + 1n)})
 
@@ -37,7 +37,7 @@ let getEvent (requestedEventID : nat)(callback : address)(s : TYPES.storage) : (
   (([] : operation list), s)
 
 let updateEvent (updatedEventID : nat)(updatedEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
-  let _ = ASSERT.assertIsManagerOrSigner (Tezos.get_sender()) s.manager s.signer in
+  let _ = ASSERT.assert_is_managerOrSigner (Tezos.get_sender()) s.manager s.signer in
   let _cbk_event : TYPES.eventType =
     match Map.find_opt updatedEventID s.events with
       Some event -> event
@@ -49,7 +49,7 @@ let updateEvent (updatedEventID : nat)(updatedEvent : TYPES.eventType)(s : TYPES
 let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.storage) =
   let result =
     match params with
-    | ChangeManager a -> changeManager a s
+    | ChangeManager a -> change_manager a s
     | ChangeSigner a -> changeSigner a s
     | SwitchPause -> switchPause s
     | AddEvent e -> addEvent e s

@@ -40,7 +40,7 @@ type callbackReturnedValue =
 }
 
 type action =
-  ChangeManager of address
+  | ChangeManager of address
   | ChangeSigner of address
   | SwitchPause
   | AddEvent of eventType
