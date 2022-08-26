@@ -5,7 +5,7 @@
 
 let () = Test.log("___ TEST ChangeSigner STARTED ___")
 
-let (oracle_contract, oracle_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
+let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(oracle_contract, oracle_taddress, elon, jeff)
@@ -26,7 +26,7 @@ let () = HELPER.trscChangeSigner(oracle_contract, elon, jeff)
 let () = ASSERT.assert_signer oracle_taddress jeff
 
 let () = Test.log("-> Changing Manager of the contract from unauthorized address")
-let () = HELPER.trscChangeSigner (oracle_contract, jeff, elon)
+let () = HELPER.trscChangeSigner (oracle_contract, alice, alice)
 let () = ASSERT.assert_signer oracle_taddress jeff
 
 let () = Test.log("___ TEST ChangeSigner ENDED ___")

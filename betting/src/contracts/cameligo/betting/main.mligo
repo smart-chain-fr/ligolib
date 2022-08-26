@@ -42,6 +42,10 @@ let changeConfigType (newBetConfig : TYPES.betConfigType)(s : TYPES.storage) : (
 let addEvent (newEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assertIsManagerOrOracle (Tezos.get_sender()) s.manager s.oracleAddress in
   let _ = ASSERT.assertEventCreationNotPaused s.betConfig.isEventCreationPaused in
+  let _ = ASSERT.assertEventStartToEndDates newEvent.begin_at newEvent.end_at in
+  let _ = ASSERT.assertEventBetStartToEndDates newEvent.startBetTime newEvent.closedBetTime in
+  let _ = ASSERT.assertEventBetStartAfterEnd newEvent.startBetTime newEvent.end_at in
+  let _ = ASSERT.assertEventBetEndsAfterEnd newEvent.closedBetTime newEvent.end_at in
   let newEvents : (nat, TYPES.eventType) map = (Map.add (s.events_index) newEvent s.events) in
   let newEventBet : TYPES.eventBets = {
     betsTeamOne = (Map.empty : (address, tez) map);
@@ -90,6 +94,10 @@ let getEvent (requestedEventID : nat)(callback : address)(s : TYPES.storage) : (
 
 let updateEvent (updatedEventID : nat)(updatedEvent : TYPES.eventType)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assertIsManagerOrOracle (Tezos.get_sender()) s.manager s.oracleAddress in
+  let _ = ASSERT.assertEventStartToEndDates updatedEvent.begin_at updatedEvent.end_at in
+  let _ = ASSERT.assertEventBetStartToEndDates updatedEvent.startBetTime updatedEvent.closedBetTime in
+  let _ = ASSERT.assertEventBetStartAfterEnd updatedEvent.startBetTime updatedEvent.end_at in
+  let _ = ASSERT.assertEventBetEndsAfterEnd updatedEvent.closedBetTime updatedEvent.end_at in
   let _ = match Map.find_opt updatedEventID s.events with
     | Some event -> event
     | None -> (failwith ERRORS.no_event_id)
@@ -147,13 +155,13 @@ let addBet (pRequestedEventID : nat)(teamOneBet : bool)(s : TYPES.storage) : (op
     | Some event -> event
     | None -> failwith ERRORS.no_event_id
   in
+  let _ = ASSERT.assertBettingNotFinalized (requestedEvent.isFinalized) in
+  let _ = ASSERT.assertBettingBeforePeriodStart (requestedEvent.begin_at) in
+  let _ = ASSERT.assertBettingAfterPeriodEnd (requestedEvent.end_at) in
   let requestedEventBets : TYPES.eventBets = match (Map.find_opt pRequestedEventID s.events_bets) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_bets
   in
-  let _ = ASSERT.assertBettingNotFinalized (requestedEvent.isFinalized) in
-  let _ = ASSERT.assertBettingBeforePeriodStart (requestedEvent.begin_at) in
-  let _ = ASSERT.assertBettingAfterPeriodEnd (requestedEvent.end_at) in
   let updatedBetEvent : TYPES.eventBets = if (teamOneBet)
     then ( let uEvent : TYPES.eventBets = addBetTeamOne requestedEventBets in (uEvent) )
     else ( let uEvent : TYPES.eventBets = addBetTeamTwo requestedEventBets in (uEvent) )

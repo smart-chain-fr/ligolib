@@ -66,7 +66,7 @@ let bootstrap =
     (* Boostrapping Oracle contract *)
     let oraclePath = "contracts/cameligo/oracle/main.mligo" in
     let iBis = Test.run (fun (x : TYPES.storage) -> x) init_storage in
-    let (oracle_address, _, _) = Test.originate_from_file oraclePath "main" (["getManager"; "getSigner"; "getStatus"] : string list) iBis 0mutez in
+    let (oracle_address, _, _) = Test.originate_from_file oraclePath "main" (["getManager"; "getSigner"; "getStatus"; "getEvent"] : string list) iBis 0mutez in
     let oracle_taddress = (Test.cast_address oracle_address : (TYPES.action,TYPES.storage) typed_address) in
     let oracle_contract = Test.to_contract oracle_taddress in
     

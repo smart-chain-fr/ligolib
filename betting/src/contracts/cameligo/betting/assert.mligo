@@ -33,6 +33,22 @@ let assertEventCreationNotPaused (pEventCreationPaused : bool) : unit =
   if (pEventCreationPaused)
     then failwith ERRORS.event_creation_paused
 
+let assertEventStartToEndDates (pEventStart : timestamp) (pEventEnd : timestamp) : unit =
+  if (pEventStart > pEventEnd)
+    then failwith ERRORS.event_end_before_start
+
+let assertEventBetStartToEndDates (pEventBetStart : timestamp) (pEventBetEnd : timestamp) : unit =
+  if (pEventBetStart > pEventBetEnd)
+    then failwith ERRORS.event_betting_end_before_start
+
+let assertEventBetStartAfterEnd (pEventBetStart : timestamp) (pEventEnd : timestamp) : unit =
+  if (pEventBetStart > pEventEnd)
+    then failwith ERRORS.event_betting_start_after_end
+
+let assertEventBetEndsAfterEnd (pEventBetEnd : timestamp) (pEventEnd : timestamp) : unit =
+  if (pEventBetEnd > pEventEnd)
+    then failwith ERRORS.event_betting_end_after_end
+
 // --------------------------------------
 //         BETTING RELATED ASSERTIONS
 // --------------------------------------

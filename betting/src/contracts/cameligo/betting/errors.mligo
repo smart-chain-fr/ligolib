@@ -15,6 +15,12 @@ let no_event_id : string = "No Event with this ID"
 let no_event_bets : string = "No Event Bets with this ID"
 let event_creation_paused : string = "Event Creation is currently paused"
 
+let event_end_before_start : string = "Event End Date can't be before Start Date"
+let event_betting_end_before_start : string = "Event Betting End Date can't be before Betting Start Date"
+
+let event_betting_start_after_end : string = "Event Betting Start Date can't be after the Event Start Date"
+let event_betting_end_after_end : string = "Event Betting End Date can't be after the Event End Date"
+
 // --------------------------------------
 //         BETTING RELATED ERRORS
 // --------------------------------------
