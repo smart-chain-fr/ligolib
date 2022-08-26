@@ -1,4 +1,4 @@
-type betConfigType = {
+type bet_config_type = {
   // is betting on events paused (true), or is it allowed (false)
   isBettingPaused : bool;
   // is creating new events paused (true), or is it allowed (false)
@@ -9,7 +9,7 @@ type betConfigType = {
   retainedProfitQuota : nat;
 }
 
-type eventType = 
+type event_type = 
   [@layout:comb] {
   name : string;
   videogame : string;
@@ -24,7 +24,7 @@ type eventType =
   closedBetTime : timestamp;
 }
 
-type eventBets =
+type event_bets =
   [@layout:comb] {
   betsTeamOne : (address, tez) map;
   betsTeamOne_index : nat;
@@ -37,34 +37,34 @@ type eventBets =
 type storage = {
   manager : address;
   oracleAddress : address;
-  betConfig : betConfigType;
-  events : (nat, eventType) map;
-  events_bets : (nat, eventBets) map;
+  betConfig : bet_config_type;
+  events : (nat, event_type) map;
+  events_bets : (nat, event_bets) map;
   events_index : nat;
   metadata : (string, bytes) map;
 }
 
-type getEventParameter =
+type get_event_parameter =
   [@layout:comb] {
   requestedEventID : nat;
   callback : address;
 }
 
-type updateEventParameter =
+type update_event_parameter =
   [@layout:comb] {
   updatedEventID : nat;
-  updatedEvent : eventType;
+  updatedEvent : event_type;
 }
 
-type addBetParameter =
+type add_bet_parameter =
   [@layout:comb] {
   requestedEventID : nat;
   teamOneBet : bool
 }
 
-type finalizeBetParameter = nat
+type finalize_bet_parameter = nat
 
-type callbackEventParameter = 
+type callback_event_parameter = 
   [@layout:comb] {
   name : string;
   videogame : string;
@@ -85,15 +85,15 @@ type callbackEventParameter =
   betsTeamTwo_total : tez;
   }
 
-type callbackAskedParameter =
+type callback_asked_parameter =
   [@layout:comb] {
   requestedEventID : nat;
   callback : address
 }
 
-type callbackReturnedValue =
+type callback_returned_value =
   [@layout:comb] {
-  requestedEvent : callbackEventParameter;
+  requestedEvent : callback_event_parameter;
   callback : address
 }
 
@@ -102,9 +102,9 @@ type action =
   | ChangeOracleAddress of address
   | SwitchPauseBetting
   | SwitchPauseEventCreation
-  | UpdateConfigType of betConfigType
-  | AddEvent of eventType
-  | GetEvent of getEventParameter
-  | UpdateEvent of updateEventParameter
-  | AddBet of addBetParameter
-  | FinalizeBet of finalizeBetParameter
+  | UpdateConfigType of bet_config_type
+  | AddEvent of event_type
+  | GetEvent of get_event_parameter
+  | UpdateEvent of update_event_parameter
+  | AddBet of add_bet_parameter
+  | FinalizeBet of finalize_bet_parameter

@@ -1,4 +1,4 @@
-type eventType = 
+type event_type = 
   [@layout:comb] {
   name : string;
   videogame : string;
@@ -16,26 +16,26 @@ type storage =
   isPaused : bool;
   manager : address;
   signer : address;
-  events : (nat, eventType) map;
+  events : (nat, event_type) map;
   events_index : nat;
   metadata : (string, bytes) map;
 }
 
-type updateEventParameter =
+type update_event_parameter =
   [@layout:comb] {
   updatedEventID : nat;
-  updatedEvent : eventType;
+  updatedEvent : event_type;
 }
 
-type callbackAskedParameter =
+type callback_asked_parameter =
   [@layout:comb] {
   requestedEventID : nat;
   callback : address
 }
 
-type callbackReturnedValue =
+type callback_returned_value =
   [@layout:comb] {
-  requestedEvent : eventType;
+  requestedEvent : event_type;
   callback : address
 }
 
@@ -43,6 +43,6 @@ type action =
   | ChangeManager of address
   | ChangeSigner of address
   | SwitchPause
-  | AddEvent of eventType
-  | GetEvent of callbackAskedParameter
-  | UpdateEvent of updateEventParameter
+  | AddEvent of event_type
+  | GetEvent of callback_asked_parameter
+  | UpdateEvent of update_event_parameter

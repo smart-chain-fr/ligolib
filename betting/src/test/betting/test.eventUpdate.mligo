@@ -6,7 +6,7 @@
 
 let () = Test.log("___ TEST updateEvent STARTED ___")
 
-let updatedEventMap : (nat, TYPES.eventType) map = Map.literal [
+let updatedEventMap : (nat, TYPES.event_type) map = Map.literal [
     (0n, BOOTSTRAP.secondaryEvent)
     ]
 

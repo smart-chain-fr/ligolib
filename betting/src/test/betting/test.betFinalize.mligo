@@ -14,7 +14,7 @@ let () = Test.log(betting_contract, betting_taddress, elon, jeff)
 let () =  HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
-let aliceBetLastMap : (nat, TYPES.eventBets) map = Map.literal [
+let aliceBetLastMap : (nat, TYPES.event_bets) map = Map.literal [
     (0n, {
         betsTeamOne = (Map.literal [ (alice, (22000000mutez)); (bob, 1000000mutez); ]);
         betsTeamOne_index = (1n + 1n) ;
@@ -34,7 +34,7 @@ let () = HELPER.trscAddBet (betting_contract, bob, 0n, (false : bool), 7000000mu
 let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetLastMap
 
 
-let finalizedEvent : TYPES.eventType = {
+let finalizedEvent : TYPES.event_type = {
     name = "First Event";
     videogame= "Videogame ONE";
     begin_at= plainTimestamp + 3;
@@ -48,7 +48,7 @@ let finalizedEvent : TYPES.eventType = {
     closedBetTime = plainTimestamp + 2;
     }
 
-let oneEventFinalizedMap : (nat, TYPES.eventType) map = Map.literal [ (0n, finalizedEvent) ]
+let oneEventFinalizedMap : (nat, TYPES.event_type) map = Map.literal [ (0n, finalizedEvent) ]
 
 let () = HELPER.trscUpdateEvent (betting_contract, elon, 0n, finalizedEvent)
 

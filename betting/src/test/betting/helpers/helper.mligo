@@ -4,22 +4,22 @@
 
 //  VARIABLES
 
-let emptyMap : (nat, TYPES.eventType) map = (Map.empty : (nat, TYPES.eventType) map)
+let emptyMap : (nat, TYPES.event_type) map = (Map.empty : (nat, TYPES.event_type) map)
 
-let oneEventMap : (nat, TYPES.eventType) map = Map.literal [
+let oneEventMap : (nat, TYPES.event_type) map = Map.literal [
     (0n, BOOTSTRAP.primaryEvent)
     ]
-let doubleEventMap : (nat, TYPES.eventType) map = Map.literal [
+let doubleEventMap : (nat, TYPES.event_type) map = Map.literal [
     (0n, BOOTSTRAP.primaryEvent);
     (1n, BOOTSTRAP.primaryEvent)
     ]
-let threeEventMap : (nat, TYPES.eventType) map = Map.literal [
+let threeEventMap : (nat, TYPES.event_type) map = Map.literal [
     (0n, BOOTSTRAP.primaryEvent);
     (1n, BOOTSTRAP.primaryEvent);
     (2n, BOOTSTRAP.primaryEvent)
     ]
 
-let emptyBetMap : (nat, TYPES.eventBets) map = (Map.empty : (nat, TYPES.eventBets) map)
+let emptyBetMap : (nat, TYPES.event_bets) map = (Map.empty : (nat, TYPES.event_bets) map)
 
 //  FUNCTIONS
 
@@ -47,14 +47,14 @@ let trscSwitchPauseEventCreation(contr, from : TYPES.action contract * address) 
     let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseEventCreation) 0mutez in
     result
 
-let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.eventType) =
+let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.event_type) =
     let () = Test.set_source from in
     let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0mutez in
     result
 
-let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * address * nat * TYPES.eventType) =
+let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * address * nat * TYPES.event_type) =
     let () = Test.set_source from in
-    let updateEventParam : TYPES.updateEventParameter =
+    let updateEventParam : TYPES.update_event_parameter =
     {
         updatedEventID = event_num;
         updatedEvent = event;
@@ -65,7 +65,7 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
 
 let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * address * address * nat) =
     let () = Test.set_source from in
-    let callbackParameter : TYPES.callbackAskedParameter =
+    let callbackParameter : TYPES.callback_asked_parameter =
     {
         requestedEventID = event_num;
         callback = cbk_addr
@@ -75,7 +75,7 @@ let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * addr
 
 let trscAddBet  (contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : TYPES.action contract * address * nat * bool * tez) =
     let () = Test.set_source from in
-    let addBetParam : TYPES.addBetParameter = {
+    let addBetParam : TYPES.add_bet_parameter = {
         requestedEventID = pRequestedEventID;
         teamOneBet = pTeamOneBet
     } in

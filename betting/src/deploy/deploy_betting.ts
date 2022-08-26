@@ -19,7 +19,7 @@ Tezos.tz
     .then((balance) => console.log(`Signer balance : ${balance.toNumber() / 1000000} ꜩ`))
     .catch((error) => console.log(JSON.stringify(error)));
 
-let init_betConfigType = {
+let init_bet_config_type = {
     'isBettingPaused': false,
     'isEventCreationPaused': false,
     'minBetAmount': 1000000,
@@ -29,7 +29,7 @@ let init_betConfigType = {
 let store = {
     'manager': process.env.ADMIN_ADDRESS,
     'oracleAddress': process.env.ORACLE_ADDRESS,
-    'betConfig': init_betConfigType,
+    'betConfig': init_bet_config_type,
     'events': (new (MichelsonMap)),
     'events_bets': (new (MichelsonMap)),
     'events_index': 0,

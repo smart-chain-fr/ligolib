@@ -4,7 +4,7 @@
 
 let plainTimestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
 
-let primaryEvent : TYPES.eventType =
+let primaryEvent : TYPES.event_type =
     {
         name = "First Event";
         videogame = "Videogame ONE";
@@ -19,7 +19,7 @@ let primaryEvent : TYPES.eventType =
         closedBetTime = plainTimestamp + 1024;
     }
 
-let secondaryEvent : TYPES.eventType =
+let secondaryEvent : TYPES.event_type =
     {
         name = "Secondary Event";
         videogame = "Videogame TWO";
@@ -65,7 +65,7 @@ let bootstrap =
     let bob: address = Test.nth_bootstrap_account 3 in
     let james: address = Test.nth_bootstrap_account 4 in
 
-    let initBetConfig : TYPES.betConfigType = {
+    let initBetConfig : TYPES.bet_config_type = {
         isBettingPaused = false;
         isEventCreationPaused = false;
         minBetAmount = 1tez;
@@ -77,8 +77,8 @@ let bootstrap =
         manager = elon;
         oracleAddress = jeff;
         betConfig = initBetConfig;
-        events = (Map.empty : (nat, TYPES.eventType) map);
-        events_bets = (Map.empty : (nat, TYPES.eventBets) map);
+        events = (Map.empty : (nat, TYPES.event_type) map);
+        events_bets = (Map.empty : (nat, TYPES.event_bets) map);
         events_index = 0n;
         metadata = (Map.empty : (string, bytes) map);
     } in

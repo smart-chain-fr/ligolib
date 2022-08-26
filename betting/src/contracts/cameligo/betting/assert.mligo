@@ -37,12 +37,12 @@ let assert_event_start_to_end_date (pEventStart : timestamp) (pEventEnd : timest
   if (pEventStart > pEventEnd)
     then failwith ERRORS.event_end_before_start
 
-let assert_event_bet_start_to_end_date (pEventBetStart : timestamp) (pEventBetEnd : timestamp) : unit =
-  if (pEventBetStart > pEventBetEnd)
+let assert_event_bet_start_to_end_date (pevent_betstart : timestamp) (pEventBetEnd : timestamp) : unit =
+  if (pevent_betstart > pEventBetEnd)
     then failwith ERRORS.event_betting_end_before_start
 
-let assert_event_bet_start_after_end (pEventBetStart : timestamp) (pEventEnd : timestamp) : unit =
-  if (pEventBetStart > pEventEnd)
+let assert_event_bet_start_after_end (pevent_betstart : timestamp) (pEventEnd : timestamp) : unit =
+  if (pevent_betstart > pEventEnd)
     then failwith ERRORS.event_betting_start_after_end
 
 let assert_event_bet_ends_after_end (pEventBetEnd : timestamp) (pEventEnd : timestamp) : unit =

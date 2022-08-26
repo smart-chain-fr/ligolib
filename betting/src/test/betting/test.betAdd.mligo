@@ -17,7 +17,7 @@ let () = ASSERT.assert_eventsMap betting_taddress HELPER.emptyMap
 let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
-let aliceBetOneMap : (nat, TYPES.eventBets) map = Map.literal [
+let aliceBetOneMap : (nat, TYPES.event_bets) map = Map.literal [
     (0n, {
         betsTeamOne = (Map.literal [ (alice, 2000000mutez) ]);
         betsTeamOne_index = 1n ;
@@ -33,7 +33,7 @@ let () = Test.log("-> Adding a Bet to TeamOne for an existing event")
 let () = HELPER.trscAddBet (betting_contract, alice, 0n, (true : bool), 2000000mutez)
 let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetOneMap
 
-let aliceBetBothMap : (nat, TYPES.eventBets) map = Map.literal [
+let aliceBetBothMap : (nat, TYPES.event_bets) map = Map.literal [
     (0n, {
         betsTeamOne = (Map.literal [ (alice, 2000000mutez) ]);
         betsTeamOne_index = 1n ;
@@ -49,7 +49,7 @@ let () = Test.log("-> Adding a Bet to TeamTwo for an existing event")
 let () = HELPER.trscAddBet (betting_contract, alice, 0n, (false : bool), 4000000mutez)
 let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetBothMap
 
-let aliceBetLastMap : (nat, TYPES.eventBets) map = Map.literal [
+let aliceBetLastMap : (nat, TYPES.event_bets) map = Map.literal [
     (0n, {
         betsTeamOne = (Map.literal [ (alice, (2000000mutez + 20000000mutez)); (bob, 1000000mutez); ]);
         betsTeamOne_index = (1n + 1n) ;

@@ -4,7 +4,7 @@
 
 let plainTimestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
 
-let primaryEvent : TYPES.eventType =
+let primaryEvent : TYPES.event_type =
     {
         name = "First Event";
         videogame = "Videogame ONE";
@@ -17,7 +17,7 @@ let primaryEvent : TYPES.eventType =
         isTeamOneWin = (None : bool option);
     }
 
-let secondaryEvent : TYPES.eventType =
+let secondaryEvent : TYPES.event_type =
     {
         name = "Secondary Event";
         videogame = "Videogame TWO";
@@ -58,7 +58,7 @@ let bootstrap =
         isPaused = false;
         manager = elon;
         signer = jeff;
-        events = (Map.empty : (nat, TYPES.eventType) map);
+        events = (Map.empty : (nat, TYPES.event_type) map);
         events_index = 0n;
         metadata = (Map.empty : (string, bytes) map);
     } in

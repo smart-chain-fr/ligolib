@@ -43,9 +43,9 @@ let assert_ispaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (e
         else failwith("NOT OK", ctr_value)
 
 (* Assert isPaused parameter with expected result *)
-let assert_eventsMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.eventType) map) : unit =
+let assert_eventsMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_type) map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : (nat, TYPES.eventType) map = (ctr_storage.events) in
+    let ctr_value : (nat, TYPES.event_type) map = (ctr_storage.events) in
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else failwith("NOT OK", ctr_value)
