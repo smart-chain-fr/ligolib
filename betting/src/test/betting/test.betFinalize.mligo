@@ -11,7 +11,7 @@ let (betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTR
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(betting_contract, betting_taddress, elon, jeff)
-let () =  HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
+let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
 let aliceBetLastMap : (nat, TYPES.event_bets) map = Map.literal [
@@ -56,17 +56,7 @@ let () = Test.log("Alice",Test.get_balance(alice))
 let () = Test.log("Bob",Test.get_balance(bob))
 let () = Test.log("Mike",Test.get_balance(mike))
 
-let () = Test.log("_______________________")
-let () = Test.log(HELPER.printStorage(betting_taddress))
-let () = Test.log("_______________________")
-
 let () = HELPER.trscFinalizeBet (betting_contract, elon, 0n)
-
-// let () = ASSERT.tx_success(Test.bake_until_n_cycle_end(100n))
-
-let () = Test.log("_______________________")
-let () = Test.log(HELPER.printStorage(betting_taddress))
-let () = Test.log("_______________________")
 
 let () = Test.log("___ Balances After Rewards ___")
 let () = Test.log("Alice",Test.get_balance(alice))
