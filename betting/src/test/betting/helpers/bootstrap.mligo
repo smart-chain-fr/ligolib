@@ -8,7 +8,7 @@ let primaryEvent : TYPES.event_type =
     {
         name = "First Event";
         videogame = "Videogame ONE";
-        begin_at = plainTimestamp;
+        begin_at = plainTimestamp + 3074;
         end_at = plainTimestamp + 4096;
         modified_at = plainTimestamp;
         opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
@@ -16,14 +16,14 @@ let primaryEvent : TYPES.event_type =
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
         startBetTime = plainTimestamp;
-        closedBetTime = plainTimestamp + 1024;
+        closedBetTime = plainTimestamp + 3072;
     }
 
 let secondaryEvent : TYPES.event_type =
     {
         name = "Secondary Event";
         videogame = "Videogame TWO";
-        begin_at = plainTimestamp;
+        begin_at = plainTimestamp + 3074;
         end_at = plainTimestamp + 4096;
         modified_at = plainTimestamp;
         opponents = { teamOne = "Team THREE"; teamTwo = "Team FOUR"};
@@ -31,7 +31,7 @@ let secondaryEvent : TYPES.event_type =
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
         startBetTime = plainTimestamp;
-        closedBetTime = plainTimestamp + 1024;
+        closedBetTime = plainTimestamp + 3072;
     }
 
 let callbackInitStorage : CALLBACK.storage =
@@ -46,7 +46,7 @@ let callbackInitStorage : CALLBACK.storage =
         isDraw = (None : bool option);
         isTeamOneWin = (None : bool option);
         startBetTime = plainTimestamp + 360;
-        closedBetTime = plainTimestamp + 1024;
+        closedBetTime = plainTimestamp + 3072;
         betsTeamOne = (Map.empty : (address, tez) map);
         betsTeamOne_index = 0n;
         betsTeamOne_total = 0mutez;

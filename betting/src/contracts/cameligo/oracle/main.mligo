@@ -2,10 +2,10 @@
 #import "assert.mligo" "ASSERT"
 #import "errors.mligo" "ERRORS"
 
-let change_manager (newManager : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
+let change_manager (new_manager : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
-  let _ = ASSERT.assert_not_previous_manager newManager s.manager in
-  (([] : operation list), {s with manager = newManager})
+  let _ = ASSERT.assert_not_previous_manager new_manager s.manager in
+  (([] : operation list), {s with manager = new_manager})
 
 let switch_pause (s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
@@ -13,15 +13,15 @@ let switch_pause (s : TYPES.storage) : (operation list * TYPES.storage) =
     then (([] : operation list), {s with isPaused = false})
     else (([] : operation list), {s with isPaused = true})
 
-let change_signer (newSigner : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
+let change_signer (new_signer : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
-  let _ = ASSERT.assert_not_previous_signer newSigner s.signer in
-  (([] : operation list), {s with signer = newSigner})
+  let _ = ASSERT.assert_not_previous_signer new_signer s.signer in
+  (([] : operation list), {s with signer = new_signer})
 
-let add_event (newEvent : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
+let add_event (new_event : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
-  let newEvents : (nat, TYPES.event_type) map = (Map.add (s.events_index) newEvent s.events) in
-  (([] : operation list), {s with events = newEvents; events_index = (s.events_index + 1n)})
+  let new_events : (nat, TYPES.event_type) map = (Map.add (s.events_index) new_event s.events) in
+  (([] : operation list), {s with events = new_events; events_index = (s.events_index + 1n)})
 
 let get_event (requestedEventID : nat)(callback : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let cbk_event =
@@ -29,22 +29,22 @@ let get_event (requestedEventID : nat)(callback : address)(s : TYPES.storage) : 
       Some event -> event
     | None -> (failwith ERRORS.no_event_id)
     in
-  let returnedValue : TYPES.callback_returned_value = {
+  let returned_value : TYPES.callback_returned_value = {
     requestedEvent = cbk_event;
     callback = callback;
   } in
-  let _operation = Tezos.transaction(returnedValue, 0mutez, callback) in
+  let _operation = Tezos.transaction(returned_value, 0mutez, callback) in
   (([] : operation list), s)
 
 let update_event (updatedEventID : nat)(updatedEvent : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
-  let _cbk_event : TYPES.event_type =
+  let _ : TYPES.event_type =
     match Map.find_opt updatedEventID s.events with
       Some event -> event
     | None -> (failwith ERRORS.no_event_id)
   in
-  let newEvents : (nat, TYPES.event_type) map = Map.update updatedEventID (Some(updatedEvent)) s.events in
-  (([] : operation list), {s with events = newEvents})
+  let new_events : (nat, TYPES.event_type) map = Map.update updatedEventID (Some(updatedEvent)) s.events in
+  (([] : operation list), {s with events = new_events})
   
 let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.storage) =
   let result =

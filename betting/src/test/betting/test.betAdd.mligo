@@ -69,5 +69,4 @@ let () = HELPER.trscAddBet (betting_contract, mike, 0n, (false : bool), 3000000m
 let () = HELPER.trscAddBet (betting_contract, bob, 0n, (false : bool), 7000000mutez)
 let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetLastMap
 
-
 let () = Test.log("___ TEST AddBet ENDED ___")

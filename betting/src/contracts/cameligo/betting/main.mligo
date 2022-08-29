@@ -156,8 +156,8 @@ let add_bet (p_requested_event_id : nat)(teamOneBet : bool)(s : TYPES.storage) :
     | None -> failwith ERRORS.no_event_id
   in
   let _ = ASSERT.assert_betting_not_finalized (requested_event.isFinalized) in
-  let _ = ASSERT.assert_betting_before_period_start (requested_event.begin_at) in
-  let _ = ASSERT.assert_betting_after_period_end (requested_event.end_at) in
+  let _ = ASSERT.assert_betting_before_period_start (requested_event.startBetTime) in
+  let _ = ASSERT.assert_betting_after_period_end (requested_event.closedBetTime) in
   let requested_event_bets : TYPES.event_bets = match (Map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_bets
@@ -169,26 +169,26 @@ let add_bet (p_requested_event_id : nat)(teamOneBet : bool)(s : TYPES.storage) :
   let new_events_map : (nat, TYPES.event_bets) map = (Map.update p_requested_event_id (Some(updated_bet_event)) s.events_bets) in
   (([] : operation list), {s with events_bets = new_events_map;})
 
-let trs_reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(pWinner : address)(pBetAmount : tez)(s : TYPES.storage) : unit =
-  let initialAmount : tez = match (pBetAmount - ((pBetAmount * s.betConfig.retainedProfitQuota) / 100n)) with
+let trs_reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
+  let initialAmount : tez = match (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)) with
     | Some tezAmount -> tezAmount
     | None -> failwith ERRORS.bet_reward_incorrect
   in
-  let opponentAmount :tez = if (p_requested_event_bets.betsTeamOne_index > 0n)
+  let opponent_amount :tez = if (p_requested_event_bets.betsTeamOne_index > 0n)
     then (p_requested_event_bets.betsTeamOne_total / p_requested_event_bets.betsTeamOne_index)
     else (0mutez)
   in
-  let finalAmount : tez = (initialAmount + opponentAmount) in
-  let _ = Tezos.transaction( (), finalAmount, pWinner ) in
+  let final_amount : tez = (initialAmount + opponent_amount) in
+  let _ = Tezos.transaction( (), final_amount, p_winner ) in
   ()
 
-let reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(pWinnersMap : (address, tez) map)(s : TYPES.storage) : unit =
-  let calculate = fun (iWinner, jBetAmount : address * tez) -> trs_reward_bet_winners p_requested_event_bets iWinner jBetAmount s in
-  let _ = Map.iter calculate pWinnersMap in
+let reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winners_map : (address, tez) map)(s : TYPES.storage) : unit =
+  let calculate = fun (i_winner, j_bet_amount : address * tez) -> trs_reward_bet_winners p_requested_event_bets i_winner j_bet_amount s in
+  let _ = Map.iter calculate p_winners_map in
   ()
 
-let trs_reward_bet_draw (pWinner : address)(pBetAmount : tez)(s : TYPES.storage) : unit =
-  let _ = Tezos.transaction( (), (pBetAmount - ((pBetAmount * s.betConfig.retainedProfitQuota) / 100n)), pWinner ) in
+let trs_reward_bet_draw (p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
+  let _ = Tezos.transaction( (), (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)), p_winner ) in
   ()
 
 let refund_bet_players (pTeamOneMap : (address, tez) map)(pTeamTwoMap : (address, tez) map)(s : TYPES.storage) : unit =
@@ -209,24 +209,24 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | None -> failwith ERRORS.no_event_bets
   in
   let _ = ASSERT.assert_finalizing_before_period_end (requested_event.end_at) in
-  let outcomeDraw : bool = match requested_event.isDraw with
+  let outcome_draw : bool = match requested_event.isDraw with
     | Some x -> x
     | None -> failwith ERRORS.bet_no_team_outcome
   in
-  let _ = if (outcomeDraw)
+  let _ = if (outcome_draw)
     then (refund_bet_players requested_event_bets.betsTeamOne requested_event_bets.betsTeamTwo s)
     else (
-      let outcomeTeamOneWin : bool = match requested_event.isTeamOneWin with
+      let outcome_team_one_win : bool = match requested_event.isTeamOneWin with
         | Some x -> x
         | None -> failwith ERRORS.bet_no_team_outcome
       in
-      if (outcomeTeamOneWin)
+      if (outcome_team_one_win)
         then ( reward_bet_winners requested_event_bets requested_event_bets.betsTeamOne s )
         else ( reward_bet_winners requested_event_bets requested_event_bets.betsTeamTwo s )
     )
   in
-  let updatedEvent : TYPES.event_type = {requested_event with isFinalized = true} in
-  let new_events_map : (nat, TYPES.event_type) map = (Map.update p_requested_event_id (Some(updatedEvent)) s.events) in
+  let updated_event : TYPES.event_type = {requested_event with isFinalized = true} in
+  let new_events_map : (nat, TYPES.event_type) map = (Map.update p_requested_event_id (Some(updated_event)) s.events) in
   (([] : operation list), {s with events = new_events_map;})
 
 // --------------------------------------
