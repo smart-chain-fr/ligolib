@@ -5,3 +5,4 @@ _esy/
 scripts/metadata.json
 .DS_Store
 node_modules
+.vscode/
