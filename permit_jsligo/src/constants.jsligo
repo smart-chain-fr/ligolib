@@ -1,2 +1,0 @@
-export const no_operation : list<operation> = list([])
-
