@@ -1,0 +1,41 @@
+#import "./helpers/token.mligo" "Token_helper"
+#import "./helpers/log.mligo" "Log"
+#import "./helpers/assert.jsligo" "Assert"
+#import "./bootstrap/bootstrap.mligo" "Bootstrap"
+#import "../src/main.jsligo" "Token"
+
+let _ = Log.describe("[Set_admin] test suite");
+
+// Boostrapping of the test environment
+const init_tok_amount = (10 as nat);
+
+let bootstrap = (_: unit) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+    let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(Bootstrap.dummy_genesis_ts);
+    let base_extended_storage = Token_helper.get_initial_extended_storage(
+      admin, Token_helper.dummy_default_expiry, Token_helper.dummy_max_expiry);
+    let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
+    [tok, admin, owners_with_keys]
+};
+
+// Successful setting of admin
+let _test_success_set_admin = (_: unit) : unit => {
+    let [tok, admin, owners] = bootstrap();
+    let [owner1, _, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    let _ = Test.set_source(admin);
+    let _ = Token_helper.set_admin_success(owner1_addr, tok.contr);
+    let s = Test.get_storage(tok.taddr);
+    assert (s.extension.admin == owner1_addr)
+};
+
+// Failure because sender is not current admin
+let _test_failure_not_admin = (_: unit) : unit => {
+    let [tok,_, owners] = bootstrap();
+    let [owner1, _, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    let r = Token_helper.set_admin(owner1_addr, tok.contr);
+    Assert.string_failure(r, Token.Errors.requires_admin)
+};
+
+const test_success_set_admin : unit = _test_success_set_admin();
+const test_failure_not_admin : unit = _test_failure_not_admin();

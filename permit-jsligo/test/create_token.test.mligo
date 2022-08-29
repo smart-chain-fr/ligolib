@@ -1,7 +1,7 @@
 #import "./helpers/token.mligo" "Token_helper"
 #import "./helpers/fa2.mligo" "FA2_helper"
 #import "./helpers/log.mligo" "Log"
-#import "./helpers/assert.mligo" "Assert"
+#import "./helpers/assert.jsligo" "Assert"
 #import "./bootstrap/bootstrap.mligo" "Bootstrap"
 #import "../src/main.jsligo" "Token"
 
@@ -42,7 +42,7 @@ let test_failure_token_exist =
     let r = Token_helper.create_token
       (FA2_helper.get_dummy_token_data (1n),
        owner1_addr, 12n, tok.contr) in
-    Assert.string_failure r Token.Errors.token_exist
+    Assert.string_failure(r, Token.Errors.token_exist)
 
 (* Failure because sender is not current admin *)
 let test_failure_not_admin =
@@ -52,4 +52,4 @@ let test_failure_not_admin =
     let r = Token_helper.create_token
       (FA2_helper.get_dummy_token_data (42n),
        owner1_addr, 12n, tok.contr) in
-    Assert.string_failure r Token.Errors.requires_admin
+    Assert.string_failure(r, Token.Errors.requires_admin)

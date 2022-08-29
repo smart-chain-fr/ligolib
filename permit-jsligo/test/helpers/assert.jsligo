@@ -1,0 +1,31 @@
+// Assert contract call results in failwith with given string
+export let string_failure = ([res, expected]: [test_exec_result, string]) : unit => {
+    let expected = Test.eval(expected);
+    return match (res, {
+        Fail: (x: test_exec_error) => (
+            match (x, {
+                Rejected: (x:[michelson_code,address]) => assert (Test.michelson_equal (x[0], expected)),
+                Balance_too_low: (_: unit) => Test.failwith("contract failed: balance too low"),
+                Other: (s: string) => failwith (s)
+            })
+        ),
+        Success: (_:unit) => Test.failwith("Transaction should fail")
+    });
+};
+
+// Assert contract result is successful
+export let tx_success = (res: test_exec_result) : unit => {
+    return match (res, {
+        Success: (_: unit) => unit,
+        Fail: (x: test_exec_result) => (
+            match (x, {
+                Rejected: (x:[michelson_code,address]) => {
+                    let _ = Test.log(x[0]);
+                    Test.failwith("Transaction should not fail")
+                },
+                Balance_too_low: (_: unit) => Test.failwith("Transaction should not fail"),
+                Other: (_: unit) => Test.failwith("Transaction should not fail")
+            })
+        )
+    })
+}

@@ -1,6 +1,6 @@
 #import "./helpers/token.mligo" "Token_helper"
 #import "./helpers/log.mligo" "Log"
-#import "./helpers/assert.mligo" "Assert"
+#import "./helpers/assert.jsligo" "Assert"
 #import "./bootstrap/bootstrap.mligo" "Bootstrap"
 #import "../src/main.jsligo" "Token"
 
@@ -93,4 +93,4 @@ let test_failure_expired_permit =
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, extended_storage) in
     let () = Test.set_source owner2_addr in
     let r = Token_helper.transfer([transfer_request], tok.contr) in
-    Assert.string_failure r Token.FA2.Errors.not_operator
+    Assert.string_failure(r, Token.FA2.Errors.not_operator)

@@ -41,7 +41,7 @@ let boot_state (init_ts : timestamp) =
     bootstrapped accounts
 *)
 let boot_token (owners, ops, init_tok_amount, init_extended_storage
-: (address * address * address) * (address * address * address) * nat * Token.Extension.t) =
+: (address * address * address) * (address * address * address) * nat * Token.Extension.t) : Token_helper.originated =
     let initial_fa2_storage = FA2_helper.get_initial_storage(
         owners, ops, init_tok_amount
     ) in

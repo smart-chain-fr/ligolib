@@ -1,7 +1,7 @@
 #import "./helpers/token.mligo" "Token_helper"
 #import "./helpers/fa2.mligo" "FA2_helper"
 #import "./helpers/log.mligo" "Log"
-#import "./helpers/assert.mligo" "Assert"
+#import "./helpers/assert.jsligo" "Assert"
 #import "./bootstrap/bootstrap.mligo" "Bootstrap"
 #import "../src/main.jsligo" "Token"
 
@@ -43,4 +43,4 @@ let test_failure_not_admin =
        token_id=1n;
        amount_=1n;
     }], tok.contr) in
-    Assert.string_failure r Token.Errors.requires_admin
+    Assert.string_failure(r, Token.Errors.requires_admin)

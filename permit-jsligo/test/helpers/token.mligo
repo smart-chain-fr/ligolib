@@ -1,5 +1,5 @@
 #import "../../src/main.jsligo" "Token"
-#import "./assert.mligo" "Assert"
+#import "./assert.jsligo" "Assert"
 
 (* Some types for readability *)
 type taddr = (Token.parameter, Token.storage) typed_address
@@ -7,7 +7,7 @@ type contr = Token.parameter contract
 type originated = {
     addr: address;
     taddr: taddr;
-    owners: address list;
+    //owners: address list;
     contr: contr;
 }
 

@@ -1,6 +1,6 @@
 #import "./helpers/token.mligo" "Token_helper"
 #import "./helpers/log.mligo" "Log"
-#import "./helpers/assert.mligo" "Assert"
+#import "./helpers/assert.jsligo" "Assert"
 #import "./bootstrap/bootstrap.mligo" "Bootstrap"
 #import "../src/main.jsligo" "Token"
 
@@ -44,7 +44,7 @@ let test_failure_forbidden =
     let () = Test.set_source owner2_addr in
     let expiry_params : Token.expiry_params = (owner1_addr, (5400n, (None: bytes option))) in
     let r = Token_helper.set_expiry(expiry_params, tok.contr) in
-    Assert.string_failure r Token.Errors.forbidden_expiry_update
+    Assert.string_failure(r, Token.Errors.forbidden_expiry_update)
 
 (* Failure because tried to set value exceeding max_expiry *)
 let test_failure_max_seconds_exceeded =
@@ -55,6 +55,6 @@ let test_failure_max_seconds_exceeded =
     let () = Test.set_source owner2_addr in
     let expiry_params : Token.expiry_params = (owner1_addr, (14_400n, (None: bytes option))) in
     let r = Token_helper.set_expiry(expiry_params, tok.contr) in
-    Assert.string_failure r Token.Errors.max_seconds_exceeded
+    Assert.string_failure(r, Token.Errors.max_seconds_exceeded)
 
 

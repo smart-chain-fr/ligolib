@@ -39,9 +39,9 @@ install: ## install dependencies
 .PHONY: test
 test: ## run tests (SUITE=permit make test)
 ifndef SUITE
-	@$(call test,permit.test.mligo)
+	@$(call test,permit.test.jsligo)
 	@$(call test,set_expiry.test.mligo)
-	@$(call test,set_admin.test.mligo)
+	@$(call test,set_admin.test.jsligo)
 	@$(call test,transfer.test.mligo)
 	@$(call test,create_token.test.mligo)
 	@$(call test,mint_token.test.mligo)
