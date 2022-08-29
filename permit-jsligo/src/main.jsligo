@@ -13,10 +13,8 @@ export type mint_or_burn = [@layout:comb] {
    amount_  : nat,
 };
 
-
-//type create_params = [create_token, address, nat]
-export type permit_params = [key, [signature, bytes]]
-export type expiry_params = [address, [nat, option<bytes>]]
+export type permit_params = [key, [signature, bytes]];
+export type expiry_params = [address, [nat, option<bytes>]];
 
 let create = ([param_create, s] : [[FA2.TokenMetadata.data, address, nat], storage]) : result => {
     let [metadata,owner,amount] = param_create;
@@ -60,7 +58,7 @@ let burn = ([lst, s] : [list<mint_or_burn>, storage]) : result => {
    [Constants.no_operation,{ ...s, extension : Extension.set_supply(s.extension, supply) }]
 };
 
-//(* TZIP-17 *)
+// TZIP-17
 let permit = ([permits, s] : [list<permit_params>, storage]) : result => {
     let process_permit = ([ext, permit] : [Extension.t, permit_params]) : Extension.t => {
         let [pub_key, [sig, hash_]] = permit;
@@ -87,7 +85,7 @@ let permit = ([permits, s] : [list<permit_params>, storage]) : result => {
     [Constants.no_operation, { ...s, extension : extension }]
 };
 
-//(* TZIP-17 *)
+// TZIP-17
 let set_expiry = ([p, s] : [expiry_params, storage]) : result => {
     let [user_address, [seconds, permit_hash_opt]] = p;
     let _check_max_expiry : unit = assert_with_error((seconds <= s.extension.max_expiry), Errors.max_seconds_exceeded);
@@ -122,7 +120,7 @@ let set_expiry = ([p, s] : [expiry_params, storage]) : result => {
     // };
 };
 
-//(* TZIP-17 implementation of TZIP-12 Transfer *)
+// TZIP-17 implementation of TZIP-12 Transfer
 let transfer_permitted = ([t, s]: [FA2.transfer, storage]) : result => {
      let make_transfer = ([acc, t] : [[FA2.Ledger.t, Extension.t], FA2.transfer_from]) : [FA2.Ledger.t, Extension.t] => {
         let [ledger, ext] = acc;
@@ -178,17 +176,12 @@ export let main = ([p,s]: [parameter, storage]): result => {
     })
 };
 
-// (*
 //     Off-chain views required by TZIP-17
-
 //     Command to run to get the micheline expressions to put in the metadata:
-
 //     ligo compile expression cameligo '_get_counter' \
 //         --init-file src/main.mligo \
 //         --project-root . \
 //         --michelson-format json
-// *)
-
 
 let _get_default_expiry = ([_,s]: [unit, storage]) : nat => {
     return s.extension.default_expiry

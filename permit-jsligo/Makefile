@@ -12,10 +12,10 @@ help:
 	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
 	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-compile = $(LIGO) compile contract $(project_root) ./src/$(1) -o ./compiled/$(2) $(3)
+compile = $(LIGO) compile contract $(project_root) ./src/$(1) -o ./compiled/$(2) $(3) --no-warn
 # ^ compile contract to michelson or micheline
 
-test = $(LIGO) run test $(project_root) ./test/$(1)
+test = $(LIGO) run test $(project_root) ./test/$(1) --no-warn
 # ^ run given test file
 
 compile: ## compile contracts

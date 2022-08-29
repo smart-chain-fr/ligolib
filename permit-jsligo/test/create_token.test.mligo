@@ -28,9 +28,9 @@ let test_success =
     let res = Token_helper.create_token
       (FA2_helper.get_dummy_token_data (token_id),
        owner1_addr, amount_, tok.contr) in
-    let () = Test.log(res) in   
-    let s = Test.get_storage tok.taddr in
-    let () = Test.log(s) in
+    // let () = Test.log(res) in   
+    // let s = Test.get_storage tok.taddr in
+    // let () = Test.log(s) in
     let () = Token_helper.assert_balance(tok.taddr, owner1_addr, token_id, amount_) in
     Token_helper.assert_supply(tok.taddr, token_id, amount_)
 

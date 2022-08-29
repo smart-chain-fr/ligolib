@@ -1,13 +1,13 @@
 #import "ligo-generic-fa2/lib/multi_asset/fa2.mligo" "FA2"
 #import "./errors.jsligo" "Errors"
 
-type seconds = nat
-export type permit_key = [address, bytes]
-export type permits = big_map<permit_key, timestamp>
-export type user_expiries = big_map<address, option<seconds>> 
+type seconds = nat;
+export type permit_key = [address, bytes];
+export type permits = big_map<permit_key, timestamp>;
+export type user_expiries = big_map<address, option<seconds>>;
 export type permit_expiries = big_map<permit_key, option<seconds>>;
 
-//(* token_id -> total_supply *)
+// token_id -> total_supply
 export type token_total_supply = big_map<FA2.Ledger.token_id, nat>;
 
 export type t = {
@@ -27,18 +27,6 @@ let get_user_defined_expiry = ([from_, ext]: [address, t]) : option<seconds> => 
         Some: (exp: option<seconds>) => exp
     });
 };
-
-// let get_expiry = ([ext, [user, param_hash]]: [t, permit_key]) : seconds =>
-//     match (Big_map.find_opt([user, param_hash], ext.permit_expiries), {
-//         None: () => {
-//             match (get_user_defined_expiry(user, ext), {
-//                 None: () => ext.default_expiry,
-//                 Some: (exp: seconds) => exp
-//             })
-//         },
-//         Some: (None: option<seconds>) => ext.default_expiry,
-//         Some: (Some(exp)) => exp
-//     })
 
 let get_expiry = ([ext, param_permit_key]: [t, permit_key]) : seconds => {
     match ((Big_map.find_opt([param_permit_key[0], param_permit_key[1]], ext.permit_expiries) as option<option<seconds>>), {
@@ -83,19 +71,19 @@ export let set_supply = ([ext, supply] : [t, token_total_supply]) : t => {
 
 export let create_supply = ([supply, new_token_id, amount_] : [token_total_supply, FA2.Ledger.token_id, nat]) : token_total_supply => {
     return Big_map.add(new_token_id, amount_, supply)
-}
+};
 
 export let increase_supply = ([supply, token_id,amount_] : [token_total_supply, FA2.Ledger.token_id, nat]) : token_total_supply => {
     let cur_amount = get_supply(supply, token_id);
     let new_amount = cur_amount + amount_;
     Big_map.update(token_id, (Some(new_amount)), supply)
-}
+};
 
 export let decrease_supply = ([supply, token_id, amount_] : [token_total_supply, FA2.Ledger.token_id, nat]) : token_total_supply => {
     let cur_amount = get_supply(supply, token_id);
     let new_supply = abs(cur_amount - amount_);
     Big_map.update(token_id, (Some(new_supply)), supply);
-}
+};
  
 export let add_permit = ([ext, permit_key] : [t, permit_key]) : t => {
     let now = Tezos.get_now();
@@ -113,17 +101,10 @@ export let update_permit = ([ext, permit_key] : [t, permit_key]) : t => {
     }
 };
 
-// let _check_not_expired = (ext, submission_timestamp, permit_key : [t, timestamp, permit_key]) : unit => {
-//     let effective_expiry: seconds = get_expiry(ext, permit_key);
-//     if abs (Tezos.get_now() - submission_timestamp) < effective_expiry
-//     then failwith Errors.dup_permit
-// }
-
 export let _check_not_expired = ([ext, submission_timestamp, permit_key]: [t, timestamp, permit_key]) : unit => {
     let effective_expiry: seconds = get_expiry(ext, permit_key);
     assert_with_error((abs (Tezos.get_now() - submission_timestamp) >= effective_expiry), Errors.dup_permit);
 };
-
 
 export let transfer_presigned = ([ext, params]: [t, FA2.transfer_from]): [bool, t] => {
     let params_hash = Crypto.blake2b(Bytes.pack(params));
