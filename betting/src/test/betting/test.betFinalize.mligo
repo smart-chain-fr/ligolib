@@ -58,6 +58,8 @@ let () = Test.log("Mike",Test.get_balance(mike))
 
 let () = HELPER.trscFinalizeBet (betting_contract, elon, 0n)
 
+// TODO : Verify why balances are not updated properly
+
 let () = Test.log("___ Balances After Rewards ___")
 let () = Test.log("Alice",Test.get_balance(alice))
 let () = Test.log("Bob",Test.get_balance(bob))
