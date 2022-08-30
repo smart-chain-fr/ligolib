@@ -1,0 +1,52 @@
+#import "./helpers/token.mligo" "Token_helper"
+#import "./helpers/fa2.jsligo" "FA2_helper"
+#import "./helpers/log.mligo" "Log"
+#import "./helpers/assert.jsligo" "Assert"
+#import "./bootstrap/bootstrap.mligo" "Bootstrap"
+#import "../src/main.jsligo" "Token"
+
+let _ = Log.describe("[Burn_token] test suite");
+
+// Boostrapping of the test environment
+const init_tok_amount = (10 as nat);
+
+let bootstrap = () : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+    let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(Bootstrap.dummy_genesis_ts);
+    let base_extended_storage = Token_helper.get_initial_extended_storage(
+      admin, Token_helper.dummy_default_expiry, Token_helper.dummy_max_expiry);
+    let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
+    [tok, admin, owners_with_keys]
+};
+
+// Successful token mint
+let _test_success = () : unit => {
+    let [tok, admin, owners] = bootstrap();
+    let [[owner1_addr, _, _], _, _] = owners;
+    let _ = Test.set_source (admin);
+    let token_id = (1 as nat);
+    let amount_ = (6 as nat);
+    let _ = Token_helper.burn_token_success(list([{
+       owner:owner1_addr,
+       token_id:token_id,
+       amount_:amount_
+    }]), tok.contr);
+    let new_amount =  abs(init_tok_amount - amount_);
+    let _ = Token_helper.assert_balance(tok.taddr, owner1_addr, token_id, new_amount);
+    Token_helper.assert_supply(tok.taddr, token_id, new_amount)
+};
+
+// Failure because sender is not current admin
+let _test_failure_not_admin = () : unit => {
+    let [tok, _, owners] = bootstrap();
+    let [[owner1_addr, _, _], _, _] = owners;
+    let _ = Test.set_source (owner1_addr);
+    let r = Token_helper.burn_token(list([{
+       owner:owner1_addr,
+       token_id:(1 as nat),
+       amount_:(1 as nat)
+    }]), tok.contr);
+    Assert.string_failure(r, Token.Errors.requires_admin)
+};
+
+const test_success : unit = _test_success();
+const test_failure_not_admin : unit = _test_failure_not_admin();

@@ -1,0 +1,63 @@
+#import "./helpers/token.mligo" "Token_helper"
+#import "./helpers/fa2.jsligo" "FA2_helper"
+#import "./helpers/log.mligo" "Log"
+#import "./helpers/assert.jsligo" "Assert"
+#import "./bootstrap/bootstrap.mligo" "Bootstrap"
+#import "../src/main.jsligo" "Token"
+
+let _ = Log.describe("[Create_token] test suite");
+
+// Boostrapping of the test environment
+const init_tok_amount = (10 as nat);
+
+let bootstrap = () : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+    let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(Bootstrap.dummy_genesis_ts);
+    let base_extended_storage = Token_helper.get_initial_extended_storage(
+      admin, Token_helper.dummy_default_expiry, Token_helper.dummy_max_expiry);
+    let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
+    [tok, admin, owners_with_keys]
+};
+
+// Successful token creation
+let _test_success = () : unit => {
+    let [tok, admin, owners] = bootstrap();
+    let [[owner1_addr, _, _], _, _] = owners;
+    let _ = Test.set_source (admin);
+    let token_id = (42 as nat);
+    let amount_ = (12 as nat);
+    //let () = Token_helper.create_token_success
+    let res = Token_helper.create_token
+      (FA2_helper.get_dummy_token_data (token_id),
+       owner1_addr, amount_, tok.contr);
+    // let () = Test.log(res);   
+    // let s = Test.get_storage tok.taddr;
+    // let () = Test.log(s);
+    let _ = Token_helper.assert_balance(tok.taddr, owner1_addr, token_id, amount_);
+    Token_helper.assert_supply(tok.taddr, token_id, amount_)
+};
+
+// Failure because token id already present
+let _test_failure_token_exist = () : unit => {
+    let [tok, admin, owners] = bootstrap();
+    let [[owner1_addr, _, _], _, _] = owners;
+    let _ = Test.set_source (admin);
+    let r = Token_helper.create_token
+      (FA2_helper.get_dummy_token_data ((1 as nat)),
+       owner1_addr, (12 as nat), tok.contr);
+    Assert.string_failure(r, Token.Errors.token_exist)
+};
+
+// Failure because sender is not current admin
+let _test_failure_not_admin = () : unit => {
+    let [tok, _, owners] = bootstrap();
+    let [[owner1_addr, _, _], _, _] = owners;
+    let _ = Test.set_source (owner1_addr);
+    let r = Token_helper.create_token
+      (FA2_helper.get_dummy_token_data ((42 as nat)),
+       owner1_addr, (12 as nat), tok.contr);
+    Assert.string_failure(r, Token.Errors.requires_admin)
+};
+
+const test_success : unit = _test_success();
+const test_failure_token_exist : unit = _test_failure_token_exist();
+const test_failure_not_admin : unit = _test_failure_not_admin();

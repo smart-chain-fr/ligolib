@@ -1,5 +1,5 @@
 #import "../helpers/token.mligo" "Token_helper"
-#import "../helpers/fa2.mligo" "FA2_helper"
+#import "../helpers/fa2.jsligo" "FA2_helper"
 #import "../../src/main.jsligo" "Token"
 
 (* Some dummy value when they don't matter for a given test *)

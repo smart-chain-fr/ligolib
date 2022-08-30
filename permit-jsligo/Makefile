@@ -40,12 +40,12 @@ install: ## install dependencies
 test: ## run tests (SUITE=permit make test)
 ifndef SUITE
 	@$(call test,permit.test.jsligo)
-	@$(call test,set_expiry.test.mligo)
+	@$(call test,set_expiry.test.jsligo)
 	@$(call test,set_admin.test.jsligo)
-	@$(call test,transfer.test.mligo)
-	@$(call test,create_token.test.mligo)
-	@$(call test,mint_token.test.mligo)
-	@$(call test,burn_token.test.mligo)
+	@$(call test,transfer.test.jsligo)
+	@$(call test,create_token.test.jsligo)
+	@$(call test,mint_token.test.jsligo)
+	@$(call test,burn_token.test.jsligo)
 else
 	@$(call test,$(SUITE).test.mligo)
 endif

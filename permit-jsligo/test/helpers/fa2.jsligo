@@ -1,0 +1,49 @@
+#import "../../src/main.jsligo" "Token"
+
+type common_storage = {
+    ledger : Token.FA2.Ledger.t,
+    token_metadata : Token.FA2.TokenMetadata.t,
+    operators : Token.FA2.Operators.t
+}
+
+let dummy_token_info = (Map.empty as map<string, bytes>);
+
+export let get_dummy_token_data = (token_id : nat) : Token.FA2.TokenMetadata.data => {
+   return { token_id: token_id, token_info: dummy_token_info};
+};
+
+
+// Get the initial storage of FA2
+// init_tok_amount is the amount of token allocated to every owner account
+
+export let get_initial_storage = ([owners, ops, init_tok_amount]
+: [[address, address,  address], [address, address, address], nat]) : common_storage => {
+    let [owner1, owner2, owner3] = owners;
+    let [op1, _op2, op3] = ops;
+
+    let ledger = Big_map.literal( list([
+        [[owner1, (1 as nat)], init_tok_amount],
+        [[owner2, (2 as nat)], init_tok_amount],
+        [[owner3, (3 as nat)], init_tok_amount],
+        [[owner1, (2 as nat)], init_tok_amount]
+    ]));
+
+    let operators  = Big_map.literal( list([
+        [[owner1, op1], Set.literal(list([(1 as nat), (2 as nat)]))],
+        [[owner2, op1], Set.literal(list([(2 as nat)]))],
+        [[owner3, op1], Set.literal(list([(3 as nat)]))],
+        [[op1   , op3], Set.literal(list([(2 as nat)]))]
+    ]));
+
+    let token_metadata : Token.FA2.TokenMetadata.t = Big_map.literal( list([
+        [(1 as nat), get_dummy_token_data((1 as nat))],
+        [(2 as nat), get_dummy_token_data((2 as nat))],
+        [(3 as nat), get_dummy_token_data((3 as nat))]
+    ]));
+
+    return {
+        ledger         : ledger,
+        token_metadata : token_metadata,
+        operators      : operators
+    }
+};
