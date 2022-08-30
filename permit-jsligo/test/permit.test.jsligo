@@ -1,5 +1,5 @@
 #import "./helpers/token.mligo" "Token_helper"
-#import "./helpers/log.mligo" "Log"
+#import "./helpers/log.jsligo" "Log"
 #import "./helpers/assert.jsligo" "Assert"
 #import "./bootstrap/bootstrap.mligo" "Bootstrap"
 #import "../src/main.jsligo" "Token"
