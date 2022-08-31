@@ -1,7 +1,7 @@
-#import "./helpers/token.mligo" "Token_helper"
+#import "./helpers/token.jsligo" "Token_helper"
 #import "./helpers/log.jsligo" "Log"
 #import "./helpers/assert.jsligo" "Assert"
-#import "./bootstrap/bootstrap.mligo" "Bootstrap"
+#import "./bootstrap/bootstrap.jsligo" "Bootstrap"
 #import "../src/main.jsligo" "Token"
 
 let _ = Log.describe("[Set_admin] test suite");
