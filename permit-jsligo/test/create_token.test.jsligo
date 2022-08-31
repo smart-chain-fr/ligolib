@@ -25,13 +25,9 @@ let _test_success = () : unit => {
     let _ = Test.set_source (admin);
     let token_id = (42 as nat);
     let amount_ = (12 as nat);
-    //let () = Token_helper.create_token_success
     let res = Token_helper.create_token
       (FA2_helper.get_dummy_token_data (token_id),
        owner1_addr, amount_, tok.contr);
-    // let () = Test.log(res);   
-    // let s = Test.get_storage tok.taddr;
-    // let () = Test.log(s);
     let _ = Token_helper.assert_balance(tok.taddr, owner1_addr, token_id, amount_);
     Token_helper.assert_supply(tok.taddr, token_id, amount_)
 };

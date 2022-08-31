@@ -77,7 +77,6 @@ let permit = ([permits, s] : [list<permit_params>, storage]) : result => {
             });
             return ext_modified;
         } else {
-            //([%Michelson ({| { FAILWITH } |} : string * bytes -> Extension.t)]) (Errors.missigned, packed)
             return (Michelson `{FAILWITH}` as ((n: [string, bytes]) => Extension.t)) ([Errors.missigned, packed])
         }
     };
@@ -90,34 +89,25 @@ let set_expiry = ([p, s] : [expiry_params, storage]) : result => {
     let [user_address, [seconds, permit_hash_opt]] = p;
     let _check_max_expiry : unit = assert_with_error((seconds <= s.extension.max_expiry), Errors.max_seconds_exceeded);
     let _check_sender : unit = assert_with_error((Tezos.get_sender() == user_address), Errors.forbidden_expiry_update);
-    
-    // if (seconds > s.extension.max_expiry) {
-    //     return (failwith(Errors.max_seconds_exceeded) as result)
-    // } else {
-    //     if (Tezos.get_sender() != user_address) {
-    //         return (failwith(Errors.forbidden_expiry_update) as result);
-    //     } else { 
-            match (permit_hash_opt, {
-                None: () => {
-                    return [
-                        Constants.no_operation,
-                        {...s, extension : { ...s.extension, 
-                            user_expiries : Big_map.add(user_address, (Some(seconds)), s.extension.user_expiries) }}
-                    ];                        
-                },
-                Some: (permit_hash: bytes) => {
-                    return [
-                        Constants.no_operation,
-                        { ...s, extension : {...s.extension, permit_expiries : Big_map.add(
-                            [user_address, permit_hash],
-                            (Some(seconds)),
-                            s.extension.permit_expiries)
-                        }}
-                    ]
-                }
-            });
-    //     }
-    // };
+    match (permit_hash_opt, {
+        None: () => {
+            return [
+                Constants.no_operation,
+                {...s, extension : { ...s.extension, 
+                    user_expiries : Big_map.add(user_address, (Some(seconds)), s.extension.user_expiries) }}
+            ];                        
+        },
+        Some: (permit_hash: bytes) => {
+            return [
+                Constants.no_operation,
+                { ...s, extension : {...s.extension, permit_expiries : Big_map.add(
+                    [user_address, permit_hash],
+                    (Some(seconds)),
+                    s.extension.permit_expiries)
+                }}
+            ]
+        }
+    });
 };
 
 // TZIP-17 implementation of TZIP-12 Transfer
