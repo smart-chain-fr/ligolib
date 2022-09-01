@@ -66,7 +66,7 @@ let permit = ([permits, s] : [list<permitParams>, storage]) : result => {
         if (Crypto.check(pub_key, sig, packed)) {
             let sender_ = Tezos.address (Tezos.implicit_account (Crypto.hash_key(pub_key)));
             let paramPermitKey = [sender_, hash_];
-            let ext_modified = match (Big_map.find_opt(paramPermitKey, ext.permits), {
+            let extModified = match (Big_map.find_opt(paramPermitKey, ext.permits), {
                 None: () => {
                     Extension.addPermit(ext, paramPermitKey)
                 },
@@ -75,7 +75,7 @@ let permit = ([permits, s] : [list<permitParams>, storage]) : result => {
                     Extension.updatePermit(ext, paramPermitKey)
                 }
             });
-            return ext_modified;
+            return extModified;
         } else {
             return (Michelson `{FAILWITH}` as ((n: [string, bytes]) => Extension.t)) ([Errors.missigned, packed])
         }
@@ -86,22 +86,22 @@ let permit = ([permits, s] : [list<permitParams>, storage]) : result => {
 
 // TZIP-17
 let setExpiry = ([p, s] : [expiryParams, storage]) : result => {
-    let [user_address, [seconds, permit_hash_opt]] = p;
-    let _check_max_expiry : unit = assert_with_error((seconds <= s.extension.maxExpiry), Errors.maxSecondsExceeded);
-    let _check_sender : unit = assert_with_error((Tezos.get_sender() == user_address), Errors.forbiddenExpiryUpdate);
-    match (permit_hash_opt, {
+    let [userAddress, [seconds, permitHashOpt]] = p;
+    let _checkMaxExpiry : unit = assert_with_error((seconds <= s.extension.maxExpiry), Errors.maxSecondsExceeded);
+    let _checkSender : unit = assert_with_error((Tezos.get_sender() == userAddress), Errors.forbiddenExpiryUpdate);
+    match (permitHashOpt, {
         None: () => {
             return [
                 Constants.noOperation,
                 {...s, extension : { ...s.extension, 
-                    userExpiries : Big_map.add(user_address, (Some(seconds)), s.extension.userExpiries) }}
+                    userExpiries : Big_map.add(userAddress, (Some(seconds)), s.extension.userExpiries) }}
             ];                        
         },
         Some: (permit_hash: bytes) => {
             return [
                 Constants.noOperation,
                 { ...s, extension : {...s.extension, permitExpiries : Big_map.add(
-                    [user_address, permit_hash],
+                    [userAddress, permit_hash],
                     (Some(seconds)),
                     s.extension.permitExpiries)
                 }}
@@ -114,20 +114,20 @@ let setExpiry = ([p, s] : [expiryParams, storage]) : result => {
 let transferPermitted = ([t, s]: [FA2.transfer, storage]) : result => {
      let makeTransfer = ([acc, t] : [[FA2.Ledger.t, Extension.t], FA2.transfer_from]) : [FA2.Ledger.t, Extension.t] => {
         let [ledger, ext] = acc;
-        const [is_transfer_authorized, ext] = Extension.transferPresigned(ext, t);
+        const [isTransferAuthorized, ext] = Extension.transferPresigned(ext, t);
         const {from_, tx} = t;
         let applyTransfer = ([ledger, dst] : [FA2.Ledger.t, FA2.atomic_trans]) : FA2.Ledger.t => {
             let {token_id, amount, to_} = dst;
             let _ = FA2.Storage.assert_token_exist(s)(token_id);
-            if (!is_transfer_authorized) {
+            if (!isTransferAuthorized) {
                 let _ = FA2.Operators.assert_authorisation(s.operators)(from_)(token_id);
-                let ledger_modified = FA2.Ledger.decrease_token_amount_for_user(ledger)(from_)(token_id)(amount);
-                let ledger_final = FA2.Ledger.increase_token_amount_for_user(ledger_modified)(to_)(token_id)(amount);
-                return ledger_final
+                let ledgerModified = FA2.Ledger.decrease_token_amount_for_user(ledger)(from_)(token_id)(amount);
+                let ledgerFinal = FA2.Ledger.increase_token_amount_for_user(ledgerModified)(to_)(token_id)(amount);
+                return ledgerFinal
             } else {
-                let ledger_modified = FA2.Ledger.decrease_token_amount_for_user(ledger)(from_)(token_id)(amount);
-                let ledger_final = FA2.Ledger.increase_token_amount_for_user(ledger_modified)(to_)(token_id)(amount);
-                return ledger_final
+                let ledgerModified = FA2.Ledger.decrease_token_amount_for_user(ledger)(from_)(token_id)(amount);
+                let ledgerFinal = FA2.Ledger.increase_token_amount_for_user(ledgerModified)(to_)(token_id)(amount);
+                return ledgerFinal
             }
         };
         let ledger = List.fold(applyTransfer, tx, ledger);
