@@ -14,28 +14,28 @@ export type originated = {
 type initial_extended_storage = {
     admin : address,
     counter : nat,
-    default_expiry : nat,
-    max_expiry : nat,
+    defaultExpiry : nat,
+    maxExpiry : nat,
     permits : Token.Extension.permits,
-    user_expiries : Token.Extension.user_expiries,
-    permit_expiries : Token.Extension.permit_expiries,
-    token_total_supply : Token.Extension.token_total_supply
+    userExpiries : Token.Extension.userExpiries,
+    permitExpiries : Token.Extension.permitExpiries,
+    tokenTotalSupply : Token.Extension.tokenTotalSupply
 };
 
 // Some dummy values when they don't matter for a given test 
-const dummy_default_expiry = (0 as nat);
-const dummy_max_expiry = (0 as nat);
+const dummyDefaultExpiry = (0 as nat);
+const dummyMaxExpiry = (0 as nat);
 
-export let get_initial_extended_storage = ([admin, default_expiry, max_expiry] : [address, nat, nat]) : initial_extended_storage => {
+export let get_initial_extended_storage = ([admin, initDefaultExpiry, initMaxExpiry] : [address, nat, nat]) : initial_extended_storage => {
     return {
         admin : admin,
         counter : (0 as nat),
-        default_expiry : default_expiry,
-        max_expiry : max_expiry,
+        defaultExpiry : initDefaultExpiry,
+        maxExpiry : initMaxExpiry,
         permits : (Big_map.empty as Token.Extension.permits),
-        user_expiries : (Big_map.empty as Token.Extension.user_expiries),
-        permit_expiries : (Big_map.empty as Token.Extension.permit_expiries),
-        token_total_supply : (Big_map.empty as Token.Extension.token_total_supply)
+        userExpiries : (Big_map.empty as Token.Extension.userExpiries),
+        permitExpiries : (Big_map.empty as Token.Extension.permitExpiries),
+        tokenTotalSupply : (Big_map.empty as Token.Extension.tokenTotalSupply)
     };
 };
 
@@ -59,7 +59,7 @@ export let originate_from_file = (init_storage : Token.storage) : originated => 
 
 //    Make a permit with given packed params and secret key
 //    The chain_id is equal to 0x00000000 in the test framework
-export let make_permit = ([hash_, account, token_addr, counter] : [bytes, [address, key, string], address, nat]) : Token.permit_params => {
+export let make_permit = ([hash_, account, token_addr, counter] : [bytes, [address, key, string], address, nat]) : Token.permitParams => {
     let [_, pub_key, secret_key] = account;
     let packed = Bytes.pack ([0x00000000, token_addr], [counter, hash_]);
     let sig = Test.sign(secret_key, packed);
@@ -70,10 +70,10 @@ export let make_permit = ([hash_, account, token_addr, counter] : [bytes, [addre
 let call = ([p, contr] : [Token.parameter, contr]) : test_exec_result =>
     Test.transfer_to_contract(contr, p, (0 as mutez))
 
-export let permit = ([p, contr] : [list<Token.permit_params>, contr]) : test_exec_result =>
+export let permit = ([p, contr] : [list<Token.permitParams>, contr]) : test_exec_result =>
     call(Permit(p), contr)
 
-export let set_expiry = ([p, contr] : [Token.expiry_params, contr]) : test_exec_result =>
+export let set_expiry = ([p, contr] : [Token.expiryParams, contr]) : test_exec_result =>
     call(SetExpiry(p), contr)
 
 export let set_admin = ([p, contr] : [address, contr]) : test_exec_result =>
@@ -88,16 +88,16 @@ export let create_token = ([md, owner, amount, contr] : [Token.FA2.TokenMetadata
     call(Create_token([md, owner, amount]), contr)
 };
 
-export let mint_token = ([p, contr] : [list<Token.mint_or_burn>, contr]) : test_exec_result =>
+export let mint_token = ([p, contr] : [list<Token.mintOrBurn>, contr]) : test_exec_result =>
     call(Mint_token(p), contr)
 
-export let burn_token = ([p, contr] : [list<Token.mint_or_burn>, contr]) : test_exec_result =>
+export let burn_token = ([p, contr] : [list<Token.mintOrBurn>, contr]) : test_exec_result =>
     call(Burn_token(p), contr)
 
-export let permit_success = ([p, contr] : [list<Token.permit_params>, contr]) : unit =>
+export let permit_success = ([p, contr] : [list<Token.permitParams>, contr]) : unit =>
     Assert.tx_success (permit(p, contr))
 
-export let set_expiry_success = ([p, contr] : [Token.expiry_params, contr]) : unit =>
+export let set_expiry_success = ([p, contr] : [Token.expiryParams, contr]) : unit =>
     Assert.tx_success (set_expiry(p, contr))
 
 export let set_admin_success = ([p, contr] : [address, contr]) : unit =>
@@ -109,26 +109,26 @@ export let transfer_success = ([p, contr] : [Token.FA2.transfer, contr]) : unit 
 export let create_token_success = ([md, owner, amount, contr] : [Token.FA2.TokenMetadata.data, address, nat, contr]) : unit =>
     Assert.tx_success (create_token(md, owner, amount, contr))
 
-export let mint_token_success = ([p, contr] : [list<Token.mint_or_burn>, contr]) : unit =>
+export let mint_token_success = ([p, contr] : [list<Token.mintOrBurn>, contr]) : unit =>
     Assert.tx_success (mint_token(p, contr))
 
-export let burn_token_success = ([p, contr] : [list<Token.mint_or_burn>, contr]) : unit => {
+export let burn_token_success = ([p, contr] : [list<Token.mintOrBurn>, contr]) : unit => {
     Assert.tx_success (burn_token(p, contr));
 };
 
 // Assert Token contract at [taddr] has permit with [address, hash] key 
-export let assert_has_permit = ([taddr, permit_key] : [taddr, Token.Extension.permit_key]) : unit => {
+export let assert_has_permit = ([taddr, paramPermitKey] : [taddr, Token.Extension.permitKey]) : unit => {
     let s = Test.get_storage (taddr);
-    match (Big_map.find_opt(permit_key, s.extension.permits), {
+    match (Big_map.find_opt(paramPermitKey, s.extension.permits), {
         Some: (_: timestamp) => unit,
         None: () => Test.failwith("Permits Big_map key should not be missing")
     })
 };
 
 // Assert Token contract at [taddr] has no permit with [address, hash] key
-export let assert_no_permit = ([taddr, permit_key] : [taddr, Token.Extension.permit_key]) : unit => {
+export let assert_no_permit = ([taddr, paramPermitKey] : [taddr, Token.Extension.permitKey]) : unit => {
     let s = Test.get_storage (taddr);
-    match (Big_map.find_opt(permit_key, s.extension.permits), {
+    match (Big_map.find_opt(paramPermitKey, s.extension.permits), {
         Some: (_: timestamp) => Test.failwith("Permits Big_map key should be None"),
         None: () => unit
     })
@@ -143,7 +143,7 @@ export let assert_counter = ([taddr, counter] : [taddr, nat]) : unit => {
 // Assert Token contract at [taddr] has user expiry for [user_addr] equal to [seconds]
 export let assert_user_expiry = ([taddr, user_addr, seconds] : [taddr, address, option<nat>]) : unit => {
     let s = Test.get_storage (taddr);
-    match (Big_map.find_opt(user_addr, s.extension.user_expiries), {
+    match (Big_map.find_opt(user_addr, s.extension.userExpiries), {
         Some: (s: option<seconds>) => assert (s == seconds),
         None: () => Test.failwith("User epiries Big_map key should not be missing")
     })
@@ -153,7 +153,7 @@ export let assert_user_expiry = ([taddr, user_addr, seconds] : [taddr, address, 
 // hash [hash_] equal to [seconds] 
 export let assert_permit_expiry = ([taddr, user_addr, hash_, seconds] : [taddr, address, bytes, option<nat>]) : unit => {
     let s = Test.get_storage (taddr);
-    match (Big_map.find_opt([user_addr, hash_], s.extension.permit_expiries), {
+    match (Big_map.find_opt([user_addr, hash_], s.extension.permitExpiries), {
         Some: (s: option<seconds>) => assert (s == seconds),
         None: () => Test.failwith("Permit epiries Big_map key should not be missing")
     })
@@ -168,10 +168,10 @@ export let assert_balance = ([taddr, owner, token_id, amount_] : [taddr, address
     })
 };
 
-// assert Token contract at [taddr] have token_total_supply for [token_id] matching [amount_] 
+// assert Token contract at [taddr] have tokenTotalSupply for [token_id] matching [amount_] 
 export let assert_supply = ([taddr, token_id, amount_] : [taddr, Token.FA2.Ledger.token_id, nat]) : unit => {
     let s = Test.get_storage (taddr);
-    match (Big_map.find_opt(token_id, s.extension.token_total_supply), {
+    match (Big_map.find_opt(token_id, s.extension.tokenTotalSupply), {
         Some: (tokens: nat) => assert(tokens == amount_),
         None: () => Test.failwith("Big_map key should not be missing")
     })

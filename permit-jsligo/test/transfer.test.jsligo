@@ -9,9 +9,9 @@ let _ = Log.describe("[Transfer] test suite");
 // Boostrapping of the test environment
 let init_tok_amount = (10 as nat);
 
-let bootstrap = ([init_ts, init_default_expiry, init_max_expiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+let bootstrap = ([init_ts, initDefaultExpiry, initMaxExpiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
     let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(init_ts);
-    let base_extended_storage = Token_helper.get_initial_extended_storage(admin, init_default_expiry, init_max_expiry);
+    let base_extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
     [tok, admin, owners_with_keys]
 };
@@ -39,8 +39,8 @@ let _test_success = () : unit => {
 
 // Successful with permit expired but sender is operator
 let _test_success_by_operator_with_expired_permit = () : unit => {
-    let init_default_expiry = 86_400 as nat;
-    let init_max_expiry = 259_200 as nat;
+    let initDefaultExpiry = 86_400 as nat;
+    let initMaxExpiry = 259_200 as nat;
     let now = ("2000-01-03t10:10:10Z" as timestamp);
     let expired = ("2000-01-01t10:10:10Z" as timestamp);
 
@@ -56,7 +56,7 @@ let _test_success_by_operator_with_expired_permit = () : unit => {
     };
     let hash_ = Crypto.blake2b (Bytes.pack (transfer_request));
 
-    let extended_storage = Token_helper.get_initial_extended_storage(admin, init_default_expiry, init_max_expiry);
+    let extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
     let extended_storage_modified = { ...extended_storage, 
         permits : Big_map.literal(list([ [[owner1_addr, hash_], expired] ])),
         counter : (1 as nat)
@@ -72,8 +72,8 @@ let _test_success_by_operator_with_expired_permit = () : unit => {
 
 // Failing because the permit has expired
 let _test_failure_expired_permit = () : unit => {
-    let init_default_expiry = 86_400 as nat;
-    let init_max_expiry = 259_200 as nat;
+    let initDefaultExpiry = 86_400 as nat;
+    let initMaxExpiry = 259_200 as nat;
     let now = ("2000-01-03t10:10:10Z" as timestamp);
     let expired = ("2000-01-01t10:10:10Z" as timestamp);
 
@@ -88,7 +88,7 @@ let _test_failure_expired_permit = () : unit => {
     });
     let hash_ = Crypto.blake2b (Bytes.pack (transfer_request));
 
-    let extended_storage = Token_helper.get_initial_extended_storage(admin, init_default_expiry, init_max_expiry);
+    let extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
     let extended_storage_modified = { ...extended_storage,
         permits : Big_map.literal(list([
             [[owner1_addr, hash_], expired]

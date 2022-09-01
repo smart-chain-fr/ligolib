@@ -36,12 +36,12 @@ const deploy = async () => {
       extension: {
         admin: process.env.ADMIN,
         counter: 0,
-        default_expiry: 3600,
-        max_expiry: 7200,
+        defaultExpiry: 3600,
+        maxExpiry: 7200,
         permits: new MichelsonMap(),
-        user_expiries: new MichelsonMap(),
-        permit_expiries: new MichelsonMap(),
-        token_total_supply: new MichelsonMap(),
+        userExpiries: new MichelsonMap(),
+        permitExpiries: new MichelsonMap(),
+        tokenTotalSupply: new MichelsonMap(),
       },
       // ^ storage extension ove generic FA2
     };

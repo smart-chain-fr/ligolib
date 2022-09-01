@@ -13,7 +13,7 @@ const init_tok_amount = (10 as nat);
 let bootstrap = () : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
     let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(Bootstrap.dummy_genesis_ts);
     let base_extended_storage = Token_helper.get_initial_extended_storage(
-      admin, Token_helper.dummy_default_expiry, Token_helper.dummy_max_expiry);
+      admin, Token_helper.dummyDefaultExpiry, Token_helper.dummyMaxExpiry);
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
     [tok, admin, owners_with_keys]
 };
@@ -45,7 +45,7 @@ let _test_failure_not_admin = () : unit => {
        token_id:(1 as nat),
        amount_:(1 as nat)
     }]), tok.contr);
-    Assert.string_failure(r, Token.Errors.requires_admin)
+    Assert.string_failure(r, Token.Errors.requiresAdmin)
 };
 
 const test_success : unit = _test_success();

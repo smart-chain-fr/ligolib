@@ -9,9 +9,9 @@ let _ = Log.describe("[Permit] test suite");
 // Boostrapping of the test environment
 const init_tok_amount = 10 as nat;
 
-let bootstrap = ([init_ts, init_default_expiry, init_max_expiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+let bootstrap = ([init_ts, initDefaultExpiry, initMaxExpiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
     let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(init_ts);
-    let base_extended_storage = Token_helper.get_initial_extended_storage(admin, init_default_expiry, init_max_expiry);
+    let base_extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
     [tok, admin, owners_with_keys]
 };
@@ -69,8 +69,8 @@ let _test_success_add_permit_list = () : unit => {
 
 // Successful permit update 
 let _test_success_update_permit = () : unit => {
-    let init_default_expiry = 86_400 as nat;
-    let init_max_expiry = 259_200 as nat;
+    let initDefaultExpiry = 86_400 as nat;
+    let initMaxExpiry = 259_200 as nat;
     let now = ("2000-01-03t10:10:10Z" as timestamp);
     let expired = ("2000-01-01t10:10:10Z" as timestamp);
 
@@ -84,7 +84,7 @@ let _test_success_update_permit = () : unit => {
     ]);
     let hash_ = Crypto.blake2b (Bytes.pack (transfer_requests));
 
-    let extended_storage = Token_helper.get_initial_extended_storage(admin, init_default_expiry, init_max_expiry);
+    let extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
     let extended_storage_modified = { ...extended_storage, 
         permits : Big_map.literal (list([[
             [owner1_addr, hash_], expired
@@ -112,7 +112,7 @@ let _test_success_update_permit_already_exist = () : unit => {
     let _ = Token_helper.permit_success(list([permit]), tok.contr);
     let permit2 = Token_helper.make_permit(hash_, owner1, tok.addr,(1 as nat));
     let r = Token_helper.permit(list([permit2]), tok.contr);
-    Assert.string_failure(r, Token.Errors.dup_permit)
+    Assert.string_failure(r, Token.Errors.dupPermit)
 };
 
 const test_success_add_permit_one : unit = _test_success_add_permit_one();

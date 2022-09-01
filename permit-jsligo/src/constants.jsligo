@@ -1,1 +1,1 @@
-export const no_operation : list<operation> = list([])
+export const noOperation : list<operation> = list([])

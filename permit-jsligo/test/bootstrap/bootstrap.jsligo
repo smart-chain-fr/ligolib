@@ -47,7 +47,7 @@ export let boot_token = ([owners, ops, init_tok_amount, init_extended_storage]
     );
 
     // supply matching initial ledger 
-    let supply : Token.Extension.token_total_supply = Big_map.literal( list([
+    let supply : Token.Extension.tokenTotalSupply = Big_map.literal( list([
        [(1 as nat), init_tok_amount],
        [(2 as nat), (init_tok_amount * (2 as nat))],
        [(3 as nat), init_tok_amount]
@@ -61,7 +61,7 @@ export let boot_token = ([owners, ops, init_tok_amount, init_extended_storage]
         ledger         : initial_fa2_storage.ledger,
         token_metadata : initial_fa2_storage.token_metadata,
         operators      : initial_fa2_storage.operators,
-        extension      : { ...init_extended_storage, token_total_supply : supply }
+        extension      : { ...init_extended_storage, tokenTotalSupply : supply }
     };
 
     //Token_helper.originate(init_storage)

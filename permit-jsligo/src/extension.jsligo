@@ -2,40 +2,40 @@
 #import "./errors.jsligo" "Errors"
 
 type seconds = nat;
-export type permit_key = [address, bytes];
-export type permits = big_map<permit_key, timestamp>;
-export type user_expiries = big_map<address, option<seconds>>;
-export type permit_expiries = big_map<permit_key, option<seconds>>;
+export type permitKey = [address, bytes];
+export type permits = big_map<permitKey, timestamp>;
+export type userExpiries = big_map<address, option<seconds>>;
+export type permitExpiries = big_map<permitKey, option<seconds>>;
 
 // token_id -> total_supply
-export type token_total_supply = big_map<FA2.Ledger.token_id, nat>;
+export type tokenTotalSupply = big_map<FA2.Ledger.token_id, nat>;
 
 export type t = {
     admin: address,
     counter: nat,
-    default_expiry: seconds,
-    max_expiry: seconds,
+    defaultExpiry: seconds,
+    maxExpiry: seconds,
     permits: permits,
-    user_expiries: user_expiries,
-    permit_expiries: permit_expiries,
-    token_total_supply : token_total_supply
+    userExpiries: userExpiries,
+    permitExpiries: permitExpiries,
+    tokenTotalSupply : tokenTotalSupply
 };
 
 let get_user_defined_expiry = ([from_, ext]: [address, t]) : option<seconds> => {
-    return match (Big_map.find_opt(from_, ext.user_expiries), {
-        None: () => (Some(ext.default_expiry)),
+    return match (Big_map.find_opt(from_, ext.userExpiries), {
+        None: () => (Some(ext.defaultExpiry)),
         Some: (exp: option<seconds>) => exp
     });
 };
 
-let get_expiry = ([ext, param_permit_key]: [t, permit_key]) : seconds => {
-    match ((Big_map.find_opt([param_permit_key[0], param_permit_key[1]], ext.permit_expiries) as option<option<seconds>>), {
+let get_expiry = ([ext, paramPermitKey]: [t, permitKey]) : seconds => {
+    match ((Big_map.find_opt([paramPermitKey[0], paramPermitKey[1]], ext.permitExpiries) as option<option<seconds>>), {
         None: () => {
-                match ((Big_map.find_opt(param_permit_key[0], ext.user_expiries) as option<option<seconds>>), {
-                    None: () => ext.default_expiry,
+                match ((Big_map.find_opt(paramPermitKey[0], ext.userExpiries) as option<option<seconds>>), {
+                    None: () => ext.defaultExpiry,
                     Some: (exp: option<seconds>) => {
                         match (exp, {
-                            None: () => ext.default_expiry,
+                            None: () => ext.defaultExpiry,
                             Some: (t: seconds) => t
                         })
                     }
@@ -43,7 +43,7 @@ let get_expiry = ([ext, param_permit_key]: [t, permit_key]) : seconds => {
             },
         Some: (p: option<seconds>) => {
                 match (p, {
-                    None: () => ext.default_expiry,
+                    None: () => ext.defaultExpiry,
                     Some: (exp: seconds) => exp
                 })
             }
@@ -52,58 +52,58 @@ let get_expiry = ([ext, param_permit_key]: [t, permit_key]) : seconds => {
 
 
 export let assert_admin = (ext : t) : unit =>
-    assert_with_error((Tezos.get_sender() == ext.admin), Errors.requires_admin);
+    assert_with_error((Tezos.get_sender() == ext.admin), Errors.requiresAdmin);
 
 export let set_admin = ([ext, admin] : [t, address]) : t => {
     let _ = assert_admin(ext);
     return { ...ext, admin : admin };
 };
 
-let get_supply = ([supply, token_id] : [token_total_supply, FA2.Ledger.token_id]) : nat =>
+let get_supply = ([supply, token_id] : [tokenTotalSupply, FA2.Ledger.token_id]) : nat =>
     match (Big_map.find_opt(token_id, supply), { 
         Some: (a: nat) => a,
         None: () => (failwith(FA2.Errors.undefined_token) as nat)
    })
 
-export let set_supply = ([ext, supply] : [t, token_total_supply]) : t => {
-    return { ...ext, token_total_supply : supply }
+export let set_supply = ([ext, supply] : [t, tokenTotalSupply]) : t => {
+    return { ...ext, tokenTotalSupply : supply }
 };
 
-export let create_supply = ([supply, new_token_id, amount_] : [token_total_supply, FA2.Ledger.token_id, nat]) : token_total_supply => {
+export let create_supply = ([supply, new_token_id, amount_] : [tokenTotalSupply, FA2.Ledger.token_id, nat]) : tokenTotalSupply => {
     return Big_map.add(new_token_id, amount_, supply)
 };
 
-export let increase_supply = ([supply, token_id,amount_] : [token_total_supply, FA2.Ledger.token_id, nat]) : token_total_supply => {
+export let increase_supply = ([supply, token_id,amount_] : [tokenTotalSupply, FA2.Ledger.token_id, nat]) : tokenTotalSupply => {
     let cur_amount = get_supply(supply, token_id);
     let new_amount = cur_amount + amount_;
     Big_map.update(token_id, (Some(new_amount)), supply)
 };
 
-export let decrease_supply = ([supply, token_id, amount_] : [token_total_supply, FA2.Ledger.token_id, nat]) : token_total_supply => {
+export let decrease_supply = ([supply, token_id, amount_] : [tokenTotalSupply, FA2.Ledger.token_id, nat]) : tokenTotalSupply => {
     let cur_amount = get_supply(supply, token_id);
     let new_supply = abs(cur_amount - amount_);
     Big_map.update(token_id, (Some(new_supply)), supply);
 };
  
-export let add_permit = ([ext, permit_key] : [t, permit_key]) : t => {
+export let add_permit = ([ext, paramPermitKey] : [t, permitKey]) : t => {
     let now = Tezos.get_now();
     return { ...ext,
-        permits : Big_map.add(permit_key, now, ext.permits),
+        permits : Big_map.add(paramPermitKey, now, ext.permits),
         counter : ext.counter + (1 as nat)
     }
 };
 
-export let update_permit = ([ext, permit_key] : [t, permit_key]) : t => {
+export let update_permit = ([ext, paramPermitKey] : [t, permitKey]) : t => {
     let now = Tezos.get_now();
     return { ...ext,
-        permits : Big_map.update(permit_key, (Some(now)), ext.permits),
+        permits : Big_map.update(paramPermitKey, (Some(now)), ext.permits),
         counter : ext.counter + (1 as nat)
     }
 };
 
-export let _check_not_expired = ([ext, submission_timestamp, permit_key]: [t, timestamp, permit_key]) : unit => {
-    let effective_expiry: seconds = get_expiry(ext, permit_key);
-    assert_with_error((abs (Tezos.get_now() - submission_timestamp) >= effective_expiry), Errors.dup_permit);
+export let _check_not_expired = ([ext, submission_timestamp, paramPermitKey]: [t, timestamp, permitKey]) : unit => {
+    let effective_expiry: seconds = get_expiry(ext, paramPermitKey);
+    assert_with_error((abs (Tezos.get_now() - submission_timestamp) >= effective_expiry), Errors.dupPermit);
 };
 
 export let transfer_presigned = ([ext, params]: [t, FA2.transfer_from]): [bool, t] => {
@@ -117,10 +117,10 @@ export let transfer_presigned = ([ext, params]: [t, FA2.transfer_from]): [bool, 
         return [false, ext]
     } else {
         let effective_expiry =
-            match (Big_map.find_opt([params.from_, params_hash], ext.permit_expiries), {
+            match (Big_map.find_opt([params.from_, params_hash], ext.permitExpiries), {
                 None: () => {
-                    match (Big_map.find_opt(params.from_, ext.user_expiries), {
-                        None: () => (Some(ext.default_expiry)),
+                    match (Big_map.find_opt(params.from_, ext.userExpiries), {
+                        None: () => (Some(ext.defaultExpiry)),
                         Some: (exp: option<seconds>) => exp
                     })
                 },

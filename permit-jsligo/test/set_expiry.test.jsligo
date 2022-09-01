@@ -9,9 +9,9 @@ let _ = Log.describe("[SetExpiry] test suite");
 // Boostrapping of the test environment
 const init_tok_amount = 10 as nat;
 
-let bootstrap = ([init_ts, init_default_expiry, init_max_expiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+let bootstrap = ([init_ts, initDefaultExpiry, initMaxExpiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
     let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(init_ts);
-    let base_extended_storage = Token_helper.get_initial_extended_storage(admin, init_default_expiry, init_max_expiry);
+    let base_extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
     [tok, admin, owners_with_keys]
 };
@@ -22,8 +22,8 @@ let _test_success_set_user_expiry = () : unit => {
     let [owner1, _, _] = owners;
     let [owner1_addr, _, _] = owner1;
     let _ = Test.set_source (owner1_addr);
-    let expiry_params : Token.expiry_params = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
-    let _ = Token_helper.set_expiry_success(expiry_params, tok.contr);
+    let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
+    let _ = Token_helper.set_expiry_success(expiryParams, tok.contr);
     Token_helper.assert_user_expiry(tok.taddr, owner1_addr, Some(5400 as nat))
 };
 
@@ -34,8 +34,8 @@ let _test_success_set_permit_expiry = () : unit => {
     let [owner1_addr, _, _] = owner1;
     let _ = Test.set_source (owner1_addr);
     let hash_ = 0x01;
-    let expiry_params : Token.expiry_params = [owner1_addr, [(5400 as nat), (Some(hash_))]];
-    let _ = Token_helper.set_expiry_success(expiry_params, tok.contr);
+    let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (Some(hash_))]];
+    let _ = Token_helper.set_expiry_success(expiryParams, tok.contr);
     Token_helper.assert_permit_expiry(tok.taddr, owner1_addr, hash_, Some((5400 as nat)));
 };
 
@@ -46,21 +46,21 @@ let _test_failure_forbidden = () : unit => {
     let [owner1_addr, _, _] = owner1;
     let [owner2_addr, _, _] = owner2;
     let _ = Test.set_source (owner2_addr);
-    let expiry_params : Token.expiry_params = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
-    let r = Token_helper.set_expiry(expiry_params, tok.contr);
-    Assert.string_failure(r, Token.Errors.forbidden_expiry_update)
+    let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
+    let r = Token_helper.set_expiry(expiryParams, tok.contr);
+    Assert.string_failure(r, Token.Errors.forbiddenExpiryUpdate)
 };
 
-// Failure because tried to set value exceeding max_expiry
+// Failure because tried to set value exceeding maxExpiry
 let _test_failure_max_seconds_exceeded = () : unit => {
     let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), (3600 as nat), (7200 as nat));
     let [owner1, owner2, _] = owners;
     let [owner1_addr, _, _] = owner1;
     let [owner2_addr, _, _] = owner2;
     let _ = Test.set_source (owner2_addr);
-    let expiry_params : Token.expiry_params = [owner1_addr, [14_400 as nat, (None() as option<bytes>)]];
-    let r = Token_helper.set_expiry(expiry_params, tok.contr);
-    Assert.string_failure(r, Token.Errors.max_seconds_exceeded)
+    let expiryParams : Token.expiryParams = [owner1_addr, [14_400 as nat, (None() as option<bytes>)]];
+    let r = Token_helper.set_expiry(expiryParams, tok.contr);
+    Assert.string_failure(r, Token.Errors.maxSecondsExceeded)
 };
 
 const test_success_set_user_expiry : unit = _test_success_set_user_expiry();
