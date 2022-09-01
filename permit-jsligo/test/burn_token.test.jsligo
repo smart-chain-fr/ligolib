@@ -27,7 +27,7 @@ let _test_success = () : unit => {
     let amount_ = (6 as nat);
     let _ = Token_helper.burn_token_success(list([{
        owner:owner1_addr,
-       token_id:token_id,
+       tokenId:token_id,
        amount_:amount_
     }]), tok.contr);
     let new_amount =  abs(init_tok_amount - amount_);
@@ -42,7 +42,7 @@ let _test_failure_not_admin = () : unit => {
     let _ = Test.set_source (owner1_addr);
     let r = Token_helper.burn_token(list([{
        owner:owner1_addr,
-       token_id:(1 as nat),
+       tokenId:(1 as nat),
        amount_:(1 as nat)
     }]), tok.contr);
     Assert.string_failure(r, Token.Errors.requiresAdmin)

@@ -9,7 +9,7 @@ type result = [list<operation>, storage]
 
 export type mintOrBurn = [@layout:comb] {
    owner    : address,
-   token_id : nat,
+   tokenId : nat,
    amount_  : nat,
 };
 
@@ -18,44 +18,44 @@ export type expiryParams = [address, [nat, option<bytes>]];
 
 let create = ([paramCreate, s] : [[FA2.TokenMetadata.data, address, nat], storage]) : result => {
     let [metadata,owner,amount] = paramCreate;
-    let _ = Extension.assert_admin(s.extension);
+    let _ = Extension.assertAdmin(s.extension);
     let md = Storage.add_new_token(s.token_metadata, metadata.token_id, metadata);
     let s = Storage.set_token_metadata(s, md);
     let ledger = FA2.Ledger.increase_token_amount_for_user(s.ledger)(owner)(metadata.token_id)(amount);
     let newStore = FA2.Storage.set_ledger(s)(ledger);
-    let supply = Extension.create_supply(newStore.extension.tokenTotalSupply, metadata.token_id, amount);
-    [Constants.noOperation, { ...newStore, extension : Extension.set_supply(s.extension, supply) }]
+    let supply = Extension.createSupply(newStore.extension.tokenTotalSupply, metadata.token_id, amount);
+    [Constants.noOperation, { ...newStore, extension : Extension.setSupply(s.extension, supply) }]
 };
 
 let mint = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
-    let _ = Extension.assert_admin(s.extension);
+    let _ = Extension.assertAdmin(s.extension);
     let processOne = ([ledger_and_supply, param_mint] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
         let [ledger,supply] = ledger_and_supply;
-        let {owner,token_id,amount_} = param_mint;
-        let _ = FA2.Storage.assert_token_exist(s)(token_id);
+        let {owner,tokenId,amount_} = param_mint;
+        let _ = FA2.Storage.assert_token_exist(s)(tokenId);
         [
-            FA2.Ledger.increase_token_amount_for_user(ledger)(owner)(token_id)(amount_),
-            Extension.increase_supply(supply, token_id, amount_)
+            FA2.Ledger.increase_token_amount_for_user(ledger)(owner)(tokenId)(amount_),
+            Extension.increaseSupply(supply, tokenId, amount_)
         ]
     };
     let [ledger, supply] = List.fold_left(processOne, [s.ledger, s.extension.tokenTotalSupply], lst);
     let s = FA2.Storage.set_ledger(s)(ledger);
-    [Constants.noOperation, { ...s, extension : Extension.set_supply(s.extension, supply) }]
+    [Constants.noOperation, { ...s, extension : Extension.setSupply(s.extension, supply) }]
 };
 
 let burn = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
-   let _ = Extension.assert_admin(s.extension);
+   let _ = Extension.assertAdmin(s.extension);
    let processOne = ([ledger_and_supply, param_burn] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
       let [ledger,supply] = ledger_and_supply;
-      let {owner,token_id,amount_} = param_burn;
+      let {owner,tokenId,amount_} = param_burn;
       [
-        FA2.Ledger.decrease_token_amount_for_user(ledger)(owner)(token_id)(amount_),
-        Extension.decrease_supply(supply, token_id, amount_)
+        FA2.Ledger.decrease_token_amount_for_user(ledger)(owner)(tokenId)(amount_),
+        Extension.decreaseSupply(supply, tokenId, amount_)
       ]
     };
    let [ledger, supply] = List.fold_left(processOne, [s.ledger, s.extension.tokenTotalSupply], lst);
    let s = FA2.Storage.set_ledger(s)(ledger);
-   [Constants.noOperation,{ ...s, extension : Extension.set_supply(s.extension, supply) }]
+   [Constants.noOperation,{ ...s, extension : Extension.setSupply(s.extension, supply) }]
 };
 
 // TZIP-17
@@ -68,11 +68,11 @@ let permit = ([permits, s] : [list<permitParams>, storage]) : result => {
             let paramPermitKey = [sender_, hash_];
             let ext_modified = match (Big_map.find_opt(paramPermitKey, ext.permits), {
                 None: () => {
-                    Extension.add_permit(ext, paramPermitKey)
+                    Extension.addPermit(ext, paramPermitKey)
                 },
                 Some: (submission_timestamp: timestamp) => {
-                    let _ = Extension._check_not_expired(s.extension, submission_timestamp, paramPermitKey);
-                    Extension.update_permit(ext, paramPermitKey)
+                    let _ = Extension._checkNotExpired(s.extension, submission_timestamp, paramPermitKey);
+                    Extension.updatePermit(ext, paramPermitKey)
                 }
             });
             return ext_modified;
@@ -85,7 +85,7 @@ let permit = ([permits, s] : [list<permitParams>, storage]) : result => {
 };
 
 // TZIP-17
-let set_expiry = ([p, s] : [expiryParams, storage]) : result => {
+let setExpiry = ([p, s] : [expiryParams, storage]) : result => {
     let [user_address, [seconds, permit_hash_opt]] = p;
     let _check_max_expiry : unit = assert_with_error((seconds <= s.extension.maxExpiry), Errors.maxSecondsExceeded);
     let _check_sender : unit = assert_with_error((Tezos.get_sender() == user_address), Errors.forbiddenExpiryUpdate);
@@ -111,10 +111,10 @@ let set_expiry = ([p, s] : [expiryParams, storage]) : result => {
 };
 
 // TZIP-17 implementation of TZIP-12 Transfer
-let transfer_permitted = ([t, s]: [FA2.transfer, storage]) : result => {
+let transferPermitted = ([t, s]: [FA2.transfer, storage]) : result => {
      let makeTransfer = ([acc, t] : [[FA2.Ledger.t, Extension.t], FA2.transfer_from]) : [FA2.Ledger.t, Extension.t] => {
         let [ledger, ext] = acc;
-        const [is_transfer_authorized, ext] = Extension.transfer_presigned(ext, t);
+        const [is_transfer_authorized, ext] = Extension.transferPresigned(ext, t);
         const {from_, tx} = t;
         let applyTransfer = ([ledger, dst] : [FA2.Ledger.t, FA2.atomic_trans]) : FA2.Ledger.t => {
             let {token_id, amount, to_} = dst;
@@ -133,12 +133,12 @@ let transfer_permitted = ([t, s]: [FA2.transfer, storage]) : result => {
         let ledger = List.fold(applyTransfer, tx, ledger);
         [ledger, ext]
     };
-    let [new_ledger, new_ext] = List.fold(makeTransfer, t, [s.ledger, s.extension]);
-    [Constants.noOperation, { ...s, ledger : new_ledger, extension : new_ext }]
+    let [newLedger, newExt] = List.fold(makeTransfer, t, [s.ledger, s.extension]);
+    [Constants.noOperation, { ...s, ledger : newLedger, extension : newExt }]
 };
 
-let set_admin = ([addr, s]: [address, storage]) : result => { 
-    [Constants.noOperation, { ...s, extension : Extension.set_admin(s.extension, addr) }]
+let setAdmin = ([addr, s]: [address, storage]) : result => { 
+    [Constants.noOperation, { ...s, extension : Extension.setAdmin(s.extension, addr) }]
 };
 
 export type parameter = [@layout:comb]
@@ -154,15 +154,15 @@ export type parameter = [@layout:comb]
 
 export let main = ([p,s]: [parameter, storage]): result => {
     return match (p, {
-        Transfer:         (p: FA2.transfer) => transfer_permitted(p,s),
+        Transfer:         (p: FA2.transfer) => transferPermitted(p,s),
         Balance_of:       (p: FA2.balance_of) => FA2.balance_of(p)(s),
         Update_operators: (p: FA2.update_operators) => FA2.update_ops(p)(s),
         Create_token:     (p: [create_token, address, nat]) => create(p, s),
         Mint_token:       (p: list<mintOrBurn>) => mint(p, s),
         Burn_token:       (p: list<mintOrBurn>) => burn(p, s),
         Permit:           (p: list<permitParams>) => permit(p, s),
-        SetExpiry:        (p: expiryParams) =>set_expiry(p, s),
-        SetAdmin:         (p: address) => set_admin(p, s)
+        SetExpiry:        (p: expiryParams) => setExpiry(p, s),
+        SetAdmin:         (p: address) => setAdmin(p, s)
     })
 };
 
