@@ -19,8 +19,8 @@ export type expiryParams = [address, [nat, option<bytes>]];
 let create = ([paramCreate, s] : [[FA2.TokenMetadata.data, address, nat], storage]) : result => {
     let [metadata,owner,amount] = paramCreate;
     let _ = Extension.assertAdmin(s.extension);
-    let md = Storage.add_new_token(s.token_metadata, metadata.token_id, metadata);
-    let s = Storage.set_token_metadata(s, md);
+    let md = Storage.addNewToken(s.token_metadata, metadata.token_id, metadata);
+    let s = Storage.setTokenMetadata(s, md);
     let ledger = FA2.Ledger.increase_token_amount_for_user(s.ledger)(owner)(metadata.token_id)(amount);
     let newStore = FA2.Storage.set_ledger(s)(ledger);
     let supply = Extension.createSupply(newStore.extension.tokenTotalSupply, metadata.token_id, amount);
@@ -29,9 +29,9 @@ let create = ([paramCreate, s] : [[FA2.TokenMetadata.data, address, nat], storag
 
 let mint = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
     let _ = Extension.assertAdmin(s.extension);
-    let processOne = ([ledger_and_supply, param_mint] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
-        let [ledger,supply] = ledger_and_supply;
-        let {owner,tokenId,amount_} = param_mint;
+    let processOne = ([ledgerAndSupply, paramMint] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
+        let [ledger,supply] = ledgerAndSupply;
+        let {owner,tokenId,amount_} = paramMint;
         let _ = FA2.Storage.assert_token_exist(s)(tokenId);
         [
             FA2.Ledger.increase_token_amount_for_user(ledger)(owner)(tokenId)(amount_),
@@ -45,9 +45,9 @@ let mint = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
 
 let burn = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
    let _ = Extension.assertAdmin(s.extension);
-   let processOne = ([ledger_and_supply, param_burn] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
-      let [ledger,supply] = ledger_and_supply;
-      let {owner,tokenId,amount_} = param_burn;
+   let processOne = ([ledgerAndSupply, paramBurn] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
+      let [ledger,supply] = ledgerAndSupply;
+      let {owner,tokenId,amount_} = paramBurn;
       [
         FA2.Ledger.decrease_token_amount_for_user(ledger)(owner)(tokenId)(amount_),
         Extension.decreaseSupply(supply, tokenId, amount_)
