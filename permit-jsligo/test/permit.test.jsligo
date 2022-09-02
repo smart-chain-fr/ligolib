@@ -31,8 +31,8 @@ let _test_success_add_permit_one = () : unit => {
             }]);
     let hash_ = Crypto.blake2b (Bytes.pack(transfer_requests));
     let permit = Token_helper.makePermit(hash_, owner1, tok.addr, 0 as nat);
-    let _ = Token_helper.permitSuccess(list([permit]), tok.contr);
-    let _ = Token_helper.assertHasPermit(tok.taddr, [owner1_addr, hash_]);
+    Token_helper.permitSuccess(list([permit]), tok.contr);
+    Token_helper.assertHasPermit(tok.taddr, [owner1_addr, hash_]);
     Token_helper.assertCounter(tok.taddr, 1 as nat)
 };
 
@@ -62,8 +62,8 @@ let _test_success_add_permit_list = () : unit => {
     ]);
     let hash_2 = Crypto.blake2b (Bytes.pack (transfer_requests2));
     let permit2 = Token_helper.makePermit(hash_2, owner2, tok.addr,(1 as nat));
-    let _ = Token_helper.permitSuccess(list([permit1, permit2]), tok.contr);
-    let _ = Token_helper.assertHasPermit(tok.taddr, [owner2_addr, hash_2]);
+    Token_helper.permitSuccess(list([permit1, permit2]), tok.contr);
+    Token_helper.assertHasPermit(tok.taddr, [owner2_addr, hash_2]);
     Token_helper.assertCounter(tok.taddr,(2 as nat))
 };
 
@@ -94,7 +94,7 @@ let _test_success_update_permit = () : unit => {
 
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, extended_storage_modified);
     let permit = Token_helper.makePermit(hash_, owner1, tok.addr,(1 as nat));
-    let _ = Token_helper.permitSuccess(list([permit]), tok.contr);
+    Token_helper.permitSuccess(list([permit]), tok.contr);
     Token_helper.assertHasPermit(tok.taddr, [owner1_addr, hash_])
 };
 
@@ -109,7 +109,7 @@ let _test_success_update_permit_already_exist = () : unit => {
     ]);
     let hash_ = Crypto.blake2b (Bytes.pack (transfer_requests));
     let permit = Token_helper.makePermit(hash_, owner1, tok.addr,(0 as nat));
-    let _ = Token_helper.permitSuccess(list([permit]), tok.contr);
+    Token_helper.permitSuccess(list([permit]), tok.contr);
     let permit2 = Token_helper.makePermit(hash_, owner1, tok.addr,(1 as nat));
     let r = Token_helper.permit(list([permit2]), tok.contr);
     Assert.string_failure(r, Token.Errors.dupPermit)

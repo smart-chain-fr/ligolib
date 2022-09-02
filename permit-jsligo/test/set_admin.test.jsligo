@@ -22,8 +22,8 @@ let _test_success_set_admin = (_: unit) : unit => {
     let [tok, admin, owners] = bootstrap();
     let [owner1, _, _] = owners;
     let [owner1_addr, _, _] = owner1;
-    let _ = Test.set_source(admin);
-    let _ = Token_helper.setAdminSuccess(owner1_addr, tok.contr);
+    Test.set_source(admin);
+    Token_helper.setAdminSuccess(owner1_addr, tok.contr);
     let s = Test.get_storage(tok.taddr);
     assert (s.extension.admin == owner1_addr)
 };

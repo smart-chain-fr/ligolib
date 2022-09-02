@@ -13,7 +13,7 @@ export let boot_state = (init_ts : timestamp) :
     [address, address, address], 
     [[address, key, string], [address, key, string], [address, key, string]],
     [address, address, address]] => {
-    let _ = Test.reset_state_at(init_ts, (7 as nat), (list([(10000000 as tez)]) as list<tez>));
+    Test.reset_state_at(init_ts, (7 as nat), (list([(10000000 as tez)]) as list<tez>));
 
     // don't use 0 because it the baking account and may run out of tez 
     let admin = Test.nth_bootstrap_account(6);

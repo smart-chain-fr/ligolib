@@ -18,7 +18,7 @@ export type expiryParams = [address, [nat, option<bytes>]];
 
 let create = ([paramCreate, s] : [[FA2.TokenMetadata.data, address, nat], storage]) : result => {
     let [metadata,owner,amount] = paramCreate;
-    let _ = Extension.assertAdmin(s.extension);
+    Extension.assertAdmin(s.extension);
     let md = Storage.addNewToken(s.token_metadata, metadata.token_id, metadata);
     let s = Storage.setTokenMetadata(s, md);
     let ledger = FA2.Ledger.increase_token_amount_for_user(s.ledger)(owner)(metadata.token_id)(amount);
@@ -28,11 +28,11 @@ let create = ([paramCreate, s] : [[FA2.TokenMetadata.data, address, nat], storag
 };
 
 let mint = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
-    let _ = Extension.assertAdmin(s.extension);
+    Extension.assertAdmin(s.extension);
     let processOne = ([ledgerAndSupply, paramMint] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
         let [ledger,supply] = ledgerAndSupply;
         let {owner,tokenId,amount_} = paramMint;
-        let _ = FA2.Storage.assert_token_exist(s)(tokenId);
+        FA2.Storage.assert_token_exist(s)(tokenId);
         [
             FA2.Ledger.increase_token_amount_for_user(ledger)(owner)(tokenId)(amount_),
             Extension.increaseSupply(supply, tokenId, amount_)
@@ -44,7 +44,7 @@ let mint = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
 };
 
 let burn = ([lst, s] : [list<mintOrBurn>, storage]) : result => {
-   let _ = Extension.assertAdmin(s.extension);
+   Extension.assertAdmin(s.extension);
    let processOne = ([ledgerAndSupply, paramBurn] : [[FA2.Ledger.t, Extension.tokenTotalSupply], mintOrBurn]) : [FA2.Ledger.t, Extension.tokenTotalSupply] => {
       let [ledger,supply] = ledgerAndSupply;
       let {owner,tokenId,amount_} = paramBurn;
@@ -71,7 +71,7 @@ let permit = ([permits, s] : [list<permitParams>, storage]) : result => {
                     Extension.addPermit(ext, paramPermitKey)
                 },
                 Some: (submission_timestamp: timestamp) => {
-                    let _ = Extension._checkNotExpired(s.extension, submission_timestamp, paramPermitKey);
+                    Extension._checkNotExpired(s.extension, submission_timestamp, paramPermitKey);
                     Extension.updatePermit(ext, paramPermitKey)
                 }
             });
@@ -118,9 +118,9 @@ let transferPermitted = ([t, s]: [FA2.transfer, storage]) : result => {
         const {from_, tx} = t;
         let applyTransfer = ([ledger, dst] : [FA2.Ledger.t, FA2.atomic_trans]) : FA2.Ledger.t => {
             let {token_id, amount, to_} = dst;
-            let _ = FA2.Storage.assert_token_exist(s)(token_id);
+            FA2.Storage.assert_token_exist(s)(token_id);
             if (!isTransferAuthorized) {
-                let _ = FA2.Operators.assert_authorisation(s.operators)(from_)(token_id);
+                FA2.Operators.assert_authorisation(s.operators)(from_)(token_id);
                 let ledgerModified = FA2.Ledger.decrease_token_amount_for_user(ledger)(from_)(token_id)(amount);
                 let ledgerFinal = FA2.Ledger.increase_token_amount_for_user(ledgerModified)(to_)(token_id)(amount);
                 return ledgerFinal

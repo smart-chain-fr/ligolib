@@ -21,9 +21,9 @@ let _test_success_set_user_expiry = () : unit => {
     let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), 3600 as nat, 7200 as nat);
     let [owner1, _, _] = owners;
     let [owner1_addr, _, _] = owner1;
-    let _ = Test.set_source (owner1_addr);
+    Test.set_source (owner1_addr);
     let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
-    let _ = Token_helper.setExpirySuccess(expiryParams, tok.contr);
+    Token_helper.setExpirySuccess(expiryParams, tok.contr);
     Token_helper.assertUserExpiry(tok.taddr, owner1_addr, Some(5400 as nat))
 };
 
@@ -32,10 +32,10 @@ let _test_success_set_permit_expiry = () : unit => {
     let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), 3600 as nat, 7200 as nat);
     let [owner1, _, _] = owners;
     let [owner1_addr, _, _] = owner1;
-    let _ = Test.set_source (owner1_addr);
+    Test.set_source (owner1_addr);
     let hash_ = 0x01;
     let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (Some(hash_))]];
-    let _ = Token_helper.setExpirySuccess(expiryParams, tok.contr);
+    Token_helper.setExpirySuccess(expiryParams, tok.contr);
     Token_helper.assertPermitExpiry(tok.taddr, owner1_addr, hash_, Some((5400 as nat)));
 };
 
@@ -45,7 +45,7 @@ let _test_failure_forbidden = () : unit => {
     let [owner1, owner2, _] = owners;
     let [owner1_addr, _, _] = owner1;
     let [owner2_addr, _, _] = owner2;
-    let _ = Test.set_source (owner2_addr);
+    Test.set_source (owner2_addr);
     let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
     let r = Token_helper.setExpiry(expiryParams, tok.contr);
     Assert.string_failure(r, Token.Errors.forbiddenExpiryUpdate)
@@ -57,7 +57,7 @@ let _test_failure_max_seconds_exceeded = () : unit => {
     let [owner1, owner2, _] = owners;
     let [owner1_addr, _, _] = owner1;
     let [owner2_addr, _, _] = owner2;
-    let _ = Test.set_source (owner2_addr);
+    Test.set_source (owner2_addr);
     let expiryParams : Token.expiryParams = [owner1_addr, [14_400 as nat, (None() as option<bytes>)]];
     let r = Token_helper.setExpiry(expiryParams, tok.contr);
     Assert.string_failure(r, Token.Errors.maxSecondsExceeded)

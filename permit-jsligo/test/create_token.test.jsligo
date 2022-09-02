@@ -22,13 +22,13 @@ let bootstrap = () : [Token_helper.originated, address, [[address, key, string],
 let _test_success = () : unit => {
     let [tok, admin, owners] = bootstrap();
     let [[owner1_addr, _, _], _, _] = owners;
-    let _ = Test.set_source (admin);
+    Test.set_source (admin);
     let token_id = (42 as nat);
     let amount_ = (12 as nat);
     let res = Token_helper.createToken
       (FA2_helper.get_dummy_token_data (token_id),
        owner1_addr, amount_, tok.contr);
-    let _ = Token_helper.assertBalance(tok.taddr, owner1_addr, token_id, amount_);
+    Token_helper.assertBalance(tok.taddr, owner1_addr, token_id, amount_);
     Token_helper.assertSupply(tok.taddr, token_id, amount_)
 };
 
@@ -36,7 +36,7 @@ let _test_success = () : unit => {
 let _test_failure_token_exist = () : unit => {
     let [tok, admin, owners] = bootstrap();
     let [[owner1_addr, _, _], _, _] = owners;
-    let _ = Test.set_source (admin);
+    Test.set_source (admin);
     let r = Token_helper.createToken
       (FA2_helper.get_dummy_token_data ((1 as nat)),
        owner1_addr, (12 as nat), tok.contr);
@@ -47,7 +47,7 @@ let _test_failure_token_exist = () : unit => {
 let _test_failure_not_admin = () : unit => {
     let [tok, _, owners] = bootstrap();
     let [[owner1_addr, _, _], _, _] = owners;
-    let _ = Test.set_source (owner1_addr);
+    Test.set_source (owner1_addr);
     let r = Token_helper.createToken
       (FA2_helper.get_dummy_token_data ((42 as nat)),
        owner1_addr, (12 as nat), tok.contr);

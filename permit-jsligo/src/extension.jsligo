@@ -55,7 +55,7 @@ export let assertAdmin = (ext : t) : unit =>
     assert_with_error((Tezos.get_sender() == ext.admin), Errors.requiresAdmin);
 
 export let setAdmin = ([ext, admin] : [t, address]) : t => {
-    let _ = assertAdmin(ext);
+    assertAdmin(ext);
     return { ...ext, admin : admin };
 };
 

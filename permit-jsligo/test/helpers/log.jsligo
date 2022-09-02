@@ -18,7 +18,7 @@ let repeat = ([str, n] : [string, nat]) : string => {
 
 export let describe = (lbl : string) : unit => {
     let hr = "+" + repeat("-", String.length(lbl) + (2 as nat)) + "+"; 
-    let _ = Test.log (hr);
-    let _ = Test.log ("| " + lbl + " |");
+    Test.log (hr);
+    Test.log ("| " + lbl + " |");
     Test.log (hr);
 }

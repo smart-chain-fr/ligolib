@@ -20,7 +20,7 @@ export let tx_success = (res: test_exec_result) : unit => {
         Fail: (x: test_exec_result) => (
             match (x, {
                 Rejected: (x:[michelson_code,address]) => {
-                    let _ = Test.log(x[0]);
+                    Test.log(x[0]);
                     Test.failwith("Transaction should not fail")
                 },
                 Balance_too_low: (_: unit) => Test.failwith("Transaction should not fail"),
