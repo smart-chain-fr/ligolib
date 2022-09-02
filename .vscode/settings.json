@@ -1,0 +1,4 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "ligoLanguageServer.ligoBinaryPath": "/usr/local/bin/ligo"
+}

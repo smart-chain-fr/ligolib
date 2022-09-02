@@ -1,0 +1,121 @@
+#import "./helpers/token.jsligo" "Token_helper"
+#import "./helpers/log.jsligo" "Log"
+#import "./helpers/assert.jsligo" "Assert"
+#import "./bootstrap/bootstrap.jsligo" "Bootstrap"
+#import "../src/main.jsligo" "Token"
+
+let _ = Log.describe("[Permit] test suite");
+
+// Boostrapping of the test environment
+const init_tok_amount = 10 as nat;
+
+let bootstrap = ([init_ts, initDefaultExpiry, initMaxExpiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+    let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(init_ts);
+    let base_extended_storage = Token_helper.getInitialExtendedStorage(admin, initDefaultExpiry, initMaxExpiry);
+    let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
+    [tok, admin, owners_with_keys]
+};
+
+// Successful permit creation
+let _test_success_add_permit_one = () : unit => {
+    let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), 3600 as nat, 7200 as nat);
+    let [owner1, owner2, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    let [owner2_addr, _, _] = owner2;
+    let transfer_requests : Token.FA2.transfer = list([{
+                from_:owner1_addr,
+                tx: (list([{
+                    to_:owner2_addr,
+                    amount:(2 as nat),
+                    token_id:(1 as nat)}]) as list<Token.FA2.atomic_trans>)
+            }]);
+    let hash_ = Crypto.blake2b (Bytes.pack(transfer_requests));
+    let permit = Token_helper.makePermit(hash_, owner1, tok.addr, 0 as nat);
+    Token_helper.permitSuccess(list([permit]), tok.contr);
+    Token_helper.assertHasPermit(tok.taddr, [owner1_addr, hash_]);
+    Token_helper.assertCounter(tok.taddr, 1 as nat)
+};
+
+// Successful successive permit creation
+let _test_success_add_permit_list = () : unit => {
+    let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), 3600 as nat,(7200 as nat));
+    let [owner1, owner2, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    let [owner2_addr, _, _] = owner2;
+    let transfer_requests : Token.FA2.transfer = list([
+        {
+            from_: owner1_addr, 
+            tx: list([
+                {to_:owner2_addr, amount:2 as nat, token_id:1 as nat}
+            ])
+        }
+    ]);
+    let hash_ = Crypto.blake2b (Bytes.pack(transfer_requests));
+    let permit1 = Token_helper.makePermit(hash_, owner1, tok.addr,(0 as nat));
+    let transfer_requests2 : Token.FA2.transfer = list([
+        {   
+            from_:owner2_addr, 
+            tx: list([
+                { to_:owner1_addr, amount:(2 as nat), token_id:(1 as nat)}
+            ])
+        }
+    ]);
+    let hash_2 = Crypto.blake2b (Bytes.pack (transfer_requests2));
+    let permit2 = Token_helper.makePermit(hash_2, owner2, tok.addr,(1 as nat));
+    Token_helper.permitSuccess(list([permit1, permit2]), tok.contr);
+    Token_helper.assertHasPermit(tok.taddr, [owner2_addr, hash_2]);
+    Token_helper.assertCounter(tok.taddr,(2 as nat))
+};
+
+// Successful permit update 
+let _test_success_update_permit = () : unit => {
+    let initDefaultExpiry = 86_400 as nat;
+    let initMaxExpiry = 259_200 as nat;
+    let now = ("2000-01-03t10:10:10Z" as timestamp);
+    let expired = ("2000-01-01t10:10:10Z" as timestamp);
+
+    let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(now);
+    let [owner1, owner2, _] = owners_with_keys;
+    let [owner1_addr, _, _] = owner1;
+    let [owner2_addr, _, _] = owner2;
+
+    let transfer_requests : Token.FA2.transfer = list([
+        ({from_: owner1_addr, tx: list([{to_:owner2_addr, amount:(2 as nat), token_id:(1 as nat)}])})
+    ]);
+    let hash_ = Crypto.blake2b (Bytes.pack (transfer_requests));
+
+    let extended_storage = Token_helper.getInitialExtendedStorage(admin, initDefaultExpiry, initMaxExpiry);
+    let extended_storage_modified = { ...extended_storage, 
+        permits : Big_map.literal (list([[
+            [owner1_addr, hash_], expired
+            ]])),
+        counter : (1 as nat)
+    };
+
+    let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, extended_storage_modified);
+    let permit = Token_helper.makePermit(hash_, owner1, tok.addr,(1 as nat));
+    Token_helper.permitSuccess(list([permit]), tok.contr);
+    Token_helper.assertHasPermit(tok.taddr, [owner1_addr, hash_])
+};
+
+// Failing permit update because it alredy exists and has not expired
+let _test_success_update_permit_already_exist = () : unit => {
+    let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp),(3600 as nat),(7200 as nat));
+    let [owner1, owner2, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    let [owner2_addr, _, _] = owner2;
+    let transfer_requests : Token.FA2.transfer = list([
+        ({from_:owner1_addr, tx: list([{to_:owner2_addr, amount:(2 as nat), token_id:(1 as nat)}])})
+    ]);
+    let hash_ = Crypto.blake2b (Bytes.pack (transfer_requests));
+    let permit = Token_helper.makePermit(hash_, owner1, tok.addr,(0 as nat));
+    Token_helper.permitSuccess(list([permit]), tok.contr);
+    let permit2 = Token_helper.makePermit(hash_, owner1, tok.addr,(1 as nat));
+    let r = Token_helper.permit(list([permit2]), tok.contr);
+    Assert.string_failure(r, Token.Errors.dupPermit)
+};
+
+const test_success_add_permit_one : unit = _test_success_add_permit_one();
+const test_success_add_permit_list : unit = _test_success_add_permit_list();
+const test_success_update_permit : unit = _test_success_update_permit();
+const test_success_update_permit_already_exist : unit = _test_success_update_permit_already_exist();

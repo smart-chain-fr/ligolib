@@ -1,0 +1,69 @@
+#import "./helpers/token.jsligo" "Token_helper"
+#import "./helpers/log.jsligo" "Log"
+#import "./helpers/assert.jsligo" "Assert"
+#import "./bootstrap/bootstrap.jsligo" "Bootstrap"
+#import "../src/main.jsligo" "Token"
+
+let _ = Log.describe("[SetExpiry] test suite");
+
+// Boostrapping of the test environment
+const init_tok_amount = 10 as nat;
+
+let bootstrap = ([init_ts, initDefaultExpiry, initMaxExpiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
+    let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(init_ts);
+    let base_extended_storage = Token_helper.getInitialExtendedStorage(admin, initDefaultExpiry, initMaxExpiry);
+    let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
+    [tok, admin, owners_with_keys]
+};
+
+// Successful setting of user expiry
+let _test_success_set_user_expiry = () : unit => {
+    let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), 3600 as nat, 7200 as nat);
+    let [owner1, _, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    Test.set_source (owner1_addr);
+    let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
+    Token_helper.setExpirySuccess(expiryParams, tok.contr);
+    Token_helper.assertUserExpiry(tok.taddr, owner1_addr, Some(5400 as nat))
+};
+
+// Successful setting of permit expiry
+let _test_success_set_permit_expiry = () : unit => {
+    let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), 3600 as nat, 7200 as nat);
+    let [owner1, _, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    Test.set_source (owner1_addr);
+    let hash_ = 0x01;
+    let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (Some(hash_))]];
+    Token_helper.setExpirySuccess(expiryParams, tok.contr);
+    Token_helper.assertPermitExpiry(tok.taddr, owner1_addr, hash_, Some((5400 as nat)));
+};
+
+// Failure because sender is not the updated user expiry
+let _test_failure_forbidden = () : unit => {
+    let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), (3600 as nat), (7200 as nat));
+    let [owner1, owner2, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    let [owner2_addr, _, _] = owner2;
+    Test.set_source (owner2_addr);
+    let expiryParams : Token.expiryParams = [owner1_addr, [(5400 as nat), (None() as option<bytes>)]];
+    let r = Token_helper.setExpiry(expiryParams, tok.contr);
+    Assert.string_failure(r, Token.Errors.forbiddenExpiryUpdate)
+};
+
+// Failure because tried to set value exceeding maxExpiry
+let _test_failure_max_seconds_exceeded = () : unit => {
+    let [tok, _, owners] = bootstrap(("2000-01-01t10:10:10Z" as timestamp), (3600 as nat), (7200 as nat));
+    let [owner1, owner2, _] = owners;
+    let [owner1_addr, _, _] = owner1;
+    let [owner2_addr, _, _] = owner2;
+    Test.set_source (owner2_addr);
+    let expiryParams : Token.expiryParams = [owner1_addr, [14_400 as nat, (None() as option<bytes>)]];
+    let r = Token_helper.setExpiry(expiryParams, tok.contr);
+    Assert.string_failure(r, Token.Errors.maxSecondsExceeded)
+};
+
+const test_success_set_user_expiry : unit = _test_success_set_user_expiry();
+const test_success_set_permit_expiry : unit = _test_success_set_permit_expiry();
+const test_failure_forbidden : unit = _test_failure_forbidden();
+const test_failure_max_seconds_exceeded : unit = _test_failure_max_seconds_exceeded();

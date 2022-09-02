@@ -1,0 +1,9 @@
+export const requiresAdmin  = "NOT_AN_ADMIN";
+export const tokenExist     = "TOKEN_ID_ALREADY_PRESENT";
+
+// TZIP-17
+export const dupPermit      = "DUP_PERMIT";
+export const missigned       = "MISSIGNED";
+
+export const maxSecondsExceeded = "MAX_SECONDS_EXCEEDED";
+export const forbiddenExpiryUpdate = "FORBIDDEN_EXPIRY_UPDATE";

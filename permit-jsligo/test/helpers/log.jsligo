@@ -1,0 +1,24 @@
+// Return str repeated n times
+let repeat = ([str, n] : [string, nat]) : string => {
+    let loop = ([n, acc]: [nat, string]) : string => {
+        if (n == (0 as nat)) {
+            return acc;
+        } else {
+            return loop (abs(n - (1 as nat)), acc + str)
+        }
+    };
+    loop(n, "")
+};
+ 
+    // Log boxed lbl
+
+    // "+-----------+"
+    // "| My string |"
+    // "+-----------+"
+
+export let describe = (lbl : string) : unit => {
+    let hr = "+" + repeat("-", String.length(lbl) + (2 as nat)) + "+"; 
+    Test.log (hr);
+    Test.log ("| " + lbl + " |");
+    Test.log (hr);
+}
