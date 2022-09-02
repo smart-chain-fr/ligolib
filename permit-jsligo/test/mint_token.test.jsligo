@@ -12,7 +12,7 @@ const init_tok_amount = 10 as nat;
 
 let bootstrap = () : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
     let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(Bootstrap.dummy_genesis_ts);
-    let base_extended_storage = Token_helper.get_initial_extended_storage(
+    let base_extended_storage = Token_helper.getInitialExtendedStorage(
       admin, Token_helper.dummyDefaultExpiry, Token_helper.dummyMaxExpiry);
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
     [tok, admin, owners_with_keys]
@@ -25,14 +25,14 @@ let _test_success = () : unit => {
     let _ = Test.set_source (admin);
     let token_id = (1 as nat);
     let amount_ = (56 as nat);
-    let _ = Token_helper.mint_token_success(list([{
+    let _ = Token_helper.mintTokenSuccess(list([{
        owner: owner1_addr,
        tokenId: token_id,
        amount_: amount_
     }]), tok.contr);
     let new_amount =  init_tok_amount + amount_;
-    let _ = Token_helper.assert_balance(tok.taddr, owner1_addr, token_id, new_amount);
-    Token_helper.assert_supply(tok.taddr, token_id, new_amount);
+    let _ = Token_helper.assertBalance(tok.taddr, owner1_addr, token_id, new_amount);
+    Token_helper.assertSupply(tok.taddr, token_id, new_amount);
 };
 
 // Failure because sender is not current admin
@@ -40,7 +40,7 @@ let _test_failure_not_admin = () : unit => {
     let [tok, _, owners] = bootstrap();
     let [[owner1_addr, _, _], _, _] = owners;
     let _ = Test.set_source (owner1_addr);
-    let r = Token_helper.mint_token(list([{
+    let r = Token_helper.mintToken(list([{
        owner: owner1_addr,
        tokenId: (1 as nat),
        amount_: (1 as nat),

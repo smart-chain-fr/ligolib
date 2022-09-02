@@ -11,7 +11,7 @@ let init_tok_amount = (10 as nat);
 
 let bootstrap = ([init_ts, initDefaultExpiry, initMaxExpiry] : [timestamp, nat, nat]) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
     let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(init_ts);
-    let base_extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
+    let base_extended_storage = Token_helper.getInitialExtendedStorage(admin, initDefaultExpiry, initMaxExpiry);
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
     [tok, admin, owners_with_keys]
 };
@@ -27,14 +27,14 @@ let _test_success = () : unit => {
         tx:list([{to_:owner2_addr, amount:(2 as nat), token_id:(1 as nat)}])
     };
     let hash_ = Crypto.blake2b (Bytes.pack (transfer_request));
-    let permit = Token_helper.make_permit(hash_, owner1, tok.addr, (0 as nat));
-    let _ = Token_helper.permit_success(list([permit]), tok.contr);
+    let permit = Token_helper.makePermit(hash_, owner1, tok.addr, (0 as nat));
+    let _ = Token_helper.permitSuccess(list([permit]), tok.contr);
     let transfer_requests  : Token.FA2.transfer = list([transfer_request]);
     let _ = Test.set_source (owner2_addr);
-    let _ = Token_helper.transfer_success(transfer_requests, tok.contr);
-    let _ = Token_helper.assert_balance(tok.taddr, owner1_addr, (1 as nat), (8 as nat));
-    let _ = Token_helper.assert_balance(tok.taddr, owner2_addr, (1 as nat), (2 as nat));
-    Token_helper.assert_no_permit(tok.taddr, [owner1_addr, hash_])
+    let _ = Token_helper.transferSuccess(transfer_requests, tok.contr);
+    let _ = Token_helper.assertBalance(tok.taddr, owner1_addr, (1 as nat), (8 as nat));
+    let _ = Token_helper.assertBalance(tok.taddr, owner2_addr, (1 as nat), (2 as nat));
+    Token_helper.assertNoPermit(tok.taddr, [owner1_addr, hash_])
 };
 
 // Successful with permit expired but sender is operator
@@ -56,7 +56,7 @@ let _test_success_by_operator_with_expired_permit = () : unit => {
     };
     let hash_ = Crypto.blake2b (Bytes.pack (transfer_request));
 
-    let extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
+    let extended_storage = Token_helper.getInitialExtendedStorage(admin, initDefaultExpiry, initMaxExpiry);
     let extended_storage_modified = { ...extended_storage, 
         permits : Big_map.literal(list([ [[owner1_addr, hash_], expired] ])),
         counter : (1 as nat)
@@ -65,9 +65,9 @@ let _test_success_by_operator_with_expired_permit = () : unit => {
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, extended_storage_modified);
     let _ = Test.set_source (op1);
     let transfer_requests : Token.FA2.transfer = list([transfer_request]);
-    let _ = Token_helper.transfer_success(transfer_requests, tok.contr);
-    let _ = Token_helper.assert_balance(tok.taddr, owner1_addr, (1 as nat), (8 as nat));
-    Token_helper.assert_balance(tok.taddr, owner2_addr, (1 as nat), (2 as nat));
+    let _ = Token_helper.transferSuccess(transfer_requests, tok.contr);
+    let _ = Token_helper.assertBalance(tok.taddr, owner1_addr, (1 as nat), (8 as nat));
+    Token_helper.assertBalance(tok.taddr, owner2_addr, (1 as nat), (2 as nat));
 };
 
 // Failing because the permit has expired
@@ -88,7 +88,7 @@ let _test_failure_expired_permit = () : unit => {
     });
     let hash_ = Crypto.blake2b (Bytes.pack (transfer_request));
 
-    let extended_storage = Token_helper.get_initial_extended_storage(admin, initDefaultExpiry, initMaxExpiry);
+    let extended_storage = Token_helper.getInitialExtendedStorage(admin, initDefaultExpiry, initMaxExpiry);
     let extended_storage_modified = { ...extended_storage,
         permits : Big_map.literal(list([
             [[owner1_addr, hash_], expired]

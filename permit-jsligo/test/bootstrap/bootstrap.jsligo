@@ -65,5 +65,5 @@ export let boot_token = ([owners, ops, init_tok_amount, init_extended_storage]
     };
 
     //Token_helper.originate(init_storage)
-    Token_helper.originate_from_file(init_storage);
+    Token_helper.originateFromFile(init_storage);
 };

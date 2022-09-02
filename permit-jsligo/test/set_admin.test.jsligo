@@ -11,7 +11,7 @@ const init_tok_amount = (10 as nat);
 
 let bootstrap = (_: unit) : [Token_helper.originated, address, [[address, key, string], [address, key, string], [address, key, string]]] => {
     let [admin, owners, owners_with_keys, ops] = Bootstrap.boot_state(Bootstrap.dummy_genesis_ts);
-    let base_extended_storage = Token_helper.get_initial_extended_storage(
+    let base_extended_storage = Token_helper.getInitialExtendedStorage(
       admin, Token_helper.dummyDefaultExpiry, Token_helper.dummyMaxExpiry);
     let tok = Bootstrap.boot_token(owners, ops, init_tok_amount, base_extended_storage);
     [tok, admin, owners_with_keys]
@@ -23,7 +23,7 @@ let _test_success_set_admin = (_: unit) : unit => {
     let [owner1, _, _] = owners;
     let [owner1_addr, _, _] = owner1;
     let _ = Test.set_source(admin);
-    let _ = Token_helper.set_admin_success(owner1_addr, tok.contr);
+    let _ = Token_helper.setAdminSuccess(owner1_addr, tok.contr);
     let s = Test.get_storage(tok.taddr);
     assert (s.extension.admin == owner1_addr)
 };
@@ -33,7 +33,7 @@ let _test_failure_not_admin = (_: unit) : unit => {
     let [tok,_, owners] = bootstrap();
     let [owner1, _, _] = owners;
     let [owner1_addr, _, _] = owner1;
-    let r = Token_helper.set_admin(owner1_addr, tok.contr);
+    let r = Token_helper.setAdmin(owner1_addr, tok.contr);
     Assert.string_failure(r, Token.Errors.requiresAdmin)
 };
 
