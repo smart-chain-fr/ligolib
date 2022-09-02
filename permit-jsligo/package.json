@@ -1,8 +1,8 @@
 {
-  "name": "permit-cameligo",
+  "name": "permit-jsligo",
   "version": "1.0.0",
   "license": "MIT",
-  "description": "An example of permit contract (TZIP-17) written in cameligo",
+  "description": "An example of permit contract (TZIP-17) written in jsligo",
   "devDependencies": {
     "@taquito/signer": "^13.0.1",
     "@taquito/taquito": "^13.0.1",
@@ -16,9 +16,9 @@
     "eslint-plugin-prettier": "^4.0.0"
   },
   "bugs": {
-    "url": "https://github.com/ligolang/permit-cameligo/issues"
+    "url": "https://github.com/ligolang/permit-jsligo/issues"
   },
-  "homepage": "https://github.com/ligolang/permit-cameligo#readme",
+  "homepage": "https://github.com/ligolang/permit-jsligo#readme",
   "keywords": [
     "tezos",
     "ligo",

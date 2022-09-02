@@ -15,7 +15,7 @@ must be done by a third-party
 
 ## Requirements
 
-The contract is written in `cameligo` flavour of [LigoLANG](https://ligolang.org/),
+The contract is written in `jsligo` flavour of [LigoLANG](https://ligolang.org/),
 to be able to compile the contract, you need either:
 
 - a [ligo binary](https://ligolang.org/docs/intro/installation#static-linux-binary),
