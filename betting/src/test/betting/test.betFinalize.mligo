@@ -26,11 +26,16 @@ let aliceBetLastMap : (nat, TYPES.event_bets) map = Map.literal [
     )
     ]
 
-let () = HELPER.trscAddBet (betting_contract, alice, 0n, (true : bool), 22000000mutez)
-let () = HELPER.trscAddBet (betting_contract, bob, 0n, (true : bool), 1000000mutez)
+let () = Test.log("___ Balances Before Game ___")
+let () = Test.log("Alice",Test.get_balance(alice))
+let () = Test.log("Bob  ",Test.get_balance(bob))
+let () = Test.log("Mike ",Test.get_balance(mike))
+
+let () = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 22000000mutez)
+let () = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool),  1000000mutez)
 let () = HELPER.trscAddBet (betting_contract, alice, 0n, (false : bool), 24000000mutez)
-let () = HELPER.trscAddBet (betting_contract, mike, 0n, (false : bool), 3000000mutez)
-let () = HELPER.trscAddBet (betting_contract, bob, 0n, (false : bool), 7000000mutez)
+let () = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool),  3000000mutez)
+let () = HELPER.trscAddBet (betting_contract, bob,   0n, (false : bool),  7000000mutez)
 let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetLastMap
 
 let finalizedEvent : TYPES.event_type = {
@@ -53,16 +58,17 @@ let () = HELPER.trscUpdateEvent (betting_contract, elon, 0n, finalizedEvent)
 
 let () = Test.log("___ Balances Before Rewards ___")
 let () = Test.log("Alice",Test.get_balance(alice))
-let () = Test.log("Bob",Test.get_balance(bob))
-let () = Test.log("Mike",Test.get_balance(mike))
+let () = Test.log("Bob  ",Test.get_balance(bob))
+let () = Test.log("Mike ",Test.get_balance(mike))
 
-let () = HELPER.trscFinalizeBet (betting_contract, elon, 0n)
+let result_trx = HELPER.trscFinalizeBet (betting_contract, elon, 0n)
+let () = Test.log(result_trx)
 
 // TODO : Verify why balances are not updated properly
 
 let () = Test.log("___ Balances After Rewards ___")
 let () = Test.log("Alice",Test.get_balance(alice))
-let () = Test.log("Bob",Test.get_balance(bob))
-let () = Test.log("Mike",Test.get_balance(mike))
+let () = Test.log("Bob  ",Test.get_balance(bob))
+let () = Test.log("Mike ",Test.get_balance(mike))
 
 let () = Test.log("___ TEST finalizeBet ENDED ___")

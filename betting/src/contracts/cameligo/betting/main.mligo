@@ -169,33 +169,74 @@ let add_bet (p_requested_event_id : nat)(teamOneBet : bool)(s : TYPES.storage) :
   let new_events_map : (nat, TYPES.event_bets) map = (Map.update p_requested_event_id (Some(updated_bet_event)) s.events_bets) in
   (([] : operation list), {s with events_bets = new_events_map;})
 
-let trs_reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
-  let initialAmount : tez = match (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)) with
-    | Some tezAmount -> tezAmount
-    | None -> failwith ERRORS.bet_reward_incorrect
+// let trs_reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
+//   let initialAmount : tez = match (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)) with
+//     | Some tezAmount -> tezAmount
+//     | None -> failwith ERRORS.bet_reward_incorrect
+//   in
+
+//   let final_amount : tez = (initialAmount + opponent_amount) in
+
+
+//   let dest_opt : unit contract option = Tezos.get_contract_opt p_winner in
+//     let destination : unit contract = match dest_opt with
+//     | None -> failwith "Not found"
+//     | Some ct -> ct
+//     in
+//   let op : operation = Tezos.transaction unit final_amount destination in
+//   ()
+
+// let reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winners_map : (address, tez) map)(s : TYPES.storage) : operation list =
+
+//   let opponent_amount :tez = if (p_requested_event_bets.betsTeamOne_index > 0n) // TODO : ramener cette condition au début 
+//     then (p_requested_event_bets.betsTeamOne_total / p_requested_event_bets.betsTeamOne_index)
+//     else (0mutez)
+//   in
+
+
+//   let folded_op_list = fun (op_list, i_winner, j_bet_amount : operation list * (address * tez)) -> trs_reward_bet_winners op_list p_requested_event_bets i_winner j_bet_amount s in
+//   Map.fold folded_op_list p_winners_map []
+
+// let trs_reward_bet_draw (p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
+//   let _ = Tezos.transaction( (), (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)), p_winner ) in
+//   ()
+
+// let refund_bet_players (pTeamOneMap : (address, tez) map)(pTeamTwoMap : (address, tez) map)(s : TYPES.storage) : unit =
+//   let calculate = fun (dPlayer, dBetAmount : address * tez) -> trs_reward_bet_draw dPlayer dBetAmount s in
+//   let _ = Map.iter calculate pTeamOneMap in
+//   let _ = Map.iter calculate pTeamTwoMap in
+//   ()
+
+let make_reward_op (addr : address ) ( value : tez ) : operation =
+  let dest_opt : unit contract option = Tezos.get_contract_opt addr in
+  let destination : unit contract = match dest_opt with
+    | None    -> failwith "Not found"
+    | Some ct -> ct
   in
-  let opponent_amount :tez = if (p_requested_event_bets.betsTeamOne_index > 0n)
-    then (p_requested_event_bets.betsTeamOne_total / p_requested_event_bets.betsTeamOne_index)
-    else (0mutez)
+  Tezos.transaction unit value destination
+
+
+let compose_paiement_op_list ( winner_map : (address, tez) map ) ( added_reward : tez ) : operation list =
+  let folded_op_list = fun (op_list, (winner_address, bet_amount) : operation list * (address * tez) ) -> 
+    let reward_distribute : tez = bet_amount + added_reward in
+    let reward_op : operation = make_reward_op winner_address reward_distribute in
+    reward_op :: op_list
   in
-  let final_amount : tez = (initialAmount + opponent_amount) in
-  let _ = Tezos.transaction( (), final_amount, p_winner ) in
-  ()
+  let empty_op_list : operation list = [] in
+  Map.fold folded_op_list winner_map empty_op_list
 
-let reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winners_map : (address, tez) map)(s : TYPES.storage) : unit =
-  let calculate = fun (i_winner, j_bet_amount : address * tez) -> trs_reward_bet_winners p_requested_event_bets i_winner j_bet_amount s in
-  let _ = Map.iter calculate p_winners_map in
-  ()
 
-let trs_reward_bet_draw (p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
-  let _ = Tezos.transaction( (), (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)), p_winner ) in
-  ()
-
-let refund_bet_players (pTeamOneMap : (address, tez) map)(pTeamTwoMap : (address, tez) map)(s : TYPES.storage) : unit =
-  let calculate = fun (dPlayer, dBetAmount : address * tez) -> trs_reward_bet_draw dPlayer dBetAmount s in
-  let _ = Map.iter calculate pTeamOneMap in
-  let _ = Map.iter calculate pTeamTwoMap in
-  ()
+let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) : operation list =
+  if (is_team_one_win)
+  then 
+    let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamTwo_total) in
+    let reward_by_user = event_bets.betsTeamTwo_total / event_bets.betsTeamOne_index in
+    compose_paiement_op_list event_bets.betsTeamOne reward_by_user
+  else 
+    let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamTwo_total) in
+    let reward_by_user = event_bets.betsTeamOne_total / event_bets.betsTeamTwo_index in
+    compose_paiement_op_list event_bets.betsTeamTwo reward_by_user
+  
 
 let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
@@ -204,7 +245,7 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | None -> failwith ERRORS.no_event_id
   in
   let _ = ASSERT.assert_betting_not_finalized (requested_event.isFinalized) in
-  let requested_event_bets : TYPES.event_bets = match (Map.find_opt p_requested_event_id s.events_bets) with
+  let event_bets : TYPES.event_bets = match (Map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_bets
   in
@@ -213,21 +254,16 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | Some x -> x
     | None -> failwith ERRORS.bet_no_team_outcome
   in
-  let _ = if (outcome_draw)
-    then (refund_bet_players requested_event_bets.betsTeamOne requested_event_bets.betsTeamTwo s)
-    else (
-      let outcome_team_one_win : bool = match requested_event.isTeamOneWin with
-        | Some x -> x
-        | None -> failwith ERRORS.bet_no_team_outcome
-      in
-      if (outcome_team_one_win)
-        then ( reward_bet_winners requested_event_bets requested_event_bets.betsTeamOne s )
-        else ( reward_bet_winners requested_event_bets requested_event_bets.betsTeamTwo s )
-    )
+  let is_team_one_win : bool = match requested_event.isTeamOneWin with
+    | Some x -> x
+    | None -> failwith ERRORS.bet_no_team_outcome
   in
-  let updated_event : TYPES.event_type = {requested_event with isFinalized = true} in
-  let new_events_map : (nat, TYPES.event_type) map = (Map.update p_requested_event_id (Some(updated_event)) s.events) in
-  (([] : operation list), {s with events = new_events_map;})
+  if (outcome_draw)
+  then 
+    (([] : operation list), s)
+  else 
+    let op_list = resolve_team_win event_bets is_team_one_win in
+    ((op_list : operation list), s)
 
 // --------------------------------------
 //            MAIN FUNCTION

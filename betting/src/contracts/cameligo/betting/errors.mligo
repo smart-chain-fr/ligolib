@@ -46,3 +46,5 @@ let bet_no_team_outcome : string = "Bet does not have an outcome yet on which te
 let bet_ended_as_draw : string = "Bet ended in a Draw"
 
 let bet_reward_incorrect : string = "Bet reward calculations went wrong"
+
+let opponent_has_no_bet : string = "Opponent has no bet"
