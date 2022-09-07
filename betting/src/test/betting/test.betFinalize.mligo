@@ -4,71 +4,51 @@
 #import "helpers/helper.mligo" "HELPER"
 #import "helpers/assert.mligo" "ASSERT"
 
-let () = Test.log("___ TEST finalizeBet STARTED ___")
-let plainTimestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
+(**
+ *  Basic Betting Reward Test
+ *)
+let test_bet_finalize_should_work = 
+  //Given
+  let (betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
+  let _ = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent) in
+  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
+  let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
+  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 800000000000mutez) in
+  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, BOOTSTRAP.finalized_event_team1_win) in
+  //let quota_to_send : nat = 100n - betting_contract.storage.bet_config_type.retainedProfitQuota in
+  let storage = Test.get_storage(betting_taddress) in
+  let quota_left : nat = abs(100n - storage.betConfig.retainedProfitQuota) in
+  let expected_alice_balance = Test.get_balance(alice) + (800000000000mutez + 400000000000mutez) * quota_left / 100n in
+  let expected_bob_balance   = Test.get_balance(bob)   + (800000000000mutez + 400000000000mutez) * quota_left / 100n in
+  let expected_mike_balance  = Test.get_balance(mike) in
+  //When
+  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  //Then
+  let _ = assert (expected_alice_balance = Test.get_balance(alice)) in
+  let _ = assert (expected_bob_balance   = Test.get_balance(bob)) in
+  let _ = assert (expected_mike_balance  = Test.get_balance(mike)) in
+  "OK"
 
-let (betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTRAP.bootstrap
-
-let () = Test.log("-> Initial Storage :")
-let () = Test.log(betting_contract, betting_taddress, elon, jeff)
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
-
-let aliceBetLastMap : (nat, TYPES.event_bets) map = Map.literal [
-    (0n, {
-        betsTeamOne = (Map.literal [ (alice, (22000000mutez)); (bob, 1000000mutez); ]);
-        betsTeamOne_index = (1n + 1n) ;
-        betsTeamOne_total = (22000000mutez + 1000000mutez) ;
-        betsTeamTwo = (Map.literal [ (alice, (24000000mutez)); (mike, 3000000mutez); (bob, 7000000mutez) ]);
-        betsTeamTwo_index = (1n + 1n + 1n) ;
-        betsTeamTwo_total = (24000000mutez + 3000000mutez + 7000000mutez) ;
-        }
-    )
-    ]
-
-let () = Test.log("___ Balances Before Game ___")
-let () = Test.log("Alice",Test.get_balance(alice))
-let () = Test.log("Bob  ",Test.get_balance(bob))
-let () = Test.log("Mike ",Test.get_balance(mike))
-
-let () = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 22000000mutez)
-let () = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool),  1000000mutez)
-let () = HELPER.trscAddBet (betting_contract, alice, 0n, (false : bool), 24000000mutez)
-let () = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool),  3000000mutez)
-let () = HELPER.trscAddBet (betting_contract, bob,   0n, (false : bool),  7000000mutez)
-let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetLastMap
-
-let finalizedEvent : TYPES.event_type = {
-    name = "First Event";
-    videogame= "Videogame ONE";
-    begin_at= plainTimestamp + 3;
-    end_at= plainTimestamp + 4;
-    modified_at= plainTimestamp;
-    opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
-    isFinalized = (false : bool);
-    isDraw = (Some(false) : bool option);
-    isTeamOneWin = (Some(true) : bool option);
-    startBetTime = plainTimestamp + 1;
-    closedBetTime = plainTimestamp + 2;
-    }
-
-let oneEventFinalizedMap : (nat, TYPES.event_type) map = Map.literal [ (0n, finalizedEvent) ]
-
-let () = HELPER.trscUpdateEvent (betting_contract, elon, 0n, finalizedEvent)
-
-let () = Test.log("___ Balances Before Rewards ___")
-let () = Test.log("Alice",Test.get_balance(alice))
-let () = Test.log("Bob  ",Test.get_balance(bob))
-let () = Test.log("Mike ",Test.get_balance(mike))
-
-let result_trx = HELPER.trscFinalizeBet (betting_contract, elon, 0n)
-let () = Test.log(result_trx)
-
-// TODO : Verify why balances are not updated properly
-
-let () = Test.log("___ Balances After Rewards ___")
-let () = Test.log("Alice",Test.get_balance(alice))
-let () = Test.log("Bob  ",Test.get_balance(bob))
-let () = Test.log("Mike ",Test.get_balance(mike))
-
-let () = Test.log("___ TEST finalizeBet ENDED ___")
+(**
+ *  Basic Draw Reward Test
+ *)
+let test_draw_should_work = 
+  //Given
+  let (betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
+  let _ = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent) in
+  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
+  let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
+  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 800000000000mutez) in
+  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, BOOTSTRAP.finalized_event_draw) in
+  let storage = Test.get_storage(betting_taddress) in
+  let quota_left : nat = abs(100n - storage.betConfig.retainedProfitQuota) in
+  let expected_alice_balance = Test.get_balance(alice) + 800000000000mutez * quota_left / 100n in
+  let expected_bob_balance   = Test.get_balance(bob)   + 800000000000mutez * quota_left / 100n in
+  let expected_mike_balance  = Test.get_balance(mike)  + 800000000000mutez * quota_left / 100n in
+  //When
+  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  //Then
+  let _ = assert (expected_alice_balance = Test.get_balance(alice)) in
+  let _ = assert (expected_bob_balance   = Test.get_balance(bob)) in
+  let _ = assert (expected_mike_balance  = Test.get_balance(mike)) in
+  "OK"

@@ -58,6 +58,7 @@ let add_event (p_new_event : TYPES.event_type)(s : TYPES.storage) : (operation l
   let new_events_bets : (nat, TYPES.event_bets) map = (Map.add (s.events_index) new_event_bet s.events_bets) in
   (([] : operation list), {s with events = new_events; events_bets = new_events_bets; events_index = (s.events_index + 1n)})
 
+
 let get_event (requested_event_id : nat)(callback : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let cbk_event = match Map.find_opt requested_event_id s.events with
     | Some event -> event
@@ -114,10 +115,12 @@ let add_bet_team_one_amount_to_existing_user (p_requested_event_id : TYPES.event
   let p_new_bets_team_one : (address, tez) map = Map.update (Tezos.get_sender()) (Some(pPreviousAmount + Tezos.get_amount())) p_requested_event_id.betsTeamOne in
   (p_new_bets_team_one, p_requested_event_id.betsTeamOne_index)
 
+
 let add_bet_team_one_amount_to_new_user (p_requested_event_id : TYPES.event_bets) =
   let p_new_bets_team_one : (address, tez) map = Map.add (Tezos.get_sender()) (Tezos.get_amount()) p_requested_event_id.betsTeamOne in
   let p_new_bets_team_one_index : nat = (p_requested_event_id.betsTeamOne_index + 1n) in
   (p_new_bets_team_one, p_new_bets_team_one_index)
+
 
 let add_bet_team_one (p_requested_event_id : TYPES.event_bets) : TYPES.event_bets =
   let (new_bets_team_one, new_bets_team_one_index) : ((address, tez) map * nat) = match (Map.find_opt (Tezos.get_sender()) p_requested_event_id.betsTeamOne) with
@@ -133,10 +136,12 @@ let add_bet_team_two_amount_to_existing_user (p_requested_event_id : TYPES.event
   let p_newbetsTeamTwo : (address, tez) map = Map.update (Tezos.get_sender()) (Some(pPreviousAmount + Tezos.get_amount())) p_requested_event_id.betsTeamTwo in
   (p_newbetsTeamTwo, p_requested_event_id.betsTeamTwo_index)
 
+
 let add_bet_team_twoAmountToNewUser (p_requested_event_id : TYPES.event_bets) =
   let p_newbetsTeamTwo : (address, tez) map = Map.add (Tezos.get_sender()) (Tezos.get_amount()) p_requested_event_id.betsTeamTwo in
   let p_newbetsTeamTwo_index : nat = (p_requested_event_id.betsTeamTwo_index + 1n) in
   (p_newbetsTeamTwo, p_newbetsTeamTwo_index)
+
 
 let add_bet_team_two (p_requested_event_id : TYPES.event_bets) : TYPES.event_bets =
   let (newbetsTeamTwo, newbetsTeamTwo_index) : ((address, tez) map * nat) = match (Map.find_opt (Tezos.get_sender()) p_requested_event_id.betsTeamTwo) with
@@ -146,6 +151,7 @@ let add_bet_team_two (p_requested_event_id : TYPES.event_bets) : TYPES.event_bet
   let newbetsTeamTwo_total : tez = (p_requested_event_id.betsTeamTwo_total + Tezos.get_amount()) in
   let r_updatedEvent : TYPES.event_bets = {p_requested_event_id with betsTeamTwo = newbetsTeamTwo; betsTeamTwo_index = newbetsTeamTwo_index; betsTeamTwo_total = newbetsTeamTwo_total;} in
   (r_updatedEvent)
+
 
 let add_bet (p_requested_event_id : nat)(teamOneBet : bool)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_not_manager_nor_oracle (Tezos.get_sender()) s.manager s.oracleAddress in
@@ -169,74 +175,50 @@ let add_bet (p_requested_event_id : nat)(teamOneBet : bool)(s : TYPES.storage) :
   let new_events_map : (nat, TYPES.event_bets) map = (Map.update p_requested_event_id (Some(updated_bet_event)) s.events_bets) in
   (([] : operation list), {s with events_bets = new_events_map;})
 
-// let trs_reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
-//   let initialAmount : tez = match (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)) with
-//     | Some tezAmount -> tezAmount
-//     | None -> failwith ERRORS.bet_reward_incorrect
-//   in
 
-//   let final_amount : tez = (initialAmount + opponent_amount) in
-
-
-//   let dest_opt : unit contract option = Tezos.get_contract_opt p_winner in
-//     let destination : unit contract = match dest_opt with
-//     | None -> failwith "Not found"
-//     | Some ct -> ct
-//     in
-//   let op : operation = Tezos.transaction unit final_amount destination in
-//   ()
-
-// let reward_bet_winners (p_requested_event_bets : TYPES.event_bets)(p_winners_map : (address, tez) map)(s : TYPES.storage) : operation list =
-
-//   let opponent_amount :tez = if (p_requested_event_bets.betsTeamOne_index > 0n) // TODO : ramener cette condition au début 
-//     then (p_requested_event_bets.betsTeamOne_total / p_requested_event_bets.betsTeamOne_index)
-//     else (0mutez)
-//   in
-
-
-//   let folded_op_list = fun (op_list, i_winner, j_bet_amount : operation list * (address * tez)) -> trs_reward_bet_winners op_list p_requested_event_bets i_winner j_bet_amount s in
-//   Map.fold folded_op_list p_winners_map []
-
-// let trs_reward_bet_draw (p_winner : address)(p_bet_amount : tez)(s : TYPES.storage) : unit =
-//   let _ = Tezos.transaction( (), (p_bet_amount - ((p_bet_amount * s.betConfig.retainedProfitQuota) / 100n)), p_winner ) in
-//   ()
-
-// let refund_bet_players (pTeamOneMap : (address, tez) map)(pTeamTwoMap : (address, tez) map)(s : TYPES.storage) : unit =
-//   let calculate = fun (dPlayer, dBetAmount : address * tez) -> trs_reward_bet_draw dPlayer dBetAmount s in
-//   let _ = Map.iter calculate pTeamOneMap in
-//   let _ = Map.iter calculate pTeamTwoMap in
-//   ()
-
-let make_reward_op (addr : address ) ( value : tez ) : operation =
+let make_tranfer_op (addr : address ) ( value_won : tez ) (profit_quota : nat): operation =
+  let quota_to_send : nat = abs(100n - profit_quota) in
+  let value_to_send : tez = value_won * quota_to_send / 100n in
   let dest_opt : unit contract option = Tezos.get_contract_opt addr in
   let destination : unit contract = match dest_opt with
     | None    -> failwith "Not found"
     | Some ct -> ct
   in
-  Tezos.transaction unit value destination
+  Tezos.transaction unit value_to_send destination
 
 
-let compose_paiement_op_list ( winner_map : (address, tez) map ) ( added_reward : tez ) : operation list =
-  let folded_op_list = fun (op_list, (winner_address, bet_amount) : operation list * (address * tez) ) -> 
+let compose_paiement ( winner_map : (address, tez) map ) ( added_reward : tez ) (profit_quota : nat) : operation list =
+  let folded_op_list = fun (op_list, (address, bet_amount) : operation list * (address * tez) ) -> 
     let reward_distribute : tez = bet_amount + added_reward in
-    let reward_op : operation = make_reward_op winner_address reward_distribute in
+    let reward_op : operation = make_tranfer_op address reward_distribute profit_quota in
     reward_op :: op_list
   in
   let empty_op_list : operation list = [] in
   Map.fold folded_op_list winner_map empty_op_list
 
 
-let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) : operation list =
+let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) (profit_quota : nat) : operation list =
   if (is_team_one_win)
   then 
     let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamTwo_total) in
     let reward_by_user = event_bets.betsTeamTwo_total / event_bets.betsTeamOne_index in
-    compose_paiement_op_list event_bets.betsTeamOne reward_by_user
+    compose_paiement event_bets.betsTeamOne reward_by_user profit_quota
   else 
     let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamTwo_total) in
     let reward_by_user = event_bets.betsTeamOne_total / event_bets.betsTeamTwo_index in
-    compose_paiement_op_list event_bets.betsTeamTwo reward_by_user
+    compose_paiement event_bets.betsTeamTwo reward_by_user profit_quota
   
+
+let refund_bet (event_bets : TYPES.event_bets) (profit_quota : nat) : operation list =
+  let folded_op_list = fun (op_list, (address, bet_amount) : operation list * (address * tez) ) -> 
+    let refund_op : operation = make_tranfer_op address bet_amount profit_quota in
+    refund_op :: op_list
+  in
+  let empty_op_list : operation list = [] in
+  let team_one_refund : operation list = Map.fold folded_op_list event_bets.betsTeamOne empty_op_list   in
+  let total_refund    : operation list = Map.fold folded_op_list event_bets.betsTeamTwo team_one_refund in
+  total_refund
+
 
 let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
@@ -254,16 +236,19 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | Some x -> x
     | None -> failwith ERRORS.bet_no_team_outcome
   in
-  let is_team_one_win : bool = match requested_event.isTeamOneWin with
+  let profit_quota : nat = s.betConfig.retainedProfitQuota in
+  if outcome_draw
+  then
+    let op_list = refund_bet event_bets profit_quota in
+    ((op_list : operation list), s)
+  else
+    let is_team_one_win : bool = match requested_event.isTeamOneWin with
     | Some x -> x
     | None -> failwith ERRORS.bet_no_team_outcome
-  in
-  if (outcome_draw)
-  then 
-    (([] : operation list), s)
-  else 
-    let op_list = resolve_team_win event_bets is_team_one_win in
+    in
+    let op_list = resolve_team_win event_bets is_team_one_win profit_quota in
     ((op_list : operation list), s)
+
 
 // --------------------------------------
 //            MAIN FUNCTION
