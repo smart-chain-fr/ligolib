@@ -187,10 +187,12 @@ let make_tranfer_op (addr : address ) ( value_won : tez ) (profit_quota : nat): 
   Tezos.transaction unit value_to_send destination
 
 
-let compose_paiement ( winner_map : (address, tez) map ) ( added_reward : tez ) (profit_quota : nat) : operation list =
+let compose_paiement ( winner_map : (address, tez) map ) ( total_value_bet : tez ) ( total_value_won : tez ) (profit_quota : nat) : operation list =
   let folded_op_list = fun (op_list, (address, bet_amount) : operation list * (address * tez) ) -> 
-    let reward_distribute : tez = bet_amount + added_reward in
-    let reward_op : operation = make_tranfer_op address reward_distribute profit_quota in
+    let won_reward_percentage : nat = 10000000n * bet_amount / total_value_bet in
+    let added_reward : tez =  total_value_won * won_reward_percentage / 10000000n in    
+    let reward_to_distribute : tez = bet_amount + added_reward in
+    let reward_op : operation = make_tranfer_op address reward_to_distribute profit_quota in
     reward_op :: op_list
   in
   let empty_op_list : operation list = [] in
@@ -201,12 +203,10 @@ let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) (p
   if (is_team_one_win)
   then 
     let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamTwo_total) in
-    let reward_by_user = event_bets.betsTeamTwo_total / event_bets.betsTeamOne_index in
-    compose_paiement event_bets.betsTeamOne reward_by_user profit_quota
+    compose_paiement event_bets.betsTeamOne event_bets.betsTeamOne_total event_bets.betsTeamTwo_total profit_quota
   else 
-    let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamTwo_total) in
-    let reward_by_user = event_bets.betsTeamOne_total / event_bets.betsTeamTwo_index in
-    compose_paiement event_bets.betsTeamTwo reward_by_user profit_quota
+    let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamOne_total) in
+    compose_paiement event_bets.betsTeamTwo event_bets.betsTeamTwo_total event_bets.betsTeamOne_total profit_quota
   
 
 let refund_bet (event_bets : TYPES.event_bets) (profit_quota : nat) : operation list =

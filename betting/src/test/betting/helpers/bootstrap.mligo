@@ -104,6 +104,20 @@ let finalized_event_team1_win : TYPES.event_type = {
   closedBetTime = plainTimestamp + 2;
 }
 
+let finalized_event_team2_win : TYPES.event_type = {
+  name          = "First Event";
+  videogame     = "Videogame ONE";
+  begin_at      = plainTimestamp + 3;
+  end_at        = plainTimestamp + 4;
+  modified_at   = plainTimestamp;
+  opponents     = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
+  isFinalized   = (false : bool);
+  isDraw        = (Some(false) : bool option);
+  isTeamOneWin  = (Some(false) : bool option);
+  startBetTime  = plainTimestamp + 1;
+  closedBetTime = plainTimestamp + 2;
+}
+
 let finalized_event_draw : TYPES.event_type = {
   name          = "First Event";
   videogame     = "Videogame ONE";
