@@ -17,7 +17,6 @@ let buyTicket(param, store : Parameter.buyTicketParam * (Storage.data_storage * 
    let (data_storage, tickets_map) = store in
    let {
       ticket_type = ticket_type;
-      ticket_duration = _ticket_duration;
       ticket_amount = ticket_amount;
       ticket_owner = ticket_owner;
    } = param in
@@ -50,9 +49,34 @@ let buyTicket(param, store : Parameter.buyTicketParam * (Storage.data_storage * 
    (([] : operation list), { data = data_storage; all_tickets = new_ticket_map })
 
 
-let redeemTicket(_param, store : Parameter.redeemTicketParam * (Storage.data_storage * Storage.tickets)) : return =
+let redeemTicket(param, store : Parameter.redeemTicketParam * (Storage.data_storage * Storage.tickets)) : return =
    let (data_storage, tickets_map) = store in 
-   (([] : operation list), { data = data_storage; all_tickets = tickets_map })
+   let { ticket_type = ticket_type; ticket_amount = ticket_amount } = param in
+   // retrieve ticket from ticket_map
+   let (ticket_opt, ticket_map) = Big_map.get_and_update (Tezos.get_sender(), ticket_type) (None : Storage.ticket_value option) tickets_map in
+   let modified_tickets_map : Storage.tickets = match ticket_opt with
+   | None -> (failwith("No tickets") : Storage.tickets)
+   | Some tkt -> 
+      let (ticket_creation_timestamp, ticket) = tkt in
+      let _check_ticket_validity : unit = assert_with_error 
+         (ticket_creation_timestamp + int(data_storage.ticket_duration) > Tezos.get_now()) 
+         "Ticket expired" 
+      in
+      let ((_ticketer, (_value, amt)), ticket) = Tezos.read_ticket ticket in
+      let _check_zero_amount : unit = assert_with_error (amt > 0n) "Ticket amount is zero" in
+      if (amt = ticket_amount) then
+         ticket_map
+      else
+         (
+            match Tezos.split_ticket ticket (abs(amt - ticket_amount),ticket_amount) with
+            | None -> failwith("unsplittable ticket")
+            | Some splitted_tickets ->
+               let (resulting_ticket, _to_delete_ticket) = splitted_tickets in 
+               let (_, new_ticket_map) = Big_map.get_and_update (Tezos.get_sender(), ticket_type) ((Some(ticket_creation_timestamp, resulting_ticket)) : Storage.ticket_value option) ticket_map in
+               new_ticket_map
+         )
+   in
+   (([] : operation list), { data = data_storage; all_tickets = modified_tickets_map })
 
 let main(p, store : parameter * storage) : return =
    let { data = d; all_tickets = tickets_map} = store in

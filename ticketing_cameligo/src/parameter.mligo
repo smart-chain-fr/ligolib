@@ -2,13 +2,13 @@
 
 type buyTicketParam = [@layout:comb] {
     ticket_amount : nat;
-    ticket_duration : nat;
     ticket_owner : address;
     ticket_type : string; 
 }
 
 type redeemTicketParam = [@layout:comb] {
-    amount : nat;
+    ticket_type : string;
+    ticket_amount : nat;
 }
 
 type t = BuyTicket of buyTicketParam | RedeemTicket of redeemTicketParam

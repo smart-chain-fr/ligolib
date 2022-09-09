@@ -17,7 +17,6 @@ let test_success_buy_ticket =
     let () = Test.set_source creator in
     let () = Ticketing_helper.buy_ticket_success({
         ticket_type = "PARKING";
-        ticket_duration = 10000n;
         ticket_amount = 2n;
         ticket_owner = creator;
     }, 20tez, ticketing.contr) in

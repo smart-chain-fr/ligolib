@@ -7,6 +7,7 @@ type ticket_prices = (ticket_type, tez) big_map
 
 type data_storage = {
     prices : ticket_prices;
+    ticket_duration : nat;
     metadata: (string, bytes) big_map;
 }
 

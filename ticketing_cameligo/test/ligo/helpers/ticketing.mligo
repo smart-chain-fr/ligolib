@@ -18,6 +18,7 @@ let base_storage : Ticketing.storage = {
     all_tickets = (Big_map.empty : Ticketing.Storage.tickets);
     data = {
         prices = Big_map.literal[("PARKING", 10tez)];
+        ticket_duration = 1000n;
         metadata = metadata_empty
     }
 }
@@ -58,7 +59,7 @@ type unforged_storage = (string unforged_ticket) option
 
 (* assert Ticketing contract at [taddr] have [owner] address with [amount] tickets *)
 let assert_owned_ticket_amount (addr, taddr, owner, ticket_type, _amount : address * taddr * Ticketing.Storage.owner * Ticketing.Storage.ticket_type * nat) =
-    let storage : michelson_program = Test.get_storage_of_address addr in
+    let _storage : michelson_program = Test.get_storage_of_address addr in
 
     let s = Test.get_storage taddr in
     let (ticket, _ticket_map) = Big_map.get_and_update (owner, ticket_type) (None : Ticketing.Storage.ticket_value option) s.all_tickets in
