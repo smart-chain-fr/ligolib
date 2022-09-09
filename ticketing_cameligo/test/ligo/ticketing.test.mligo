@@ -7,8 +7,6 @@
 
 let () = Log.describe("[Ticketing] test suite")
 
-
-
 let bootstrap () = Bootstrap.boot_ticketing()
 
 let test_success_buy_ticket =
