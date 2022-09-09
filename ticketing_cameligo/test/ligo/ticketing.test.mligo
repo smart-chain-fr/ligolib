@@ -21,8 +21,7 @@ let test_success_buy_ticket =
         ticket_amount = 2n;
         ticket_owner = creator;
     }, 20tez, ticketing.contr) in
-    Test.log("finished")
-    //Ticketing_helper.assert_owned_ticket_amount(ticketing.addr, creator, "PARKING", 1n)
+    Ticketing_helper.assert_owned_ticket_amount(ticketing.addr, ticketing.taddr, creator, "PARKING", 1n)
 
 // let test_success_nft_origination_with_uuid =
 //     let (accounts, ticketing) = bootstrap() in

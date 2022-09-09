@@ -57,11 +57,14 @@ let buy_ticket_success (p, amount_, contr : Ticketing.Parameter.buyTicketParam *
 type unforged_storage = (string unforged_ticket) option
 
 (* assert Ticketing contract at [taddr] have [owner] address with [amount] tickets *)
-let assert_owned_ticket_amount (addr, _owner, _ticket_type, _amount : address * Ticketing.Storage.owner * Ticketing.Storage.ticket_type * nat) =
+let assert_owned_ticket_amount (addr, taddr, owner, ticket_type, _amount : address * taddr * Ticketing.Storage.owner * Ticketing.Storage.ticket_type * nat) =
     let storage : michelson_program = Test.get_storage_of_address addr in
-    Test.log(storage)
-    //let unforged_storage = (Test.decompile storage : unforged_storage) in
-    //Test.log(unforged_storage)
+
+    let s = Test.get_storage taddr in
+    let (ticket, _ticket_map) = Big_map.get_and_update (owner, ticket_type) (None : Ticketing.Storage.ticket_value option) s.all_tickets in
+    let ticket_to_decompile : michelson_program = Test.eval ticket.1 in
+    let unforged_storage = (Test.decompile ticket_to_decompile : unforged_storage) in
+    Test.log(unforged_storage)
 
 
     //let s = Test.get_storage taddr in
@@ -70,7 +73,6 @@ let assert_owned_ticket_amount (addr, _owner, _ticket_type, _amount : address * 
 
     //let { data = _d; all_tickets = tis } = Test.get_storage taddr in 
     // retrieve ticket from ticket_map
-    //let (_ticket, _ticket_map) = Big_map.get_and_update (owner, ticket_type) (None : Ticketing.Storage.ticket_value option) tis in
 
 
     //let { ticketer = ticketer ; value =value ; amount = amt } = tval in
