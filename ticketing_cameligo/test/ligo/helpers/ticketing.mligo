@@ -62,7 +62,10 @@ let assert_owned_ticket_amount (addr, taddr, owner, ticket_type, _amount : addre
 
     let s = Test.get_storage taddr in
     let (ticket, _ticket_map) = Big_map.get_and_update (owner, ticket_type) (None : Ticketing.Storage.ticket_value option) s.all_tickets in
-    let ticket_to_decompile : michelson_program = Test.eval ticket.1 in
+    let ticket_to_decompile : michelson_program = match ticket with
+    | None -> Test.failwith("ticket not found")
+    | Some tkt -> Test.eval tkt.1
+    in
     let unforged_storage = (Test.decompile ticket_to_decompile : unforged_storage) in
     Test.log(unforged_storage)
 
