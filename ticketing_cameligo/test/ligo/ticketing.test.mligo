@@ -13,11 +13,12 @@ let test_success_buy_ticket =
     let (accounts, ticketing) = bootstrap() in
     let (creator, _operator) = accounts in
     let () = Test.set_source creator in
-    let () = Ticketing_helper.buy_ticket_success({
+    let ret = Ticketing_helper.buy_ticket({
         ticket_type = "PARKING";
         ticket_amount = 2n;
         ticket_owner = creator;
     }, 20tez, ticketing.contr) in
+    let () = Test.log(ret) in 
     Ticketing_helper.assert_owned_ticket_amount(ticketing.addr, ticketing.taddr, creator, "PARKING", 1n)
 
 // let test_success_nft_origination_with_uuid =

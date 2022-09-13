@@ -2,6 +2,12 @@
 #import "./assert.mligo" "Assert"
 #import "./nft.mligo" "NFT_helper"
 
+type unforged_ticket_value = timestamp * Ticketing.Storage.ticket_type unforged_ticket 
+
+type ticketStoragePolymorphiq = Ticketing.Storage.t_
+type unforged_t = unforged_ticket_value ticketStoragePolymorphiq
+
+
 (* Some types for readability *)
 type taddr = (Ticketing.parameter, Ticketing.storage) typed_address
 type contr = Ticketing.parameter contract
@@ -55,11 +61,12 @@ let redeem_ticket_success (p, contr : Ticketing.Parameter.redeemTicketParam * co
 let buy_ticket_success (p, amount_, contr : Ticketing.Parameter.buyTicketParam * tez * contr) =
     Assert.tx_success (buy_ticket(p, amount_, contr))
 
-type unforged_storage = (string unforged_ticket) option
-
 (* assert Ticketing contract at [taddr] have [owner] address with [amount] tickets *)
 let assert_owned_ticket_amount (addr, taddr, owner, ticket_type, _amount : address * taddr * Ticketing.Storage.owner * Ticketing.Storage.ticket_type * nat) =
-    let _storage : michelson_program = Test.get_storage_of_address addr in
+    let storage : michelson_program = Test.get_storage_of_address addr in
+    let unforged_storage = (Test.decompile storage : unforged_t) in
+    let () = Test.log(unforged_storage) in
+
 
     let s = Test.get_storage taddr in
     let (ticket, _ticket_map) = Big_map.get_and_update (owner, ticket_type) (None : Ticketing.Storage.ticket_value option) s.all_tickets in
@@ -67,17 +74,8 @@ let assert_owned_ticket_amount (addr, taddr, owner, ticket_type, _amount : addre
     | None -> Test.failwith("ticket not found")
     | Some tkt -> Test.eval tkt.1
     in
-    let unforged_storage = (Test.decompile ticket_to_decompile : unforged_storage) in
-    Test.log(unforged_storage)
-
-
-    //let s = Test.get_storage taddr in
-    //let unforged_storage = (Test.decompile s.all_tickets : unforged_storage) in
-    //Test.log(unforged_storage)
-
-    //let { data = _d; all_tickets = tis } = Test.get_storage taddr in 
-    // retrieve ticket from ticket_map
-
+    let decompiled_ticket = (Test.decompile ticket_to_decompile : unforged_ticket_value) in
+    Test.log(decompiled_ticket)
 
     //let { ticketer = ticketer ; value =value ; amount = amt } = tval in
     //let (tt, (ticketer, (value, amt))) : string unforged_ticket = tval in
