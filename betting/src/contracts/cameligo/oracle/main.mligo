@@ -1,6 +1,7 @@
 #import "types.mligo" "TYPES"
 #import "assert.mligo" "ASSERT"
 #import "errors.mligo" "ERRORS"
+#import "callback/main.mligo" "ORACLE_CALLBACK"
 
 let change_manager (new_manager : address)( s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
@@ -23,18 +24,23 @@ let add_event (new_event : TYPES.event_type)(s : TYPES.storage) : (operation lis
   let new_events : (nat, TYPES.event_type) map = (Map.add (s.events_index) new_event s.events) in
   (([] : operation list), {s with events = new_events; events_index = (s.events_index + 1n)})
 
-let get_event (requestedEventID : nat)(callback : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
+let get_event (requestedEventID : nat)(callbackAddr : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let cbk_event =
     match Map.find_opt requestedEventID s.events with
       Some event -> event
     | None -> (failwith ERRORS.no_event_id)
     in
-  let returned_value : TYPES.callback_returned_value = {
-    requestedEvent = cbk_event;
-    callback = callback;
-  } in
-  let _operation = Tezos.transaction(returned_value, 0mutez, callback) in
-  (([] : operation list), s)
+  // let _returned_value : TYPES.callback_returned_value = {
+  //   requestedEvent = cbk_event;
+  //   //callback = callbackAddr;
+  // } in
+  let destination : ORACLE_CALLBACK.requested_event_param contract = 
+  match (Tezos.get_entrypoint_opt "%saveEvent" callbackAddr : ORACLE_CALLBACK.requested_event_param contract option) with
+  | None -> failwith("Unknown contract")
+  | Some ctr -> ctr
+  in
+  let op : operation = Tezos.transaction cbk_event 0mutez destination in
+  ([op], s)
 
 let update_event (updatedEventID : nat)(updatedEvent : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in

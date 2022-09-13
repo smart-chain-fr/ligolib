@@ -39,14 +39,28 @@ let update_config_type (p_new_bet_config : TYPES.bet_config_type)(s : TYPES.stor
 //          EVENT INTERACTIONS
 // --------------------------------------
 
-let add_event (p_new_event : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
+let add_event (p_new_event : TYPES.add_event_parameter)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager_or_oracle (Tezos.get_sender()) s.manager s.oracleAddress in
   let _ = ASSERT.assert_event_creation_not_paused s.betConfig.isEventCreationPaused in
   let _ = ASSERT.assert_event_start_to_end_date p_new_event.begin_at p_new_event.end_at in
   let _ = ASSERT.assert_event_bet_start_to_end_date p_new_event.startBetTime p_new_event.closedBetTime in
   let _ = ASSERT.assert_event_bet_start_after_end p_new_event.startBetTime p_new_event.end_at in
   let _ = ASSERT.assert_event_bet_ends_after_end p_new_event.closedBetTime p_new_event.end_at in
-  let new_events : (nat, TYPES.event_type) map = (Map.add (s.events_index) p_new_event s.events) in
+
+  let new_event : TYPES.event_type = { 
+    name=p_new_event.name;
+    videogame= p_new_event.videogame;
+    begin_at=p_new_event.begin_at;
+    end_at=p_new_event.end_at;
+    modified_at=p_new_event.modified_at;
+    opponents=p_new_event.opponents;
+    isFinalized=p_new_event.isFinalized;
+    isDraw=p_new_event.isDraw;
+    isTeamOneWin=p_new_event.isTeamOneWin;
+    startBetTime=p_new_event.startBetTime;
+    closedBetTime=p_new_event.closedBetTime;
+    is_claimed=False } in
+  let new_events : (nat, TYPES.event_type) map = (Map.add (s.events_index) new_event s.events) in
   let new_event_bet : TYPES.event_bets = {
     betsTeamOne = (Map.empty : (address, tez) map);
     betsTeamOne_index = 0n;
@@ -226,6 +240,7 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | Some event -> event
     | None -> failwith ERRORS.no_event_id
   in
+  let _check_is_claimed : unit = assert_with_error (requested_event.is_claimed = False) ERRORS.event_already_claimed in
   let _ = ASSERT.assert_betting_not_finalized (requested_event.isFinalized) in
   let event_bets : TYPES.event_bets = match (Map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
@@ -237,17 +252,18 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | None -> failwith ERRORS.bet_no_team_outcome
   in
   let profit_quota : nat = s.betConfig.retainedProfitQuota in
+  let modified_events = Map.update p_requested_event_id (Some({ requested_event with is_claimed = True })) s.events in
   if outcome_draw
   then
     let op_list = refund_bet event_bets profit_quota in
-    ((op_list : operation list), s)
+    ((op_list : operation list), { s with events = modified_events })
   else
     let is_team_one_win : bool = match requested_event.isTeamOneWin with
     | Some x -> x
     | None -> failwith ERRORS.bet_no_team_outcome
     in
     let op_list = resolve_team_win event_bets is_team_one_win profit_quota in
-    ((op_list : operation list), s)
+    ((op_list : operation list), { s with events = modified_events })
 
 
 // --------------------------------------

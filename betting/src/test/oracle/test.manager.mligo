@@ -5,7 +5,7 @@
 
 let () = Test.log("___ TEST ChangeManager STARTED ___")
 
-let (oracle_contract, oracle_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
+let (oracle_contract, oracle_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap_oracle()
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(oracle_contract, oracle_taddress, elon, jeff)

@@ -22,6 +22,7 @@ type event_type =
   isTeamOneWin : bool option;
   startBetTime : timestamp;
   closedBetTime : timestamp;
+  is_claimed : bool;
 }
 
 type event_bets =
@@ -97,13 +98,30 @@ type callback_returned_value =
   callback : address
 }
 
+
+type add_event_parameter = 
+[@layout:comb] {
+  name : string;
+  videogame : string;
+  begin_at : timestamp;
+  end_at : timestamp;
+  modified_at : timestamp;
+  opponents : { teamOne : string; teamTwo : string};
+  isFinalized : bool;
+  isDraw : bool option;
+  isTeamOneWin : bool option;
+  startBetTime : timestamp;
+  closedBetTime : timestamp;
+}
+
+
 type action =
   | ChangeManager of address
   | ChangeOracleAddress of address
   | SwitchPauseBetting
   | SwitchPauseEventCreation
   | UpdateConfigType of bet_config_type
-  | AddEvent of event_type
+  | AddEvent of add_event_parameter
   | GetEvent of get_event_parameter
   | UpdateEvent of update_event_parameter
   | AddBet of add_bet_parameter

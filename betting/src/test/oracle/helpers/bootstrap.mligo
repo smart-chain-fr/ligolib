@@ -1,6 +1,7 @@
 #import "../../../contracts/cameligo/oracle/main.mligo" "ORACLE"
 #import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
 #import "../../../contracts/cameligo/oracle/callback/main.mligo" "CALLBACK"
+#import "oracle_callback.mligo" "HELPER_oracle_callback"
 
 let plainTimestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
 
@@ -44,7 +45,7 @@ let callbackInitStorage : CALLBACK.storage =
         metadata = (Map.empty : (string, bytes) map);
     }
 
-let bootstrap =
+let bootstrap_oracle () =
     (* Boostrapping accounts *)
     let () = Test.reset_state 6n ([] : tez list) in
     let _baker: address = Test.nth_bootstrap_account 0 in
@@ -74,10 +75,6 @@ let bootstrap =
     
     (oracle_contract, oracle_taddress, elon, jeff, alice, bob, james)
 
-let bootstrap_callback =
-    let oraclePath = "contracts/cameligo/oracle/callback/main.mligo" in
-    let iTres = Test.run (fun (x : CALLBACK.storage) -> x) callbackInitStorage in
-    let (callback_addr, _, _) = Test.originate_from_file oraclePath "main" ([] : string list) iTres 0mutez in
-    let callback_taddress = (Test.cast_address callback_addr : (CALLBACK.action, CALLBACK.storage) typed_address) in
-    let callback_contract = Test.to_contract callback_taddress in
-    (callback_contract, callback_taddress, callback_addr)
+let bootstrap_oracle_callback () =
+    let oracle_callback = HELPER_oracle_callback.originate_from_file(HELPER_oracle_callback.base_storage) in    
+    oracle_callback

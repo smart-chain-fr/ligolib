@@ -10,7 +10,7 @@ let updatedEventMap : (nat, TYPES.event_type) map = Map.literal [
     (0n, BOOTSTRAP.secondaryEvent)
     ]
 
-let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap
+let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap_oracle()
 let () = HELPER.trscAddEvent (oracle_contract, elon, BOOTSTRAP.primaryEvent)
 
 let () = Test.log("-> Updating the first Event from Manager")

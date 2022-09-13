@@ -6,7 +6,7 @@
 
 let () = Test.log("___ TEST addEvent STARTED ___")
 
-let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap
+let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap_oracle()
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(oracle_contract, oracle_taddress, elon, jeff)
