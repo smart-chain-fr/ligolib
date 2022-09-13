@@ -93,8 +93,8 @@ let bootstrap () =
     manager       = elon;
     oracleAddress = jeff;
     betConfig     = initBetConfig;
-    events        = (Map.empty : (nat, TYPES.event_type) map);
-    events_bets   = (Map.empty : (nat, TYPES.event_bets) map);
+    events        = (Big_map.empty : (nat, TYPES.event_type) big_map);
+    events_bets   = (Big_map.empty : (nat, TYPES.event_bets) big_map);
     events_index  = 0n;
     metadata      = (Map.empty : (string, bytes) map);
   } in

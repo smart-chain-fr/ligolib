@@ -59,17 +59,17 @@ let assert_isEventCreationPaused (ctr_taddr : (TYPES.action, TYPES.storage) type
         else failwith("NOT OK", ctr_value)
 
 (* Assert Events Map parameter with expected result *)
-let assert_eventsMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_type) map) : unit =
+let assert_eventsMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_type) big_map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : (nat, TYPES.event_type) map = (ctr_storage.events) in
+    let ctr_value : (nat, TYPES.event_type) big_map = (ctr_storage.events) in
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else failwith("NOT OK", ctr_value)
 
 (* Assert Events Bets Map parameter with expected result *)
-let assert_eventsBetMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_bets) map) : unit =
+let assert_eventsBetMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_bets) big_map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : (nat, TYPES.event_bets) map = (ctr_storage.events_bets) in
+    let ctr_value : (nat, TYPES.event_bets) big_map = (ctr_storage.events_bets) in
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else failwith("NOT OK", ctr_value)

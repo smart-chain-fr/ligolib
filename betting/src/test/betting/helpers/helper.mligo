@@ -4,22 +4,22 @@
 
 //  VARIABLES
 
-let emptyMap : (nat, TYPES.event_type) map = (Map.empty : (nat, TYPES.event_type) map)
+let emptyMap : (nat, TYPES.event_type) big_map = (Big_map.empty : (nat, TYPES.event_type) big_map)
 
-let oneEventMap : (nat, TYPES.event_type) map = Map.literal [
+let oneEventMap : (nat, TYPES.event_type) big_map = Big_map.literal [
   (0n, BOOTSTRAP.primaryEvent)
   ]
-let doubleEventMap : (nat, TYPES.event_type) map = Map.literal [
+let doubleEventMap : (nat, TYPES.event_type) big_map = Big_map.literal [
   (0n, BOOTSTRAP.primaryEvent);
   (1n, BOOTSTRAP.primaryEvent)
   ]
-let threeEventMap : (nat, TYPES.event_type) map = Map.literal [
+let threeEventMap : (nat, TYPES.event_type) big_map = Big_map.literal [
   (0n, BOOTSTRAP.primaryEvent);
   (1n, BOOTSTRAP.primaryEvent);
   (2n, BOOTSTRAP.primaryEvent)
   ]
 
-let emptyBetMap : (nat, TYPES.event_bets) map = (Map.empty : (nat, TYPES.event_bets) map)
+let emptyBetMap : (nat, TYPES.event_bets) big_map = (Big_map.empty : (nat, TYPES.event_bets) big_map)
 
     
 //  FAILWITH HELPER
