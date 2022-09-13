@@ -35,13 +35,15 @@ type event_bets =
   betsTeamTwo_total : tez;
   }
 
+type event_key = nat
+
 type storage = {
   manager : address;
   oracleAddress : address;
   betConfig : bet_config_type;
-  events : (nat, event_type) map;
-  events_bets : (nat, event_bets) map;
-  events_index : nat;
+  events : (event_key, event_type) big_map;
+  events_bets : (event_key, event_bets) big_map;
+  events_index : event_key;
   metadata : (string, bytes) map;
 }
 

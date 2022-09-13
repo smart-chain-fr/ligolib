@@ -60,7 +60,7 @@ let add_event (p_new_event : TYPES.add_event_parameter)(s : TYPES.storage) : (op
     startBetTime=p_new_event.startBetTime;
     closedBetTime=p_new_event.closedBetTime;
     is_claimed=False } in
-  let new_events : (nat, TYPES.event_type) map = (Map.add (s.events_index) new_event s.events) in
+  let new_events : (nat, TYPES.event_type) big_map = (Big_map.add (s.events_index) new_event s.events) in
   let new_event_bet : TYPES.event_bets = {
     betsTeamOne = (Map.empty : (address, tez) map);
     betsTeamOne_index = 0n;
@@ -69,16 +69,16 @@ let add_event (p_new_event : TYPES.add_event_parameter)(s : TYPES.storage) : (op
     betsTeamTwo_index = 0n;
     betsTeamTwo_total = 0mutez;
   } in
-  let new_events_bets : (nat, TYPES.event_bets) map = (Map.add (s.events_index) new_event_bet s.events_bets) in
+  let new_events_bets : (nat, TYPES.event_bets) big_map = (Big_map.add (s.events_index) new_event_bet s.events_bets) in
   (([] : operation list), {s with events = new_events; events_bets = new_events_bets; events_index = (s.events_index + 1n)})
 
 
 let get_event (requested_event_id : nat)(callback : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
-  let cbk_event = match Map.find_opt requested_event_id s.events with
+  let cbk_event = match Big_map.find_opt requested_event_id s.events with
     | Some event -> event
     | None -> (failwith ERRORS.no_event_id)
     in
-  let cbk_eventbet = match Map.find_opt requested_event_id s.events_bets with
+  let cbk_eventbet = match Big_map.find_opt requested_event_id s.events_bets with
     | Some eventbet -> eventbet
     | None -> (failwith ERRORS.no_event_id)
     in
@@ -114,11 +114,11 @@ let update_event (updated_event_id : nat)(updatedEvent : TYPES.event_type)(s : T
   let _ = ASSERT.assert_event_bet_start_after_end updatedEvent.startBetTime updatedEvent.end_at in
   let _ = ASSERT.assert_event_bet_ends_after_end updatedEvent.closedBetTime updatedEvent.end_at in
   let _ = ASSERT.assert_betting_not_finalized (updatedEvent.isFinalized) in
-  let _ = match Map.find_opt updated_event_id s.events with
+  let _ = match Big_map.find_opt updated_event_id s.events with
     | Some event -> event
     | None -> (failwith ERRORS.no_event_id)
   in
-  let new_events : (nat, TYPES.event_type) map = Map.update updated_event_id (Some(updatedEvent)) s.events in
+  let new_events : (nat, TYPES.event_type) big_map = Big_map.update updated_event_id (Some(updatedEvent)) s.events in
   (([] : operation list), {s with events = new_events})
 
 // --------------------------------------
@@ -171,14 +171,14 @@ let add_bet (p_requested_event_id : nat)(teamOneBet : bool)(s : TYPES.storage) :
   let _ = ASSERT.assert_not_manager_nor_oracle (Tezos.get_sender()) s.manager s.oracleAddress in
   let _ = ASSERT.assert_no_tez (Tezos.get_amount()) in
   let _ = ASSERT.assert_tez_lower_than_min (Tezos.get_amount()) s.betConfig.minBetAmount in
-  let requested_event : TYPES.event_type = match (Map.find_opt p_requested_event_id s.events) with
+  let requested_event : TYPES.event_type = match (Big_map.find_opt p_requested_event_id s.events) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_id
   in
   let _ = ASSERT.assert_betting_not_finalized (requested_event.isFinalized) in
   let _ = ASSERT.assert_betting_before_period_start (requested_event.startBetTime) in
   let _ = ASSERT.assert_betting_after_period_end (requested_event.closedBetTime) in
-  let requested_event_bets : TYPES.event_bets = match (Map.find_opt p_requested_event_id s.events_bets) with
+  let requested_event_bets : TYPES.event_bets = match (Big_map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_bets
   in
@@ -186,7 +186,7 @@ let add_bet (p_requested_event_id : nat)(teamOneBet : bool)(s : TYPES.storage) :
     then ( let uEvent : TYPES.event_bets = add_bet_team_one requested_event_bets in (uEvent) )
     else ( let uEvent : TYPES.event_bets = add_bet_team_two requested_event_bets in (uEvent) )
   in
-  let new_events_map : (nat, TYPES.event_bets) map = (Map.update p_requested_event_id (Some(updated_bet_event)) s.events_bets) in
+  let new_events_map : (nat, TYPES.event_bets) big_map = (Big_map.update p_requested_event_id (Some(updated_bet_event)) s.events_bets) in
   (([] : operation list), {s with events_bets = new_events_map;})
 
 
@@ -236,13 +236,13 @@ let refund_bet (event_bets : TYPES.event_bets) (profit_quota : nat) : operation 
 
 let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
-  let requested_event : TYPES.event_type = match (Map.find_opt p_requested_event_id s.events) with
+  let requested_event : TYPES.event_type = match (Big_map.find_opt p_requested_event_id s.events) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_id
   in
   let _check_is_claimed : unit = assert_with_error (requested_event.is_claimed = False) ERRORS.event_already_claimed in
   let _ = ASSERT.assert_betting_not_finalized (requested_event.isFinalized) in
-  let event_bets : TYPES.event_bets = match (Map.find_opt p_requested_event_id s.events_bets) with
+  let event_bets : TYPES.event_bets = match (Big_map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_bets
   in
@@ -252,7 +252,7 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | None -> failwith ERRORS.bet_no_team_outcome
   in
   let profit_quota : nat = s.betConfig.retainedProfitQuota in
-  let modified_events = Map.update p_requested_event_id (Some({ requested_event with is_claimed = True })) s.events in
+  let modified_events = Big_map.update p_requested_event_id (Some({ requested_event with is_claimed = True })) s.events in
   if outcome_draw
   then
     let op_list = refund_bet event_bets profit_quota in
@@ -307,7 +307,7 @@ let getEventCreationStatus (_, s : unit * TYPES.storage) : timestamp * bool =
 
 [@view]
 let getEvent (p_requested_event_id, s : nat * TYPES.storage) : timestamp * TYPES.event_type =
-  let requested_event : TYPES.event_type = match (Map.find_opt p_requested_event_id s.events) with
+  let requested_event : TYPES.event_type = match (Big_map.find_opt p_requested_event_id s.events) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_id
   in
