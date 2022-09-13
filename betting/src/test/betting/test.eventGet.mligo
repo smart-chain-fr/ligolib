@@ -3,14 +3,18 @@
 #import "helpers/bootstrap.mligo" "BOOTSTRAP"
 #import "helpers/helper.mligo" "HELPER"
 #import "helpers/assert.mligo" "ASSERT"
+#import "helpers/events.mligo" "EVENTS"
+#import "helpers/log.mligo" "Log"
 
-let () = Test.log("___ TEST getEvent STARTED ___")
+// let () = Test.log("___ TEST getEvent STARTED ___")
 
-let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap()
-let (callback_contract, callback_taddr, callback_addr) = BOOTSTRAP.bootstrap_callback
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.eventype_to_addeventparam(BOOTSTRAP.primaryEvent))
-let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
+let () = Log.describe("[getEvent] test suite")
 
-let () = HELPER.trscGetEvent (betting_contract, elon, callback_addr, 0n)
+let test_get_event =
+    let (betting_contract, betting_taddress, elon, _jeff, _, _, _) = BOOTSTRAP.bootstrap() in
+    let (callback_contract, callback_taddr, callback_addr) = BOOTSTRAP.bootstrap_callback in 
+    let () = HELPER.trscAddEvent_success (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent))in
+    let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap in
+    HELPER.trscGetEvent (betting_contract, elon, callback_addr, 0n)
 
-let () = Test.log("___ TEST getEvent ENDED ___")
+// let () = Test.log("___ TEST getEvent ENDED ___")

@@ -3,8 +3,11 @@
 #import "helpers/bootstrap.mligo" "BOOTSTRAP"
 #import "helpers/helper.mligo" "HELPER"
 #import "helpers/assert.mligo" "ASSERT"
+#import "helpers/events.mligo" "EVENTS"
+#import "helpers/log.mligo" "Log"
 
-let () = Test.log("___ TEST AddBet STARTED ___")
+// let () = Test.log("___ TEST AddBet STARTED ___")
+let () = Log.describe("[AddBet] test suite")
 
 let () = Test.log("-> Timing Now :")
 let () = Test.log( Tezos.get_now() )
@@ -14,7 +17,7 @@ let (betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTR
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(betting_contract, betting_taddress, elon, jeff)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.emptyMap
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.eventype_to_addeventparam(BOOTSTRAP.primaryEvent))
+let () = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent))
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
 let aliceBetOneMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
