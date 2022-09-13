@@ -21,6 +21,9 @@ let event_betting_end_before_start : string = "Event Betting End Date can't be b
 let event_betting_start_after_end : string = "Event Betting Start Date can't be after the Event Start Date"
 let event_betting_end_after_end : string = "Event Betting End Date can't be after the Event End Date"
 
+let event_already_claimed : string = "Already been claimed"
+
+
 // --------------------------------------
 //         BETTING RELATED ERRORS
 // --------------------------------------
