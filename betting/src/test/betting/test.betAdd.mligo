@@ -9,12 +9,12 @@ let () = Test.log("___ TEST AddBet STARTED ___")
 let () = Test.log("-> Timing Now :")
 let () = Test.log( Tezos.get_now() )
 
-let (betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTRAP.bootstrap
+let (betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTRAP.bootstrap()
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(betting_contract, betting_taddress, elon, jeff)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.emptyMap
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
+let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.eventype_to_addeventparam(BOOTSTRAP.primaryEvent))
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
 let aliceBetOneMap : (nat, TYPES.event_bets) map = Map.literal [

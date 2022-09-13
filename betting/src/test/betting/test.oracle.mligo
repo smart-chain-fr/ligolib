@@ -5,7 +5,7 @@
 
 let () = Test.log("___ TEST ChangeOracleAddress STARTED ___")
 
-let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
+let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap()
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(betting_contract, betting_taddress, elon, jeff)

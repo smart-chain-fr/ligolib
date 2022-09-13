@@ -10,8 +10,8 @@ let updatedEventMap : (nat, TYPES.event_type) map = Map.literal [
     (0n, BOOTSTRAP.secondaryEvent)
     ]
 
-let (betting_contract, betting_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
+let (betting_contract, betting_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap()
+let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.eventype_to_addeventparam(BOOTSTRAP.primaryEvent))
 
 let () = Test.log("-> Updating the first Event from Manager")
 let () = HELPER.trscUpdateEvent (betting_contract, elon, 0n, BOOTSTRAP.secondaryEvent)
@@ -25,8 +25,8 @@ let () = Test.log("-> Updating the first Event from unauthorized address")
 let () = HELPER.trscUpdateEvent (betting_contract, alice, 0n, BOOTSTRAP.secondaryEvent)
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
+let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.eventype_to_addeventparam(BOOTSTRAP.primaryEvent))
+let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.eventype_to_addeventparam(BOOTSTRAP.primaryEvent))
 
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.threeEventMap
 

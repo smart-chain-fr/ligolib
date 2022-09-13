@@ -6,9 +6,9 @@
 
 let () = Test.log("___ TEST getEvent STARTED ___")
 
-let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
+let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap()
 let (callback_contract, callback_taddr, callback_addr) = BOOTSTRAP.bootstrap_callback
-let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.primaryEvent)
+let () = HELPER.trscAddEvent (betting_contract, elon, BOOTSTRAP.eventype_to_addeventparam(BOOTSTRAP.primaryEvent))
 let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
 let () = HELPER.trscGetEvent (betting_contract, elon, callback_addr, 0n)

@@ -6,7 +6,7 @@
 let () = Test.log("___ TEST SwitchPause STARTED ___")
 
 let () = Test.log("-> Boostrapping contract")
-let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap
+let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap()
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(betting_contract, betting_taddress, elon, jeff)

@@ -3,8 +3,10 @@
 #import "helpers/bootstrap.mligo" "BOOTSTRAP"
 #import "helpers/helper.mligo" "HELPER"
 #import "helpers/assert.mligo" "ASSERT"
+#import "helpers/log.mligo" "Log"
 
-let () = Test.log("___ TEST addEvent STARTED ___")
+// let () = Test.log("___ TEST addEvent STARTED ___")
+let () = Log.describe("[addEvent] test suite")
 
 let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap_oracle()
 

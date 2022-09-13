@@ -59,7 +59,7 @@ let trscSwitchPauseEventCreation(contr, from : TYPES.action contract * address) 
   let result : test_exec_result = Test.transfer_to_contract contr (SwitchPauseEventCreation) 0mutez in
   result
 
-let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.event_type) =
+let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.add_event_parameter) =
   let () = Test.set_source from in
   let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0mutez in
   result
