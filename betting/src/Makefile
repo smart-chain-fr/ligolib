@@ -1,4 +1,4 @@
-LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0
+LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.50.0
 PROTOCOL_OPT=--protocol jakarta
 JSON_OPT=--michelson-format json
 
@@ -98,7 +98,6 @@ test_oracle_pause: test/oracle/test.pause.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_oracle_events: test_oracle_event_add test_oracle_event_update test_oracle_event_get
-	@echo "Running Oracle Events tests..."
 
 test_oracle_event_add: test/oracle/test.eventAdd.mligo
 	@echo "Running Oracle AddEvent tests..." 
@@ -127,7 +126,6 @@ test_betting_pause: test/betting/test.pause.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_events: test_betting_event_add test_betting_event_update test_betting_event_get
-	@echo "Running Betting Events tests..."
 
 test_betting_event_add: test/betting/test.eventAdd.mligo
 	@echo "Running betting AddEvent tests..." 
@@ -142,7 +140,6 @@ test_betting_event_get: test/betting/test.eventGet.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_bet: test_betting_bet_add test_betting_bet_finalize
-	@echo "Running Betting Bets tests..."
 
 test_betting_bet_add: test/betting/test.betAdd.mligo
 	@echo "Running betting AddBet tests..." 
