@@ -212,18 +212,6 @@ let compose_paiement ( winner_map : (address, tez) map ) ( total_value_bet : tez
   in
   let empty_op_list : operation list = [] in
   Map.fold folded_op_list winner_map empty_op_list
-<<<<<<< HEAD
-=======
-
-let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) (profit_quota : nat) : operation list =
-  if (is_team_one_win)
-  then 
-    let _ = ASSERT.opponent_has_positive_bet (event_bets.bets_team_two_total) in
-    compose_paiement event_bets.bets_team_one event_bets.bets_team_one_total event_bets.bets_team_two_total profit_quota
-  else 
-    let _ = ASSERT.opponent_has_positive_bet (event_bets.bets_team_one_total) in
-    compose_paiement event_bets.bets_team_two event_bets.bets_team_two_total event_bets.bets_team_one_total profit_quota
->>>>>>> 67182faa130e325e096a40a4a707d0131d2ba613
   
 let refund_bet (event_bets : TYPES.event_bets) (profit_quota : nat) : operation list =
   let folded_op_list = fun (op_list, (address, bet_amount) : operation list * (address * tez) ) -> 
@@ -236,13 +224,13 @@ let refund_bet (event_bets : TYPES.event_bets) (profit_quota : nat) : operation 
   total_refund
 
 let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) (profit_quota : nat) : operation list =
-  if (event_bets.betsTeamOne_total = 0mutez or event_bets.betsTeamTwo_total = 0mutez)
-  then refund_bet event_bets profit_quota
+  if (event_bets.bets_team_one_total = 0mutez or event_bets.bets_team_two_total = 0mutez)
+  then refund_bet event_bets 0n
   else if (is_team_one_win)
     then
-      compose_paiement event_bets.betsTeamOne event_bets.betsTeamOne_total event_bets.betsTeamTwo_total profit_quota
+      compose_paiement event_bets.bets_team_one event_bets.bets_team_one_total event_bets.bets_team_two_total profit_quota
     else 
-      compose_paiement event_bets.betsTeamTwo event_bets.betsTeamTwo_total event_bets.betsTeamOne_total profit_quota
+      compose_paiement event_bets.bets_team_two event_bets.bets_team_two_total event_bets.bets_team_one_total profit_quota
 
 let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in
