@@ -68,12 +68,12 @@ let saveEvent(param, store : requested_event_param * storage) : operation list *
   })
 
 let requestEvent(param, store : nat * storage) : operation list * storage =
-  let payload : BETTING_TYPES.get_event_parameter = {
+  let payload : BETTING_TYPES.callback_asked_parameter = {
     requestedEventID=param;
     callback=Tezos.get_self_address();
   } in
-  let destination : BETTING_TYPES.get_event_parameter contract = 
-    match (Tezos.get_entrypoint_opt "%getEvent" store.bettingAddr : BETTING_TYPES.get_event_parameter contract option) with
+  let destination : BETTING_TYPES.callback_asked_parameter contract = 
+    match (Tezos.get_entrypoint_opt "%getEvent" store.bettingAddr : BETTING_TYPES.callback_asked_parameter contract option) with
     | None -> failwith("Unknown entrypoint GetEvent")
     | Some ctr -> ctr
   in
