@@ -1,0 +1,1 @@
+let not_admin : string = "not admin"
