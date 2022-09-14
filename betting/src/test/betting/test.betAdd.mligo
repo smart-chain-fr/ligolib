@@ -12,7 +12,7 @@ let () = Log.describe("[AddBet] test suite")
 let () = Test.log("-> Timing Now :")
 let () = Test.log( Tezos.get_now() )
 
-let (betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTRAP.bootstrap()
+let (_betting_address, betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTRAP.bootstrap()
 
 let () = Test.log("-> Initial Storage :")
 let () = Test.log(betting_contract, betting_taddress, elon, jeff)

@@ -1,29 +1,30 @@
 #import "../../../contracts/cameligo/betting/callback/main.mligo" "CALLBACK"
 #import "../../../contracts/cameligo/betting/main.mligo" "BETTING"
 #import "../../../contracts/cameligo/betting/types.mligo" "TYPES"
+#import "betting_callback.mligo" "HELPER_betting_callback"
 
 let plainTimestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
 
-let callbackInitStorage : CALLBACK.storage = {
-  name              = "";
-  videogame         = "";
-  begin_at          = plainTimestamp + 2048;
-  end_at            = plainTimestamp + 4096;
-  modified_at       = plainTimestamp;
-  opponents         = { teamOne = ""; teamTwo = ""};
-  isFinalized       = false;
-  isDraw            = (None : bool option);
-  isTeamOneWin      = (None : bool option);
-  startBetTime      = plainTimestamp + 360;
-  closedBetTime     = plainTimestamp + 3072;
-  betsTeamOne       = (Map.empty : (address, tez) map);
-  betsTeamOne_index = 0n;
-  betsTeamOne_total = 0mutez;
-  betsTeamTwo       = (Map.empty : (address, tez) map);
-  betsTeamTwo_index = 0n;
-  betsTeamTwo_total = 0mutez;
-  metadata          = (Map.empty : (string, bytes) map);
-  }
+// let callbackInitStorage : CALLBACK.storage = {
+//   name              = "";
+//   videogame         = "";
+//   begin_at          = plainTimestamp + 2048;
+//   end_at            = plainTimestamp + 4096;
+//   modified_at       = plainTimestamp;
+//   opponents         = { teamOne = ""; teamTwo = ""};
+//   isFinalized       = false;
+//   isDraw            = (None : bool option);
+//   isTeamOneWin      = (None : bool option);
+//   startBetTime      = plainTimestamp + 360;
+//   closedBetTime     = plainTimestamp + 3072;
+//   betsTeamOne       = (Map.empty : (address, tez) map);
+//   betsTeamOne_index = 0n;
+//   betsTeamOne_total = 0mutez;
+//   betsTeamTwo       = (Map.empty : (address, tez) map);
+//   betsTeamTwo_index = 0n;
+//   betsTeamTwo_total = 0mutez;
+//   metadata          = (Map.empty : (string, bytes) map);
+//   }
 
 let bootstrap () =
   (* Boostrapping accounts *)
@@ -60,14 +61,8 @@ let bootstrap () =
   let betting_taddress = (Test.cast_address betting_address : (TYPES.action,TYPES.storage) typed_address) in
   let betting_contract = Test.to_contract betting_taddress in
   
-  (betting_contract, betting_taddress, elon, jeff, alice, bob, james)
+  (betting_address, betting_contract, betting_taddress, elon, jeff, alice, bob, james)
 
-
-
-let bootstrap_callback =
-  let bettingPath           = "contracts/cameligo/betting/callback/main.mligo" in
-  let iTres                 = Test.run (fun (x : CALLBACK.storage) -> x) callbackInitStorage in
-  let (callback_addr, _, _) = Test.originate_from_file bettingPath "main" ([] : string list) iTres 0mutez in
-  let callback_taddress     = (Test.cast_address callback_addr : (CALLBACK.action, CALLBACK.storage) typed_address) in
-  let callback_contract     = Test.to_contract callback_taddress in
-  (callback_contract, callback_taddress, callback_addr)
+let bootstrap_betting_callback (bettingAddr : address) =
+    let betting_callback = HELPER_betting_callback.originate_from_file(HELPER_betting_callback.base_storage(bettingAddr)) in    
+    betting_callback

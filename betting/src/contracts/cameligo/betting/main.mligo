@@ -3,6 +3,7 @@
 #import "types.mligo" "TYPES"
 #import "errors.mligo" "ERRORS"
 #import "assert.mligo" "ASSERT"
+#import "callback/main.mligo" "BETTING_CALLBACK"
 
 // --------------------------------------
 //      CONFIGURATION INTERACTIONS
@@ -73,7 +74,7 @@ let add_event (p_new_event : TYPES.add_event_parameter)(s : TYPES.storage) : (op
   (([] : operation list), {s with events = new_events; events_bets = new_events_bets; events_index = (s.events_index + 1n)})
 
 
-let get_event (requested_event_id : nat)(callback : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
+let get_event (requested_event_id : nat)(callbackAddr : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let cbk_event = match Big_map.find_opt requested_event_id s.events with
     | Some event -> event
     | None -> (failwith ERRORS.no_event_id)
@@ -82,30 +83,32 @@ let get_event (requested_event_id : nat)(callback : address)(s : TYPES.storage) 
     | Some eventbet -> eventbet
     | None -> (failwith ERRORS.no_event_id)
     in
-  let returned_value : TYPES.callback_returned_value = {
-    requestedEvent = {
-      name = cbk_event.name;
-      videogame = cbk_event.videogame;
-      begin_at = cbk_event.begin_at;
-      end_at = cbk_event.end_at;
-      modified_at = cbk_event.modified_at;
-      opponents = { teamOne = cbk_event.opponents.teamOne; teamTwo = cbk_event.opponents.teamTwo};
-      isFinalized = cbk_event.isFinalized;
-      isDraw = cbk_event.isDraw;
-      isTeamOneWin = cbk_event.isTeamOneWin;
-      startBetTime = cbk_event.startBetTime;
-      closedBetTime = cbk_event.closedBetTime;
-      betsTeamOne = cbk_eventbet.betsTeamOne;
-      betsTeamOne_index = cbk_eventbet.betsTeamOne_index;
-      betsTeamOne_total = cbk_eventbet.betsTeamOne_total;
-      betsTeamTwo = cbk_eventbet.betsTeamTwo;
-      betsTeamTwo_index = cbk_eventbet.betsTeamTwo_index;
-      betsTeamTwo_total = cbk_eventbet.betsTeamTwo_total;
-    };
-    callback = callback;
+  let payload : BETTING_CALLBACK.requested_event_param = {
+    name = cbk_event.name;
+    videogame = cbk_event.videogame;
+    begin_at = cbk_event.begin_at;
+    end_at = cbk_event.end_at;
+    modified_at = cbk_event.modified_at;
+    opponents = { teamOne = cbk_event.opponents.teamOne; teamTwo = cbk_event.opponents.teamTwo};
+    isFinalized = cbk_event.isFinalized;
+    isDraw = cbk_event.isDraw;
+    isTeamOneWin = cbk_event.isTeamOneWin;
+    startBetTime = cbk_event.startBetTime;
+    closedBetTime = cbk_event.closedBetTime;
+    betsTeamOne = cbk_eventbet.betsTeamOne;
+    betsTeamOne_index = cbk_eventbet.betsTeamOne_index;
+    betsTeamOne_total = cbk_eventbet.betsTeamOne_total;
+    betsTeamTwo = cbk_eventbet.betsTeamTwo;
+    betsTeamTwo_index = cbk_eventbet.betsTeamTwo_index;
+    betsTeamTwo_total = cbk_eventbet.betsTeamTwo_total;
   } in
-  let _ = Tezos.transaction(returned_value, 0mutez, callback) in
-  (([] : operation list), s)
+  let destination : BETTING_CALLBACK.requested_event_param contract = 
+    match (Tezos.get_entrypoint_opt "%saveEvent" callbackAddr : BETTING_CALLBACK.requested_event_param contract option) with
+    | None -> failwith("Unknown contract")
+    | Some ctr -> ctr
+  in
+  let op : operation = Tezos.transaction payload 0mutez destination in
+  ([op], s)
 
 let update_event (updated_event_id : nat)(updatedEvent : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager_or_oracle (Tezos.get_sender()) s.manager s.oracleAddress in

@@ -13,7 +13,7 @@ let () = Log.describe("[FinalizeBet] test suite")
  *)
 let test_win_basic_team1_should_work = 
   //Given
-  let (betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
   let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
   let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
   let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
@@ -38,7 +38,7 @@ let test_win_basic_team1_should_work =
  *)
 let test_draw_should_work = 
   //Given
-  let (betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
   let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
   let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
   let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
@@ -63,7 +63,7 @@ let test_draw_should_work =
  *)
 let test_win_weighted_team1_should_work = 
   //Given
-  let (betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
   let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
   let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
   let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 400000000000mutez) in
@@ -94,7 +94,7 @@ let test_win_weighted_team1_should_work =
  *)
 let test_win_weighted_team2_should_work = 
   //Given
-  let (betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
   let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
   let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
   let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in

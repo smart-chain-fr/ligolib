@@ -92,6 +92,10 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
   let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0mutez in
   result
 
+let trscUpdateEvent_success(contr, from, event_num, event : TYPES.action contract * address * nat * TYPES.event_type) =
+  ASSERT.tx_success (trscUpdateEvent(contr, from, event_num, event))
+
+
 let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * address * address * nat) =
   let () = Test.set_source from in
   let callbackParameter : TYPES.callback_asked_parameter =
