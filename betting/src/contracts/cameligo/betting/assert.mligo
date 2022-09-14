@@ -61,6 +61,10 @@ let assert_betting_not_finalized (p_betting_finalized : bool) : unit =
   if (p_betting_finalized)
     then failwith ERRORS.bet_finished
 
+let assert_betting_finalized (p_betting_finalized : bool) : unit =
+  if (not p_betting_finalized)
+    then failwith ERRORS.bet_not_finished
+
 let assert_no_tez (p_asserted_amount : tez) : unit =
   if (p_asserted_amount = 0mutez)
     then failwith ERRORS.bet_with_no_tez

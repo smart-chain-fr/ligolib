@@ -63,6 +63,18 @@ let bootstrap () =
   
   (betting_address, betting_contract, betting_taddress, elon, jeff, alice, bob, james)
 
+<<<<<<< HEAD
 let bootstrap_betting_callback (bettingAddr : address) =
     let betting_callback = HELPER_betting_callback.originate_from_file(HELPER_betting_callback.base_storage(bettingAddr)) in    
     betting_callback
+=======
+
+
+let bootstrap_callback =
+  let bettingPath           = "contracts/cameligo/betting/callback/main.mligo" in
+  let iTres                 = Test.run (fun (x : CALLBACK.storage) -> x) callbackInitStorage in
+  let (callback_addr, _, _) = Test.originate_from_file bettingPath "main" ([] : string list) iTres 0mutez in
+  let callback_taddress     = (Test.cast_address callback_addr : (CALLBACK.parameter, CALLBACK.storage) typed_address) in
+  let callback_contract     = Test.to_contract callback_taddress in
+  (callback_contract, callback_taddress, callback_addr)
+>>>>>>> 90811c00edf0c31c6d7ee31312d63d51db8e3926

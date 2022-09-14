@@ -84,3 +84,4 @@ let main ((param, s):(parameter * storage)) : operation list * storage =
   match param with
   | SaveEvent p -> saveEvent(p, s)
   | RequestEvent p -> requestEvent(p, s)
+

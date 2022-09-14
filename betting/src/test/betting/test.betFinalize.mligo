@@ -1,5 +1,6 @@
 #import "../../contracts/cameligo/betting/main.mligo" "BETTING"
 #import "../../contracts/cameligo/betting/types.mligo" "TYPES"
+#import "../../contracts/cameligo/betting/errors.mligo" "ERRORS"
 #import "helpers/bootstrap.mligo" "BOOTSTRAP"
 #import "helpers/helper.mligo" "HELPER"
 #import "helpers/assert.mligo" "ASSERT"
@@ -117,4 +118,39 @@ let test_win_weighted_team2_should_work =
   in
   let _ = assert (mike_bal_error < 1tez) in
   let _ = assert (bob_bal_error < 1tez) in
+  "OK"
+
+
+(**
+ *  Finalizing a bet two times should fail
+ *)
+let test_finalizing_bet_two_times_should_fail = 
+  //Given
+  let (betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
+  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
+  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
+  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
+  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  //When
+  let result = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  //Then
+  let _ = ASSERT.string_failure result ERRORS.bet_finished in
+  "OK"
+
+
+(**
+ *  Claiming a bet two times should fail
+ *)
+let test_claim_bet_two_times_should_fail = 
+  //Given
+  let (betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
+  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
+  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
+  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
+  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  //When
+  let result = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  //Then
+  let _ = ASSERT.string_failure result ERRORS.event_already_claimed in
   "OK"

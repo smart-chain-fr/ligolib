@@ -55,7 +55,7 @@ let finalized_event_team1_win : TYPES.event_type = {
   end_at        = plainTimestamp + 4;
   modified_at   = plainTimestamp;
   opponents     = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
-  isFinalized   = (false : bool);
+  isFinalized   = (true : bool);
   isDraw        = (Some(false) : bool option);
   isTeamOneWin  = (Some(true)  : bool option);
   startBetTime  = plainTimestamp + 1;
@@ -70,7 +70,7 @@ let finalized_event_team2_win : TYPES.event_type = {
   end_at        = plainTimestamp + 4;
   modified_at   = plainTimestamp;
   opponents     = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
-  isFinalized   = (false : bool);
+  isFinalized   = (true : bool);
   isDraw        = (Some(false) : bool option);
   isTeamOneWin  = (Some(false) : bool option);
   startBetTime  = plainTimestamp + 1;
@@ -85,7 +85,7 @@ let finalized_event_draw : TYPES.event_type = {
   end_at        = plainTimestamp + 4;
   modified_at   = plainTimestamp;
   opponents     = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
-  isFinalized   = (false : bool);
+  isFinalized   = (true : bool);
   isDraw        = (Some(true) : bool option);
   isTeamOneWin  = (None : bool option);
   startBetTime  = plainTimestamp + 1;
