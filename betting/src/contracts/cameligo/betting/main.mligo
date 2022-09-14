@@ -212,15 +212,6 @@ let compose_paiement ( winner_map : (address, tez) map ) ( total_value_bet : tez
   in
   let empty_op_list : operation list = [] in
   Map.fold folded_op_list winner_map empty_op_list
-
-let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) (profit_quota : nat) : operation list =
-  if (is_team_one_win)
-  then 
-    let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamTwo_total) in
-    compose_paiement event_bets.betsTeamOne event_bets.betsTeamOne_total event_bets.betsTeamTwo_total profit_quota
-  else 
-    let _ = ASSERT.opponent_has_positive_bet (event_bets.betsTeamOne_total) in
-    compose_paiement event_bets.betsTeamTwo event_bets.betsTeamTwo_total event_bets.betsTeamOne_total profit_quota
   
 let refund_bet (event_bets : TYPES.event_bets) (profit_quota : nat) : operation list =
   let folded_op_list = fun (op_list, (address, bet_amount) : operation list * (address * tez) ) -> 
@@ -231,6 +222,15 @@ let refund_bet (event_bets : TYPES.event_bets) (profit_quota : nat) : operation 
   let team_one_refund : operation list = Map.fold folded_op_list event_bets.betsTeamOne empty_op_list   in
   let total_refund    : operation list = Map.fold folded_op_list event_bets.betsTeamTwo team_one_refund in
   total_refund
+
+let resolve_team_win (event_bets : TYPES.event_bets) (is_team_one_win : bool) (profit_quota : nat) : operation list =
+  if (event_bets.betsTeamOne_total = 0mutez or event_bets.betsTeamTwo_total = 0mutez)
+  then refund_bet event_bets profit_quota
+  else if (is_team_one_win)
+    then
+      compose_paiement event_bets.betsTeamOne event_bets.betsTeamOne_total event_bets.betsTeamTwo_total profit_quota
+    else 
+      compose_paiement event_bets.betsTeamTwo event_bets.betsTeamTwo_total event_bets.betsTeamOne_total profit_quota
 
 let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager (Tezos.get_sender()) s.manager in

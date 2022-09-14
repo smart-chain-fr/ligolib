@@ -89,6 +89,3 @@ let assert_bet_is_draw (p_is_draw : bool) : unit =
   if (p_is_draw)
     then failwith ERRORS.bet_ended_as_draw
 
-let opponent_has_positive_bet (o_has_bet : tez) : unit =
-  if (o_has_bet = 0mutez)
-    then failwith ERRORS.opponent_has_no_bet
