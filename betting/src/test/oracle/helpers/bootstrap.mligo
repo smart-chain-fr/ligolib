@@ -12,10 +12,10 @@ let primaryEvent : TYPES.event_type =
         begin_at = plainTimestamp;
         end_at = plainTimestamp + 4096;
         modified_at = plainTimestamp;
-        opponents = { teamOne = "Team ONE"; teamTwo = "Team TWO"};
-        isFinalized = false;
-        isDraw = (None : bool option);
-        isTeamOneWin = (None : bool option);
+        opponents = { team_one = "Team ONE"; team_two = "Team TWO"};
+        is_finalized = false;
+        is_draw = (None : bool option);
+        is_team_one_win = (None : bool option);
     }
 
 let secondaryEvent : TYPES.event_type =
@@ -25,10 +25,10 @@ let secondaryEvent : TYPES.event_type =
         begin_at = plainTimestamp;
         end_at = plainTimestamp + 4096;
         modified_at = plainTimestamp;
-        opponents = { teamOne = "Team THREE"; teamTwo = "Team FOUR"};
-        isFinalized = false;
-        isDraw = (None : bool option);
-        isTeamOneWin = (None : bool option);
+        opponents = { team_one = "Team THREE"; team_two = "Team FOUR"};
+        is_finalized = false;
+        is_draw = (None : bool option);
+        is_team_one_win = (None : bool option);
     }
 
 let callbackInitStorage : CALLBACK.storage =
@@ -38,10 +38,10 @@ let callbackInitStorage : CALLBACK.storage =
         begin_at = plainTimestamp + 2000;
         end_at = plainTimestamp + 4000;
         modified_at = plainTimestamp;
-        opponents = { teamOne = ""; teamTwo = ""};
-        isFinalized = false;
-        isDraw = (None : bool option);
-        isTeamOneWin = (None : bool option);
+        opponents = { team_one = ""; team_two = ""};
+        is_finalized = false;
+        is_draw = (None : bool option);
+        is_team_one_win = (None : bool option);
         metadata = (Map.empty : (string, bytes) map);
     }
 

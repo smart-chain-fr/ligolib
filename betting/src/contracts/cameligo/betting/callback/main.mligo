@@ -7,18 +7,18 @@ type storage =
   begin_at : timestamp;
   end_at : timestamp;
   modified_at : timestamp;
-  opponents : { teamOne : string; teamTwo : string};
-  isFinalized : bool;
-  isDraw : bool option;
-  isTeamOneWin : bool option;
-  startBetTime : timestamp;
-  closedBetTime : timestamp;
-  betsTeamOne : (address, tez) map;
-  betsTeamOne_index : nat;
-  betsTeamOne_total : tez;
-  betsTeamTwo : (address, tez) map;
-  betsTeamTwo_index : nat;
-  betsTeamTwo_total : tez;
+  opponents : { team_one : string; team_two : string};
+  is_finalized : bool;
+  is_draw : bool option;
+  is_team_one_win : bool option;
+  start_bet_time : timestamp;
+  closed_bet_time : timestamp;
+  bets_team_one : (address, tez) map;
+  bets_team_one_index : nat;
+  bets_team_one_total : tez;
+  bets_team_two : (address, tez) map;
+  bets_team_two_index : nat;
+  bets_team_two_total : tez;
   metadata : (string, bytes) map;
   bettingAddr : address;
   }
@@ -29,18 +29,18 @@ type requested_event_param = [@layout:comb] {
   begin_at : timestamp;
   end_at : timestamp;
   modified_at : timestamp;
-  opponents : { teamOne : string; teamTwo : string};
-  isFinalized : bool;
-  isDraw : bool option;
-  isTeamOneWin : bool option;
-  startBetTime : timestamp;
-  closedBetTime : timestamp;
-  betsTeamOne : (address, tez) map;
-  betsTeamOne_index : nat;
-  betsTeamOne_total : tez;
-  betsTeamTwo : (address, tez) map;
-  betsTeamTwo_index : nat;
-  betsTeamTwo_total : tez;
+  opponents : { team_one : string; team_two : string};
+  is_finalized : bool;
+  is_draw : bool option;
+  is_team_one_win : bool option;
+  start_bet_time : timestamp;
+  closed_bet_time : timestamp;
+  bets_team_one : (address, tez) map;
+  bets_team_one_index : nat;
+  bets_team_one_total : tez;
+  bets_team_two : (address, tez) map;
+  bets_team_two_index : nat;
+  bets_team_two_total : tez;
 }
 
 type parameter = SaveEvent of requested_event_param | RequestEvent of nat
@@ -54,22 +54,22 @@ let saveEvent(param, store : requested_event_param * storage) : operation list *
     end_at=param.end_at;
     modified_at=param.modified_at;
     opponents=param.opponents;
-    isFinalized=param.isFinalized;
-    isDraw=param.isDraw;
-    isTeamOneWin=param.isTeamOneWin;
-    startBetTime=param.startBetTime;
-    closedBetTime=param.closedBetTime;
-    betsTeamOne=param.betsTeamOne;
-    betsTeamOne_index=param.betsTeamOne_index;
-    betsTeamOne_total=param.betsTeamOne_total;
-    betsTeamTwo=param.betsTeamTwo;
-    betsTeamTwo_index=param.betsTeamTwo_index;
-    betsTeamTwo_total=param.betsTeamTwo_total;
+    is_finalized=param.is_finalized;
+    is_draw=param.is_draw;
+    is_team_one_win=param.is_team_one_win;
+    start_bet_time=param.start_bet_time;
+    closed_bet_time=param.closed_bet_time;
+    bets_team_one=param.bets_team_one;
+    bets_team_one_index=param.bets_team_one_index;
+    bets_team_one_total=param.bets_team_one_total;
+    bets_team_two=param.bets_team_two;
+    bets_team_two_index=param.bets_team_two_index;
+    bets_team_two_total=param.bets_team_two_total;
   })
 
 let requestEvent(param, store : nat * storage) : operation list * storage =
   let payload : BETTING_TYPES.callback_asked_parameter = {
-    requestedEventID=param;
+    requested_event_id=param;
     callback=Tezos.get_self_address();
   } in
   let destination : BETTING_TYPES.callback_asked_parameter contract = 

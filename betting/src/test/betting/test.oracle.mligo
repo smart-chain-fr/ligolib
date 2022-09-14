@@ -17,7 +17,7 @@ let test_change_oracle_address =
 
     // Changing Oracle of the contract to current Oracle
     let result = HELPER.trscChangeOracleAddress(betting_contract, elon, elon) in
-    let () = ASSERT.string_failure result BETTING.ERRORS.same_previous_oracleAddress in
+    let () = ASSERT.string_failure result BETTING.ERRORS.same_previous_oracle_address in
     let () = ASSERT.assert_oracle betting_taddress elon in
 
     // Changing Oracle of the contract to original Oracle

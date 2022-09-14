@@ -62,6 +62,6 @@ let assert_event (taddr : (ORACLE_CALLBACK.parameter, ORACLE_CALLBACK.storage) t
     let () = assert(storage.end_at=expected_event.end_at) in
     let () = assert(storage.modified_at=expected_event.modified_at) in
     let () = assert(storage.opponents=expected_event.opponents) in
-    let () = assert(storage.isFinalized=expected_event.isFinalized) in
-    let () = assert(storage.isDraw=expected_event.isDraw) in
-    assert(storage.isTeamOneWin=expected_event.isTeamOneWin)
+    let () = assert(storage.is_finalized=expected_event.is_finalized) in
+    let () = assert(storage.is_draw=expected_event.is_draw) in
+    assert(storage.is_team_one_win=expected_event.is_team_one_win)

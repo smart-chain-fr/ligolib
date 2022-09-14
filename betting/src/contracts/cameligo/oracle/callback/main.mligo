@@ -5,10 +5,10 @@ type storage =
   begin_at : timestamp;
   end_at : timestamp;
   modified_at : timestamp;
-  opponents : { teamOne : string; teamTwo : string};
-  isFinalized : bool;
-  isDraw : bool option;
-  isTeamOneWin : bool option;
+  opponents : { team_one : string; team_two : string};
+  is_finalized : bool;
+  is_draw : bool option;
+  is_team_one_win : bool option;
   metadata : (string, bytes) map;
   }
 
@@ -19,10 +19,10 @@ type requested_event_param =
     begin_at : timestamp;
     end_at : timestamp;
     modified_at : timestamp;
-    opponents : { teamOne : string; teamTwo : string};
-    isFinalized : bool;
-    isDraw : bool option;
-    isTeamOneWin : bool option;
+    opponents : { team_one : string; team_two : string};
+    is_finalized : bool;
+    is_draw : bool option;
+    is_team_one_win : bool option;
   }
 
 type parameter = SaveEvent of requested_event_param | Nothing of unit
@@ -35,9 +35,9 @@ let saveEvent(param, store : requested_event_param * storage) : operation list *
     end_at = param.end_at;
     modified_at = param.modified_at;
     opponents = param.opponents;
-    isFinalized = param.isFinalized;
-    isDraw = param.isDraw;
-    isTeamOneWin = param.isTeamOneWin;
+    is_finalized = param.is_finalized;
+    is_draw = param.is_draw;
+    is_team_one_win = param.is_team_one_win;
   })
 
 let main ((p, s):(parameter * storage)) : operation list * storage =

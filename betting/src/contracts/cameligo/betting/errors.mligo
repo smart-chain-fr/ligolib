@@ -5,7 +5,7 @@
 let not_manager : string = "Not the Manager of the contract"
 let not_manager_nor_oracle : string = "Not the Manager or Oracle of the contract"
 let same_previous_manager : string = "New Manager address can't be the same as the current one"
-let same_previous_oracleAddress : string = "New Oracle address can't be the same as the current one"
+let same_previous_oracle_address : string = "New Oracle address can't be the same as the current one"
 
 // --------------------------------------
 //         EVENT RELATED ERRORS

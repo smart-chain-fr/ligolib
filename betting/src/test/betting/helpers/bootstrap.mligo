@@ -16,17 +16,17 @@ let bootstrap () =
   let james:  address = Test.nth_bootstrap_account 5 in
 
   let initBetConfig : TYPES.bet_config_type = {
-    isBettingPaused       = false;
-    isEventCreationPaused = false;
-    minBetAmount          = 1tez;
-    retainedProfitQuota   = 10n;
+    is_betting_paused       = false;
+    is_event_creation_paused = false;
+    min_bet_amount          = 1tez;
+    retained_profit_quota   = 10n;
   } in
   
   (* Boostrapping storage *)
   let init_storage : TYPES.storage = {
     manager       = elon;
-    oracleAddress = jeff;
-    betConfig     = initBetConfig;
+    oracle_address = jeff;
+    bet_config     = initBetConfig;
     events        = (Big_map.empty : (nat, TYPES.event_type) big_map);
     events_bets   = (Big_map.empty : (nat, TYPES.event_bets) big_map);
     events_index  = 0n;

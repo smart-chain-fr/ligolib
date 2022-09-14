@@ -22,12 +22,12 @@ let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
 
 let aliceBetOneMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
     (0n, {
-        betsTeamOne = (Map.literal [ (alice, 2000000mutez) ]);
-        betsTeamOne_index = 1n ;
-        betsTeamOne_total = 2000000mutez ;
-        betsTeamTwo = (Map.empty : (address, tez) map );
-        betsTeamTwo_index = 0n ;
-        betsTeamTwo_total = 0mutez ;
+        bets_team_one = (Map.literal [ (alice, 2000000mutez) ]);
+        bets_team_one_index = 1n ;
+        bets_team_one_total = 2000000mutez ;
+        bets_team_two = (Map.empty : (address, tez) map );
+        bets_team_two_index = 0n ;
+        bets_team_two_total = 0mutez ;
         }
         )
     ]
@@ -38,12 +38,12 @@ let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetOneMap
 
 let aliceBetBothMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
     (0n, {
-        betsTeamOne = (Map.literal [ (alice, 2000000mutez) ]);
-        betsTeamOne_index = 1n ;
-        betsTeamOne_total = 2000000mutez ;
-        betsTeamTwo = (Map.literal [ (alice, 4000000mutez) ]);
-        betsTeamTwo_index = 1n ;
-        betsTeamTwo_total = 4000000mutez ;
+        bets_team_one = (Map.literal [ (alice, 2000000mutez) ]);
+        bets_team_one_index = 1n ;
+        bets_team_one_total = 2000000mutez ;
+        bets_team_two = (Map.literal [ (alice, 4000000mutez) ]);
+        bets_team_two_index = 1n ;
+        bets_team_two_total = 4000000mutez ;
         }
         )
     ]
@@ -54,12 +54,12 @@ let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetBothMap
 
 let aliceBetLastMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
     (0n, {
-        betsTeamOne = (Map.literal [ (alice, (2000000mutez + 20000000mutez)); (bob, 1000000mutez); ]);
-        betsTeamOne_index = (1n + 1n) ;
-        betsTeamOne_total = (2000000mutez + 20000000mutez + 1000000mutez) ;
-        betsTeamTwo = (Map.literal [ (alice, (4000000mutez + 20000000mutez)); (mike, 3000000mutez); (bob, 7000000mutez) ]);
-        betsTeamTwo_index = (1n + 1n + 1n) ;
-        betsTeamTwo_total = (4000000mutez + 20000000mutez + 3000000mutez + 7000000mutez) ;
+        bets_team_one = (Map.literal [ (alice, (2000000mutez + 20000000mutez)); (bob, 1000000mutez); ]);
+        bets_team_one_index = (1n + 1n) ;
+        bets_team_one_total = (2000000mutez + 20000000mutez + 1000000mutez) ;
+        bets_team_two = (Map.literal [ (alice, (4000000mutez + 20000000mutez)); (mike, 3000000mutez); (bob, 7000000mutez) ]);
+        bets_team_two_index = (1n + 1n + 1n) ;
+        bets_team_two_total = (4000000mutez + 20000000mutez + 3000000mutez + 7000000mutez) ;
         }
         )
     ]

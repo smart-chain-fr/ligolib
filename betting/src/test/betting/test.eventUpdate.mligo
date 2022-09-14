@@ -9,7 +9,7 @@
 // let () = Test.log("___ TEST updateEvent STARTED ___")
 let () = Log.describe("[updateEvent] test suite")
 
-let updatedEventMap : (nat, TYPES.event_type) big_map = Big_map.literal [
+let updated_eventMap : (nat, TYPES.event_type) big_map = Big_map.literal [
     (0n, EVENTS.secondaryEvent)
     ]
 
@@ -18,7 +18,7 @@ let test_success_update_event =
     let () = HELPER.trscAddEvent_success (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
     // Updating the first Event from Manager
     let () = HELPER.trscUpdateEvent_success (betting_contract, elon, 0n, EVENTS.secondaryEvent) in
-    let () = ASSERT.assert_eventsMap betting_taddress updatedEventMap in
+    let () = ASSERT.assert_eventsMap betting_taddress updated_eventMap in
     // Updating the first Event from Oracle
     let () = HELPER.trscUpdateEvent_success (betting_contract, jeff, 0n, EVENTS.primaryEvent) in
     ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap

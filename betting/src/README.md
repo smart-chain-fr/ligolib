@@ -14,8 +14,8 @@ The current implementation of the contract is as follows :
 ```ocaml
 type storage = {
   manager : address;
-  oracleAddress : address;
-  betConfig : bet_config_type;
+  oracle_address : address;
+  bet_config : bet_config_type;
   events : (nat, event_type) map;
   events_bets : (nat, event_bets) map;
   events_index : nat;
@@ -23,43 +23,43 @@ type storage = {
 }
 ```
 - `manager` : Manager **account** of the Betting contract
-- `oracleAddress` : Oracle **contract** allowed to add Events and update them
+- `oracle_address` : Oracle **contract** allowed to add Events and update them
 - `events`, `events_bets`, `events_index` : Events mapped to their info, their attached bets, and the latest index
 ```ocaml
 type bet_config_type = {
-  isBettingPaused : bool;
-  isEventCreationPaused : bool;
-  minBetAmount : tez;
-  retainedProfitQuota : nat;
+  is_betting_paused : bool;
+  is_event_creation_paused : bool;
+  min_bet_amount : tez;
+  retained_profit_quota : nat;
 }
 ```
-- `isBettingPaused` : is Betting on Events paused (true), or is it allowed (false)
-- `isEventCreationPaused` : is the creation of new Events paused (true), or is it allowed (false)
-- `minBetAmount` : the minimum amount to Bet on an Event in a single transaction
+- `is_betting_paused` : is Betting on Events paused (true), or is it allowed (false)
+- `is_event_creation_paused` : is the creation of new Events paused (true), or is it allowed (false)
+- `min_bet_amount` : the minimum amount to Bet on an Event in a single transaction
 - `retainedProfit` : the quota to be retained from Betting profits (deduced as operating gains to the contract, shown as percentage, theorical max is 100)
 
 ## Process :
 1) Deploy the Betting contract with an initial storage
-2) The `storage.betConfig.isBettingPaused` and `storage.betConfig.isEventCreationPaused` must have as value `false`
+2) The `storage.bet_config.is_betting_paused` and `storage.bet_config.is_event_creation_paused` must have as value `false`
 3) Add an Event using the `storage.manager` address
-4) Add a Bet to the Event using an address that is not `storage.manager` nor `storage.oracleAddress`
+4) Add a Bet to the Event using an address that is not `storage.manager` nor `storage.oracle_address`
 5) _(optional)_ Add more bets to the first team or second team on the Event
-6) Update the Bet to specify the outcome in `isDraw`, and the winning Team in `isTeamOneWin` if it is not a draw, using `storage.manager` or `storage.oracleAddress`
+6) Update the Bet to specify the outcome in `is_draw`, and the winning Team in `is_team_one_win` if it is not a draw, using `storage.manager` or `storage.oracle_address`
 7) Finalize the Bet using `storage.manager`
 
 ## Initial Storage example :
 ```ocaml
 let initBetConfig : bet_config_type = {
-      isBettingPaused = false;
-      isEventCreationPaused = false;
-      minBetAmount = 5tez;
-      retainedProfitQuota = 10n;
+      is_betting_paused = false;
+      is_event_creation_paused = false;
+      min_bet_amount = 5tez;
+      retained_profit_quota = 10n;
 } in
 
 let init_storage : storage = {
       manager = "tz1******************";
-      oracleAddress = "KT1******************";
-      betConfig = initBetConfig;
+      oracle_address = "KT1******************";
+      bet_config = initBetConfig;
       events = (Map.empty : (nat, event_type) map);
       events_bets = (Map.empty : (nat, event_bets) map);
       events_index = 0n;
@@ -79,9 +79,9 @@ docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang
 
 ### - Compile Betting storage :
 - Using `tz1bdTsc3QdAj1935KiMxou6frwdm5RDdssT` as example for `storage.manager`
-- Using `KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi` as example for `storage.oracleAddress`
+- Using `KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi` as example for `storage.oracle_address`
 ```bash
-docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0 compile storage ./contracts/cameligo/betting/main.mligo '{manager = ("tz1bdTsc3QdAj1935KiMxou6frwdm5RDdssT" : address); oracleAddress = ("KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi" : address); betConfig = {isBettingPaused = false; isEventCreationPaused = false; minBetAmount = 5tez; retainedProfitQuota = 10n}; events = (Map.empty : (nat, TYPES.event_type) map); events_bets = (Map.empty : (nat, TYPES.event_bets) map); events_index = 0n; metadata = (Map.empty : (string, bytes) map)}' -e main
+docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0 compile storage ./contracts/cameligo/betting/main.mligo '{manager = ("tz1bdTsc3QdAj1935KiMxou6frwdm5RDdssT" : address); oracle_address = ("KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi" : address); bet_config = {is_betting_paused = false; is_event_creation_paused = false; min_bet_amount = 5tez; retained_profit_quota = 10n}; events = (Map.empty : (nat, TYPES.event_type) map); events_bets = (Map.empty : (nat, TYPES.event_bets) map); events_index = 0n; metadata = (Map.empty : (string, bytes) map)}' -e main
 ```
 
 ### - Simulate execution of entrypoints (with ligo compiler) :
@@ -94,9 +94,9 @@ docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang
 ### - Originate the Indice contract (with tezos-client CLI)
 - Compile the storage into Michelson expression :
 - Using `tz1bdTsc3QdAj1935KiMxou6frwdm5RDdssT` as example for `storage.manager`
-- Using `KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi` as example for `storage.oracleAddress`
+- Using `KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi` as example for `storage.oracle_address`
 ```bash
-docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0 compile storage ./contracts/cameligo/betting/main.mligo '{manager = ("tz1bdTsc3QdAj1935KiMxou6frwdm5RDdssT" : address); oracleAddress = ("KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi" : address); betConfig = {isBettingPaused = false; isEventCreationPaused = false; minBetAmount = 5tez; retainedProfitQuota = 10n}; events = (Map.empty : (nat, TYPES.event_type) map); events_bets = (Map.empty : (nat, TYPES.event_bets) map); events_index = 0n; metadata = (Map.empty : (string, bytes) map)}' -e main
+docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0 compile storage ./contracts/cameligo/betting/main.mligo '{manager = ("tz1bdTsc3QdAj1935KiMxou6frwdm5RDdssT" : address); oracle_address = ("KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi" : address); bet_config = {is_betting_paused = false; is_event_creation_paused = false; min_bet_amount = 5tez; retained_profit_quota = 10n}; events = (Map.empty : (nat, TYPES.event_type) map); events_bets = (Map.empty : (nat, TYPES.event_bets) map); events_index = 0n; metadata = (Map.empty : (string, bytes) map)}' -e main
 ```
 - This command produces the following Michelson storage :
 ```ocaml

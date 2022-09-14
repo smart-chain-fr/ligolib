@@ -49,8 +49,8 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
     let () = Test.set_source from in
     let updateEventParam : TYPES.update_event_parameter =
     {
-        updatedEventID = event_num;
-        updatedEvent = event;
+        updated_event_id = event_num;
+        updated_event = event;
     }
     in
     let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0mutez in
@@ -60,7 +60,7 @@ let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * addr
     let () = Test.set_source from in
     let callbackParameter : TYPES.callback_asked_parameter =
     {
-        requestedEventID = event_num;
+        requested_event_id = event_num;
         callback = cbk_addr
     } in
     let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0mutez in

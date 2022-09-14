@@ -39,25 +39,25 @@ let assert_manager (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (ex
 (* Assert Oracle Address parameter with expected result *)
 let assert_oracle (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : address = (ctr_storage.oracleAddress) in
+    let ctr_value : address = (ctr_storage.oracle_address) in
     assert (ctr_value = expected)
     // if (ctr_value = expected)
     //     then Test.log("OK", ctr_value)
     //     else failwith("NOT OK", ctr_value)
 
-(* Assert isBettingPaused parameter with expected result *)
-let assert_isBettingPaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
+(* Assert is_betting_paused parameter with expected result *)
+let assert_is_betting_paused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : bool = (ctr_storage.betConfig.isBettingPaused) in
+    let ctr_value : bool = (ctr_storage.bet_config.is_betting_paused) in
     assert(ctr_value = expected)
     // if (ctr_value = expected)
     //     then Test.log("OK", ctr_value)
     //     else failwith("NOT OK", ctr_value)
 
-(* Assert isPauseisEventCreationPausedd parameter with expected result *)
-let assert_isEventCreationPaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
+(* Assert isPauseis_event_creation_pausedd parameter with expected result *)
+let assert_is_event_creation_paused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : bool = (ctr_storage.betConfig.isEventCreationPaused) in
+    let ctr_value : bool = (ctr_storage.bet_config.is_event_creation_paused) in
     assert (ctr_value = expected)
     // if (ctr_value = expected)
     //     then Test.log("OK", ctr_value)
@@ -90,6 +90,6 @@ let assert_event (taddr : (BETTING_CALLBACK.parameter, BETTING_CALLBACK.storage)
     let () = assert(storage.end_at=expected_event.end_at) in
     let () = assert(storage.modified_at=expected_event.modified_at) in
     let () = assert(storage.opponents=expected_event.opponents) in
-    let () = assert(storage.isFinalized=expected_event.isFinalized) in
-    let () = assert(storage.isDraw=expected_event.isDraw) in
-    assert(storage.isTeamOneWin=expected_event.isTeamOneWin)
+    let () = assert(storage.is_finalized=expected_event.is_finalized) in
+    let () = assert(storage.is_draw=expected_event.is_draw) in
+    assert(storage.is_team_one_win=expected_event.is_team_one_win)
