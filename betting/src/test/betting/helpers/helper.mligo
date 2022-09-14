@@ -93,14 +93,15 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
   result
 
 let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * address * address * nat) =
-  let () = Test.set_source from in
-  let callbackParameter : TYPES.callback_asked_parameter =
-  {
-      requestedEventID = event_num;
-      callback = cbk_addr
-  } in
-  let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0mutez in
-  result_cbk
+    let () = Test.set_source from in
+    let callbackParameter : TYPES.callback_asked_parameter =
+    {
+        requestedEventID = event_num;
+        callback = cbk_addr
+    } in
+    let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0mutez in
+    result_cbk
+
 
 let trscAddBet  (contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : TYPES.action contract * address * nat * bool * tez) =
   let () = Test.set_source from in

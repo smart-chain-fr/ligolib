@@ -11,8 +11,8 @@
 let () = Log.describe("[getEvent] test suite")
 
 let test_get_event =
-    let (betting_contract, betting_taddress, elon, _jeff, _, _, _) = BOOTSTRAP.bootstrap() in
-    let (callback_contract, callback_taddr, callback_addr) = BOOTSTRAP.bootstrap_callback in 
+    let (betting_contract, betting_taddress, elon, _, _, _, _) = BOOTSTRAP.bootstrap() in
+    let (_, _, callback_addr) = BOOTSTRAP.bootstrap_callback in 
     let () = HELPER.trscAddEvent_success (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent))in
     let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap in
     HELPER.trscGetEvent (betting_contract, elon, callback_addr, 0n)

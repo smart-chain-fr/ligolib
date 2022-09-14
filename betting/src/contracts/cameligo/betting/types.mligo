@@ -47,7 +47,7 @@ type storage = {
   metadata : (string, bytes) map;
 }
 
-type get_event_parameter =
+type callback_asked_parameter =
   [@layout:comb] {
   requestedEventID : nat;
   callback : address;
@@ -66,40 +66,6 @@ type add_bet_parameter =
 }
 
 type finalize_bet_parameter = nat
-
-type callback_event_parameter = 
-  [@layout:comb] {
-  name : string;
-  videogame : string;
-  begin_at : timestamp;
-  end_at : timestamp;
-  modified_at : timestamp;
-  opponents : { teamOne : string; teamTwo : string};
-  isFinalized : bool;
-  isDraw : bool option;
-  isTeamOneWin : bool option;
-  startBetTime : timestamp;
-  closedBetTime : timestamp;
-  betsTeamOne : (address, tez) map;
-  betsTeamOne_index : nat;
-  betsTeamOne_total : tez;
-  betsTeamTwo : (address, tez) map;
-  betsTeamTwo_index : nat;
-  betsTeamTwo_total : tez;
-  }
-
-type callback_asked_parameter =
-  [@layout:comb] {
-  requestedEventID : nat;
-  callback : address
-}
-
-type callback_returned_value =
-  [@layout:comb] {
-  requestedEvent : callback_event_parameter;
-  callback : address
-}
-
 
 type add_event_parameter = 
 [@layout:comb] {
@@ -124,7 +90,7 @@ type action =
   | SwitchPauseEventCreation
   | UpdateConfigType of bet_config_type
   | AddEvent of add_event_parameter
-  | GetEvent of get_event_parameter
+  | GetEvent of callback_asked_parameter
   | UpdateEvent of update_event_parameter
   | AddBet of add_bet_parameter
   | FinalizeBet of finalize_bet_parameter

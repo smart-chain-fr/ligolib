@@ -68,6 +68,6 @@ let bootstrap_callback =
   let bettingPath           = "contracts/cameligo/betting/callback/main.mligo" in
   let iTres                 = Test.run (fun (x : CALLBACK.storage) -> x) callbackInitStorage in
   let (callback_addr, _, _) = Test.originate_from_file bettingPath "main" ([] : string list) iTres 0mutez in
-  let callback_taddress     = (Test.cast_address callback_addr : (CALLBACK.action, CALLBACK.storage) typed_address) in
+  let callback_taddress     = (Test.cast_address callback_addr : (CALLBACK.parameter, CALLBACK.storage) typed_address) in
   let callback_contract     = Test.to_contract callback_taddress in
   (callback_contract, callback_taddress, callback_addr)

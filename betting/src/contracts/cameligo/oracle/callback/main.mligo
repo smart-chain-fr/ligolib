@@ -29,15 +29,15 @@ type parameter = SaveEvent of requested_event_param | Nothing of unit
 
 let saveEvent(param, store : requested_event_param * storage) : operation list * storage =
   (([]: operation list), { store with 
-    name=param.name;
-    videogame=param.videogame;
-    begin_at=param.begin_at;
-    end_at=param.end_at;
-    modified_at=param.modified_at;
-    opponents=param.opponents;
-    isFinalized=param.isFinalized;
-    isDraw=param.isDraw;
-    isTeamOneWin=param.isTeamOneWin;
+    name = param.name;
+    videogame = param.videogame;
+    begin_at = param.begin_at;
+    end_at = param.end_at;
+    modified_at = param.modified_at;
+    opponents = param.opponents;
+    isFinalized = param.isFinalized;
+    isDraw = param.isDraw;
+    isTeamOneWin = param.isTeamOneWin;
   })
 
 let main ((p, s):(parameter * storage)) : operation list * storage =
