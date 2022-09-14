@@ -115,11 +115,11 @@ let update_event (updated_event_id : nat)(updatedEvent : TYPES.event_type)(s : T
   let _ = ASSERT.assert_event_bet_start_to_end_date updatedEvent.startBetTime updatedEvent.closedBetTime in
   let _ = ASSERT.assert_event_bet_start_after_end updatedEvent.startBetTime updatedEvent.end_at in
   let _ = ASSERT.assert_event_bet_ends_after_end updatedEvent.closedBetTime updatedEvent.end_at in
-  let _ = ASSERT.assert_betting_not_finalized (updatedEvent.isFinalized) in
-  let _ = match Big_map.find_opt updated_event_id s.events with
+  let requested_event = match Big_map.find_opt updated_event_id s.events with
     | Some event -> event
     | None -> (failwith ERRORS.no_event_id)
   in
+  let _ = ASSERT.assert_betting_not_finalized (requested_event.isFinalized) in
   let new_events : (nat, TYPES.event_type) big_map = Big_map.update updated_event_id (Some(updatedEvent)) s.events in
   (([] : operation list), {s with events = new_events})
 
@@ -239,7 +239,7 @@ let finalize_bet (p_requested_event_id : nat)(s : TYPES.storage) : (operation li
     | None -> failwith ERRORS.no_event_id
   in
   let _check_is_claimed : unit = assert_with_error (requested_event.is_claimed = False) ERRORS.event_already_claimed in
-  let _ = ASSERT.assert_betting_not_finalized (requested_event.isFinalized) in
+  let _ = ASSERT.assert_betting_finalized (requested_event.isFinalized) in
   let event_bets : TYPES.event_bets = match (Big_map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith ERRORS.no_event_bets
