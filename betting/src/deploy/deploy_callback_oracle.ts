@@ -25,10 +25,10 @@ let store = {
     'begin_at': 1660741034,
     'end_at': 1660741034 + 3600,
     'modified_at': 1660741034,
-    'opponents': { 'teamOne': '', 'teamTwo': '' },
-    'isFinalized': false,
-    'isDraw': false,
-    'isTeamOneWin': false,
+    'opponents': { 'team_one': '', 'team_two': '' },
+    'is_finalized': false,
+    'is_draw': false,
+    'is_team_one_win': false,
     'metadata': (MichelsonMap.fromLiteral({
         '': char2Bytes("tezos-storage:contents"),
         'contents': char2Bytes(JSON.stringify(metadataJson))

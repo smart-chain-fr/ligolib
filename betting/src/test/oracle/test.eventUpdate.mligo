@@ -6,7 +6,7 @@
 
 let () = Test.log("___ TEST updateEvent STARTED ___")
 
-let updatedEventMap : (nat, TYPES.event_type) map = Map.literal [
+let updated_eventMap : (nat, TYPES.event_type) map = Map.literal [
     (0n, BOOTSTRAP.secondaryEvent)
     ]
 
@@ -15,7 +15,7 @@ let () = HELPER.trscAddEvent (oracle_contract, elon, BOOTSTRAP.primaryEvent)
 
 let () = Test.log("-> Updating the first Event from Manager")
 let () = HELPER.trscUpdateEvent (oracle_contract, elon, 0n, BOOTSTRAP.secondaryEvent)
-let () = ASSERT.assert_eventsMap oracle_taddress updatedEventMap
+let () = ASSERT.assert_eventsMap oracle_taddress updated_eventMap
 
 let () = Test.log("-> Updating the first Event from Signer")
 let () = HELPER.trscUpdateEvent (oracle_contract, jeff, 0n, BOOTSTRAP.primaryEvent)

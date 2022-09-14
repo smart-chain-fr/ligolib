@@ -20,16 +20,16 @@ Tezos.tz
     .catch((error) => console.log(JSON.stringify(error)));
 
 let init_bet_config_type = {
-    'isBettingPaused': false,
-    'isEventCreationPaused': false,
-    'minBetAmount': 1000000,
-    'retainedProfitQuota': 10,
+    'is_betting_paused': false,
+    'is_event_creation_paused': false,
+    'min_bet_amount': 1000000,
+    'retained_profit_quota': 10,
 }
 
 let store = {
     'manager': process.env.ADMIN_ADDRESS,
-    'oracleAddress': process.env.ORACLE_ADDRESS,
-    'betConfig': init_bet_config_type,
+    'oracle_address': process.env.ORACLE_ADDRESS,
+    'bet_config': init_bet_config_type,
     'events': (new (MichelsonMap)),
     'events_bets': (new (MichelsonMap)),
     'events_index': 0,

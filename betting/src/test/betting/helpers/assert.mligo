@@ -1,4 +1,5 @@
 #import "../../../contracts/cameligo/betting/types.mligo" "TYPES"
+#import "../../../contracts/cameligo/betting/callback/main.mligo" "BETTING_CALLBACK"
 
 (* Assert contract result is successful *)
 let tx_success (res: test_exec_result) : unit =
@@ -38,25 +39,25 @@ let assert_manager (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (ex
 (* Assert Oracle Address parameter with expected result *)
 let assert_oracle (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : address = (ctr_storage.oracleAddress) in
+    let ctr_value : address = (ctr_storage.oracle_address) in
     assert (ctr_value = expected)
     // if (ctr_value = expected)
     //     then Test.log("OK", ctr_value)
     //     else failwith("NOT OK", ctr_value)
 
-(* Assert isBettingPaused parameter with expected result *)
-let assert_isBettingPaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
+(* Assert is_betting_paused parameter with expected result *)
+let assert_is_betting_paused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : bool = (ctr_storage.betConfig.isBettingPaused) in
+    let ctr_value : bool = (ctr_storage.bet_config.is_betting_paused) in
     assert(ctr_value = expected)
     // if (ctr_value = expected)
     //     then Test.log("OK", ctr_value)
     //     else failwith("NOT OK", ctr_value)
 
-(* Assert isPauseisEventCreationPausedd parameter with expected result *)
-let assert_isEventCreationPaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
+(* Assert isPauseis_event_creation_pausedd parameter with expected result *)
+let assert_is_event_creation_paused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : bool = (ctr_storage.betConfig.isEventCreationPaused) in
+    let ctr_value : bool = (ctr_storage.bet_config.is_event_creation_paused) in
     assert (ctr_value = expected)
     // if (ctr_value = expected)
     //     then Test.log("OK", ctr_value)
@@ -66,9 +67,10 @@ let assert_isEventCreationPaused (ctr_taddr : (TYPES.action, TYPES.storage) type
 let assert_eventsMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_type) big_map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
     let ctr_value : (nat, TYPES.event_type) big_map = (ctr_storage.events) in
-    if (ctr_value = expected)
-        then Test.log("OK", ctr_value)
-        else failwith("NOT OK", ctr_value)
+    assert (ctr_value = expected)
+    // if (ctr_value = expected)
+    //     then Test.log("OK", ctr_value)
+    //     else failwith("NOT OK", ctr_value)
 
 (* Assert Events Bets Map parameter with expected result *)
 let assert_eventsBetMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_bets) big_map) : unit =
@@ -77,3 +79,17 @@ let assert_eventsBetMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address
     if (ctr_value = expected)
         then Test.log("OK", ctr_value)
         else failwith("NOT OK", ctr_value)
+
+let assert_event (taddr : (BETTING_CALLBACK.parameter, BETTING_CALLBACK.storage) typed_address) (expected_event : TYPES.event_type) : unit =
+    let storage = Test.get_storage(taddr) in
+    // let () = Test.log(storage) in
+    // let () = Test.log(expected_event) in
+    let () = assert(storage.name=expected_event.name) in
+    let () = assert(storage.videogame=expected_event.videogame) in
+    let () = assert(storage.begin_at=expected_event.begin_at) in
+    let () = assert(storage.end_at=expected_event.end_at) in
+    let () = assert(storage.modified_at=expected_event.modified_at) in
+    let () = assert(storage.opponents=expected_event.opponents) in
+    let () = assert(storage.is_finalized=expected_event.is_finalized) in
+    let () = assert(storage.is_draw=expected_event.is_draw) in
+    assert(storage.is_team_one_win=expected_event.is_team_one_win)

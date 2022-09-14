@@ -23,7 +23,7 @@ let assert_not_previous_manager (p_new_manager : address)(p_prev_manager : addre
 
 let assert_not_previous_oracle (p_new_oracle : address)(p_prev_oracle : address) : unit =
   if (p_new_oracle = p_prev_oracle)
-    then failwith ERRORS.same_previous_oracleAddress
+    then failwith ERRORS.same_previous_oracle_address
 
 // --------------------------------------
 //         EVENT RELATED ASSERTIONS

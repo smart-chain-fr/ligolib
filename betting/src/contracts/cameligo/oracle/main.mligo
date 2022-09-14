@@ -24,9 +24,9 @@ let add_event (new_event : TYPES.event_type)(s : TYPES.storage) : (operation lis
   let new_events : (nat, TYPES.event_type) map = (Map.add (s.events_index) new_event s.events) in
   (([] : operation list), {s with events = new_events; events_index = (s.events_index + 1n)})
 
-let get_event (requestedEventID : nat)(callbackAddr : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
+let get_event (requested_event_id : nat)(callbackAddr : address)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let cbk_event =
-    match Map.find_opt requestedEventID s.events with
+    match Map.find_opt requested_event_id s.events with
       Some event -> event
     | None -> (failwith ERRORS.no_event_id)
     in
@@ -38,14 +38,14 @@ let get_event (requestedEventID : nat)(callbackAddr : address)(s : TYPES.storage
   let op : operation = Tezos.transaction cbk_event 0mutez destination in
   ([op], s)
 
-let update_event (updatedEventID : nat)(updatedEvent : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
+let update_event (updated_event_id : nat)(updated_event : TYPES.event_type)(s : TYPES.storage) : (operation list * TYPES.storage) =
   let _ = ASSERT.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
   let _ : TYPES.event_type =
-    match Map.find_opt updatedEventID s.events with
+    match Map.find_opt updated_event_id s.events with
       Some event -> event
     | None -> (failwith ERRORS.no_event_id)
   in
-  let new_events : (nat, TYPES.event_type) map = Map.update updatedEventID (Some(updatedEvent)) s.events in
+  let new_events : (nat, TYPES.event_type) map = Map.update updated_event_id (Some(updated_event)) s.events in
   (([] : operation list), {s with events = new_events})
   
 let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.storage) =
@@ -55,8 +55,8 @@ let main (params, s : TYPES.action * TYPES.storage) : (operation list * TYPES.st
     | ChangeSigner a -> change_signer a s
     | SwitchPause -> switch_pause s
     | AddEvent e -> add_event e s
-    | GetEvent p -> get_event p.requestedEventID p.callback s
-    | UpdateEvent p -> update_event p.updatedEventID p.updatedEvent s
+    | GetEvent p -> get_event p.requested_event_id p.callback s
+    | UpdateEvent p -> update_event p.updated_event_id p.updated_event s
   in
   result
 

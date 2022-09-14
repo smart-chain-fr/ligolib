@@ -18,10 +18,10 @@ let base_storage : CALLBACK.storage = {
     begin_at = plainTimestamp + 2000;
     end_at = plainTimestamp + 4000;
     modified_at = plainTimestamp;
-    opponents = { teamOne = ""; teamTwo = ""};
-    isFinalized = false;
-    isDraw = (None : bool option);
-    isTeamOneWin = (None : bool option);
+    opponents = { team_one = ""; team_two = ""};
+    is_finalized = false;
+    is_draw = (None : bool option);
+    is_team_one_win = (None : bool option);
     metadata = (Map.empty : (string, bytes) map);
 }
 

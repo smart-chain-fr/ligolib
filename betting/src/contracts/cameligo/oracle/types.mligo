@@ -5,10 +5,10 @@ type event_type =
   begin_at : timestamp;
   end_at : timestamp;
   modified_at : timestamp;
-  opponents : { teamOne : string; teamTwo : string};
-  isFinalized : bool;
-  isDraw : bool option;
-  isTeamOneWin : bool option;
+  opponents : { team_one : string; team_two : string};
+  is_finalized : bool;
+  is_draw : bool option;
+  is_team_one_win : bool option;
 }
 
 type storage =
@@ -23,13 +23,13 @@ type storage =
 
 type update_event_parameter =
   [@layout:comb] {
-  updatedEventID : nat;
-  updatedEvent : event_type;
+  updated_event_id : nat;
+  updated_event : event_type;
 }
 
 type callback_asked_parameter =
   [@layout:comb] {
-  requestedEventID : nat;
+  requested_event_id : nat;
   callback : address
 }
 

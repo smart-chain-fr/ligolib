@@ -7,26 +7,22 @@
 // let () = Test.log("___ TEST ChangeManager STARTED ___")
 let () = Log.describe("[ChangeManager] test suite")
 
-let test_change_manager =
-    let (betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap() in
-
-    // Initial Storage
-    let () = Test.log(betting_contract, betting_taddress, elon, jeff) in
-
-    // Initial Storage assert
-    let () = ASSERT.assert_manager betting_taddress elon in
-
+let test_failure_change_manager_unauthorized =
     // Changing Manager of the contract from unauthorized address
+    let (_betting_address, betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap() in
+    //let () = Test.log(betting_contract, betting_taddress, elon, jeff) in
+    let () = ASSERT.assert_manager betting_taddress elon in
     let result = HELPER.trscChangeManager (betting_contract, jeff, jeff) in
     let () = ASSERT.string_failure result BETTING.ERRORS.not_manager in
-    let () = ASSERT.assert_manager betting_taddress elon in
-
-    // Changing Manager of the contract from original Manager
-    let () = HELPER.trscChangeManager_success (betting_contract, elon, jeff) in
-    let () = ASSERT.assert_manager betting_taddress jeff in
-
-    // Changing Manager of the contract from the current Manager
-    let () = HELPER.trscChangeManager_success (betting_contract, jeff, elon) in
     ASSERT.assert_manager betting_taddress elon
 
-// let () = Test.log("___ TEST ChangeManager ENDED ___")
+let test_success_change_manager_authorized =
+    // Changing Manager of the contract from original Manager, and back to 
+    let (_betting_address, betting_contract, betting_taddress, elon, jeff, _, _, _) = BOOTSTRAP.bootstrap() in
+    //let () = Test.log(betting_contract, betting_taddress, elon, jeff) in
+    let () = ASSERT.assert_manager betting_taddress elon in
+    let () = HELPER.trscChangeManager_success (betting_contract, elon, jeff) in
+    let () = ASSERT.assert_manager betting_taddress jeff in
+    // Changing Manager of the contract from current Manager, back to original Manager 
+    let () = HELPER.trscChangeManager_success (betting_contract, jeff, elon) in
+    ASSERT.assert_manager betting_taddress elon
