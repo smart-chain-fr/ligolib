@@ -7,6 +7,10 @@ WHITE  := $(shell command -v tput >/dev/null 2>&1 && tput -Txterm setaf 7 || ech
 YELLOW := $(shell command -v tput >/dev/null 2>&1 && tput -Txterm setaf 3 || echo "")
 RESET  := $(shell command -v tput >/dev/null 2>&1 && tput -Txterm sgr0 || echo "")
 
+
+project_root=--project-root .
+
+
 # Add help text after each target name starting with '\#\#'
 # A category can be added with @category
 HELP_FUN = \
@@ -37,10 +41,10 @@ ifndef LIGO
 LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0
 endif
 
-compile = $(LIGO) compile contract ./src/$(1) -o ./compiled/$(2) $(3)
+compile = $(LIGO) compile contract $(project_root) ./src/$(1) -o ./compiled/$(2) $(3)
 # ^ Compile contracts to Michelson or Micheline
 
-test-ligo = $(LIGO) run test ./test/ligo/$(1)
+test-ligo = $(LIGO) run test $(project_root) ./test/ligo/$(1)
 # ^ Run the given LIGO Test file
 
 compile: ##@Contracts - Compile LIGO contracts
@@ -51,7 +55,8 @@ compile: ##@Contracts - Compile LIGO contracts
 
 test-ligo: ##@Contracts - Run LIGO tests (make test-ligo SUITE=factory)
 ifndef SUITE
-	@$(call test-ligo,vesting.entrypoint_1.test.mligo)
+	@$(call test-ligo,vesting.start.test.mligo)
+	@$(call test-ligo,vesting.release.test.mligo)
 else
 	@$(call test-ligo,$(SUITE).test.mligo)
 endif
@@ -69,7 +74,7 @@ clean: ##@Contracts - Contracts clean up
 install: ##@Scripts - Install NPM dependencies
 	@if [ ! -f ./.env ]; then cp .env.dist .env ; fi
 	@$(LIGO) install
-	@npm i
+	
 
 deploy: ##@Scripts - Deploy contracts
 	@if [ ! -f ./scripts/metadata.json ]; then cp scripts/metadata.json.dist \

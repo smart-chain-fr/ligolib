@@ -1,12 +1,98 @@
 #import "storage.mligo" "Storage"
 #import "parameter.mligo" "Parameter"
 #import "errors.mligo" "Errors"
+#import "tezos-ligo-fa2/lib/fa2/asset/multi_asset.mligo" "FA2"
 
 type storage = Storage.t
 type parameter = Parameter.t
 type return = operation list * storage
 
+let make_fa2_transfer(from, to, token_address, token_id, amount : address * address * address * nat * nat) : operation =
+    let destination : FA2.transfer contract = match (Tezos.get_entrypoint_opt "%transfer" token_address : FA2.transfer contract option) with
+    | None -> failwith "FA2 unknown transfer entrypoint"
+    | Some ctr -> ctr
+    in
+    let payload : FA2.transfer = [{from_=from; tx=[{to_=to; token_id=token_id; amount=amount}]}] in
+    Tezos.transaction payload 0mutez destination
+
+let compute_releasable_amount(total_beneficiary, already_released, end_of_cliff, vesting_end, release_duration : nat * nat * timestamp * timestamp * nat) : nat =
+    if (Tezos.get_now() - end_of_cliff < 0) then
+        0n
+    else if (Tezos.get_now() - vesting_end > 0) then
+        abs(total_beneficiary - already_released)
+    else 
+        let ratio = abs(Tezos.get_now() - end_of_cliff) / release_duration in
+        abs(total_beneficiary * ratio - already_released)
+
+
+let start(_param, s : unit * storage) : operation list * storage =
+    let _check_already_started : unit = assert_with_error (s.started = False) Errors.vesting_already_started in
+    let _check_sender_admin : unit = assert_with_error (Tezos.get_sender() = s.admin) Errors.not_admin in
+    let _check_vesting_duration : unit = assert_with_error (s.release_duration > 0n) Errors.vesting_duration_zero in
+    let _check_vesting_duration_higher_than_cliff : unit = assert_with_error (s.release_duration >= s.cliff_duration) Errors.vesting_duration_smaller_than_cliff_duration in
+
+    // compute vested_amount based on beneficiaries
+    let sum_beneficiaries_amounts(acc, elt : nat * (address * nat)) : nat = acc + elt.1 in
+    let vested_amount = Map.fold sum_beneficiaries_amounts s.beneficiaries 0n in
+    // admin transfer funds to vesting contract
+    let op = make_fa2_transfer(Tezos.get_sender(), Tezos.get_self_address(), s.token_address, s.token_id, vested_amount) in
+    // setup timestamps
+    let current_timestamp = Tezos.get_now() in
+    let end_of_cliff_timestamp = current_timestamp + int(s.cliff_duration) in
+    let start_timestamp = current_timestamp in
+    let vesting_end_timestamp = current_timestamp + int(s.release_duration) in
+    let modified_storage = { s with
+        started = True; 
+        vested_amount=vested_amount; 
+        start=(Some(start_timestamp)); 
+        vesting_end=(Some(vesting_end_timestamp)); 
+        end_of_cliff=(Some(end_of_cliff_timestamp));
+    }
+    in
+    ([op], modified_storage)
+
+let revoke(_param, s : unit * storage) : operation list * storage =
+    (([] : operation list), s)
+
+let revoke_beneficiary(_param, s : Parameter.revoke_beneficiary_param * storage) : operation list * storage =
+    (([] : operation list), s)
+
+let release(_param, s : unit * storage) : operation list * storage =
+    let sender = Tezos.get_sender() in
+    let _check_is_started : unit = assert_with_error (s.started = True) Errors.vesting_not_started in
+    let total_beneficiary_amount = match Map.find_opt sender s.beneficiaries with
+    | None -> failwith Errors.sender_not_beneficiary
+    | Some val -> val
+    in
+    let beneficiary_revoked = match Map.find_opt sender s.revoked_addresses with
+    | None -> False
+    | Some revoked -> revoked
+    in
+    let _check_is_not_revoked : unit = assert_with_error (beneficiary_revoked = False) Errors.beneficiary_revoked in
+    
+    // compute releasable amount
+    let already_released_amount = match (Map.find_opt sender s.released) with
+    | None -> 0n
+    | Some released -> released
+    in
+    let releasable_amount = compute_releasable_amount(
+        total_beneficiary_amount, 
+        already_released_amount, 
+        Option.unopt(s.end_of_cliff), 
+        Option.unopt(s.vesting_end), 
+        s.release_duration
+    ) in
+    let _check_nothing_to_release : unit = assert_with_error (releasable_amount > 0n) Errors.nothing_to_release in
+    let modified_storage = { s with 
+        total_released=s.total_released+releasable_amount;
+        released=Map.update sender (Some(already_released_amount + releasable_amount)) s.released;
+    } in
+    let op : operation = make_fa2_transfer(Tezos.get_self_address(), sender, s.token_address, s.token_id, releasable_amount) in
+    ([op], modified_storage)
+
 let main(param, store : parameter * storage) : return =
     match param with
-    | Entrypoint_1 _p -> (([] : operation list), store)
-    | Entrypoint_2 _p -> (([] : operation list), store)
+    | Start p -> start(p, store)
+    | Revoke p -> revoke(p, store)
+    | RevokeBeneficiary p -> revoke_beneficiary(p, store)
+    | Release p -> release(p, store)

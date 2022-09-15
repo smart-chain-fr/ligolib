@@ -1,9 +1,8 @@
-type entrypoint_1_param = {
-    name : string
-}
+type revoke_beneficiary_param = address
 
-type entrypoint_2_param = {
-    name : string
-}
+type t = 
+      Start of unit 
+    | Revoke of unit
+    | RevokeBeneficiary of address
+    | Release of unit
 
-type t = Entrypoint_1 of entrypoint_1_param | Entrypoint_2 of entrypoint_2_param

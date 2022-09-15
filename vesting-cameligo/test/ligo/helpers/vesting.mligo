@@ -10,13 +10,30 @@ type originated = {
     contr: contr;
 }
 
+let zero_timestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
+
 (* Base Factory storage *)
-let base_storage (admin : address) : Vesting.storage = {
+let base_storage (admin, token_address, token_id, beneficiaries, vesting_duration : address * address * nat * (address, nat)map * nat) : Vesting.storage = {
+    token_address=token_address;
+    token_id=token_id;
+    beneficiaries=beneficiaries;
+    revocable=True;
+    release_duration=vesting_duration;
+    cliff_duration=1000n;
     admin = admin;
+    released=(Map.empty : (address, nat) map);
+    revoked=False;
+    revoked_addresses=(Map.empty :(address, bool) map);
+    vested_amount=0n;
+    started=False;
+    total_released=0n;
+    end_of_cliff=(None : timestamp option);
+    vesting_end=(None : timestamp option);
+    start=(None : timestamp option);
     metadata = (Big_map.empty : (string, bytes) big_map);
 }
 
-(* Originate a Factory contract with given init_storage storage *)
+(* Originate a Vesting contract with given init_storage storage *)
 let originate (init_storage : Vesting.storage) =
     let (taddr, _, _) = Test.originate Vesting.main init_storage 0mutez in
     let contr = Test.to_contract taddr in
@@ -34,11 +51,30 @@ let call_success (p, contr: Vesting.parameter * contr) =
 let call_with_amount (p, amount_, contr : Vesting.parameter * tez * contr) =
     Test.transfer_to_contract contr p amount_
 
-let entrypoint_1 (p, amount_, contr : Vesting.Parameter.entrypoint_1_param * tez * contr) =
-    call_with_amount(Entrypoint_1(p), amount_, contr)
+let start (p, amount_, contr : unit * tez * contr) =
+    call_with_amount(Start(p), amount_, contr)
 
-let entrypoint_1_success (p, amount_, contr : Vesting.Parameter.entrypoint_1_param * tez * contr) =
-    Assert.tx_success (entrypoint_1(p, amount_, contr))
+let revoke (p, amount_, contr : unit * tez * contr) =
+    call_with_amount(Revoke(p), amount_, contr)
+
+let revoke_beneficiary (p, amount_, contr : Vesting.Parameter.revoke_beneficiary_param * tez * contr) =
+    call_with_amount(RevokeBeneficiary(p), amount_, contr)
+
+let release (p, amount_, contr : unit * tez * contr) =
+    call_with_amount(Release(p), amount_, contr)
+
+let start_success (p, amount_, contr : unit * tez * contr) =
+    Assert.tx_success (start(p, amount_, contr))
+
+let revoke_success (p, amount_, contr : unit * tez * contr) =
+    Assert.tx_success (revoke(p, amount_, contr))
+
+let revoke_beneficiary_success (p, amount_, contr : Vesting.Parameter.revoke_beneficiary_param * tez * contr) =
+    Assert.tx_success (revoke_beneficiary(p, amount_, contr))
+
+let release_success (p, amount_, contr : unit * tez * contr) =
+    Assert.tx_success (release(p, amount_, contr))
+
 
 // (* assert Factory contract at [taddr] have [owner] address with [size] collections *)
 // let assert_owned_collections_size (taddr, owner, size : taddr * Factory.Storage.collectionOwner * nat) =
@@ -48,3 +84,12 @@ let entrypoint_1_success (p, amount_, contr : Vesting.Parameter.entrypoint_1_par
 //         (* assert(lst.size = size) *)
 //         | None -> failwith("Big_map key should not be missing")
 
+let assert_vesting_started(taddr, expected_started : taddr * bool) = 
+    let s = Test.get_storage taddr in
+    assert(s.started = expected_started)
+
+let assert_released_amount(taddr, owner, expected_released_amount : taddr * address * nat) =
+    let s = Test.get_storage taddr in
+    match Map.find_opt owner s.released with
+    | None -> assert(0n = expected_released_amount)
+    | Some released_amount -> assert(released_amount = expected_released_amount)
