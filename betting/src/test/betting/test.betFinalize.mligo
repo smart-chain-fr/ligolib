@@ -205,3 +205,36 @@ let test_winning_without_counterparty_refund_should_work =
   //Then
   let _ = assert (expected_alice_balance = Test.get_balance(alice)) in
   "OK"
+
+
+(**
+ *  Finalising an event not finished should fail
+ *)
+let test_finalizing_event_not_finished_should_fail = 
+  //Given
+  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
+  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
+  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
+  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 1000tez) in
+  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_too_long) in
+  //When
+  let result = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  //Then
+  let _ = ASSERT.string_failure result ERRORS.bet_period_not_finished in
+  "OK"
+
+
+(**
+ *  Finalising an event without manager rights should fail
+ *)
+let test_finalizing_event_without_manager_rights_should_fail = 
+  //Given
+  let (_betting_address, betting_contract, _, elon, _, alice, _, _) = BOOTSTRAP.bootstrap() in
+  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
+  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
+  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_too_long) in
+  //When
+  let result = HELPER.trscFinalizeBet (betting_contract, alice, 0n) in
+  //Then
+  let _ = ASSERT.string_failure result ERRORS.not_manager in
+  "OK"

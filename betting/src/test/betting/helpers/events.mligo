@@ -92,3 +92,18 @@ let finalized_event_draw : TYPES.event_type = {
   closed_bet_time = plainTimestamp + 2;
   is_claimed    = False;
 }
+
+let finalized_event_too_long : TYPES.event_type = {
+  name          = "First Event";
+  videogame     = "Videogame ONE";
+  begin_at      = plainTimestamp + 3;
+  end_at        = plainTimestamp + 400000;
+  modified_at   = plainTimestamp;
+  opponents     = { team_one = "Team ONE"; team_two = "Team TWO"};
+  is_finalized   = (true : bool);
+  is_draw        = (Some(true) : bool option);
+  is_team_one_win  = (None : bool option);
+  start_bet_time  = plainTimestamp + 1;
+  closed_bet_time = plainTimestamp + 2;
+  is_claimed    = False;
+}
