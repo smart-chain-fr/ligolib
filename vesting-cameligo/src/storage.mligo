@@ -1,5 +1,7 @@
+type fa_type = FA1 of address | FA2 of address
+
 type t = {
-    token_address : address;
+    token_address : fa_type;
     token_id : nat;
     beneficiaries : (address, nat) map;
     revocable : bool;

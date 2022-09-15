@@ -13,11 +13,11 @@ type originated = {
 let zero_timestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
 
 (* Base Factory storage *)
-let base_storage (admin, token_address, token_id, beneficiaries, vesting_duration : address * address * nat * (address, nat)map * nat) : Vesting.storage = {
+let base_storage (admin, token_address, token_id, beneficiaries, vesting_duration, revocable : address * Vesting.Storage.fa_type * nat * (address, nat)map * nat * bool) : Vesting.storage = {
     token_address=token_address;
     token_id=token_id;
     beneficiaries=beneficiaries;
-    revocable=True;
+    revocable=revocable;
     release_duration=vesting_duration;
     cliff_duration=1000n;
     admin = admin;
@@ -93,3 +93,14 @@ let assert_released_amount(taddr, owner, expected_released_amount : taddr * addr
     match Map.find_opt owner s.released with
     | None -> assert(0n = expected_released_amount)
     | Some released_amount -> assert(released_amount = expected_released_amount)
+
+
+let assert_vesting_revoked(taddr, expected_revoked : taddr * bool) = 
+    let s = Test.get_storage taddr in
+    assert(s.revoked = expected_revoked)
+
+let assert_beneficiary_revoked(taddr, beneficiary, expected_status : taddr * address * bool) = 
+    let s = Test.get_storage taddr in
+    match Map.find_opt beneficiary s.revoked_addresses with
+    | None -> assert(expected_status = False)
+    | Some status -> assert(status = expected_status)

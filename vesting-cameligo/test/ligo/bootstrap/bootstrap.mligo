@@ -16,6 +16,6 @@ let boot_fa2 (token_id, user : nat * address) =
     let fa2 = FA2_helper.originate(FA2_helper.base_storage(token_id, user)) in
     fa2
 
-let boot_vesting (admin, token_address, token_id, beneficiaries, vesting_duration : address * address * nat * (address, nat)map * nat) =
-    let vesting = Vesting_helper.originate(Vesting_helper.base_storage(admin, token_address, token_id, beneficiaries, vesting_duration)) in
+let boot_vesting (admin, token_address, token_id, beneficiaries, vesting_duration, revocable : address * Vesting_helper.Vesting.Storage.fa_type * nat * (address, nat)map * nat * bool) =
+    let vesting = Vesting_helper.originate(Vesting_helper.base_storage(admin, token_address, token_id, beneficiaries, vesting_duration, revocable)) in
     vesting

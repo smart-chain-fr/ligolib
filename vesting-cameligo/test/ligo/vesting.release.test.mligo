@@ -17,7 +17,7 @@ let test_failure_release_during_cliff =
     let token_id = 0n in
     let fa2 = Bootstrap.boot_fa2(token_id, admin) in
     let beneficiaries = Map.literal[(alice, 20n);(bob, 10n)] in
-    let vesting = Bootstrap.boot_vesting(admin, fa2.addr, token_id, beneficiaries, 10000n) in
+    let vesting = Bootstrap.boot_vesting(admin, FA2(fa2.addr), token_id, beneficiaries, 10000n, True) in
     let () = FA2_helper.update_operators_success([Add_operator({owner=admin; operator=vesting.addr; token_id=token_id})], fa2.contr) in
     
     let () = Test.set_source admin in
@@ -32,7 +32,7 @@ let test_failure_release_not_started =
     let token_id = 0n in
     let fa2 = Bootstrap.boot_fa2(token_id, admin) in
     let beneficiaries = Map.literal[(alice, 20n);(bob, 10n)] in
-    let vesting = Bootstrap.boot_vesting(admin, fa2.addr, token_id, beneficiaries, 10000n) in
+    let vesting = Bootstrap.boot_vesting(admin, FA2(fa2.addr), token_id, beneficiaries, 10000n, True) in
     let () = FA2_helper.update_operators_success([Add_operator({owner=admin; operator=vesting.addr; token_id=token_id})], fa2.contr) in
 
     let () = Test.set_source alice in
@@ -46,7 +46,7 @@ let test_failure_release_not_started =
 //     let token_id = 0n in
 //     let fa2 = Bootstrap.boot_fa2(token_id, admin) in
 //     let beneficiaries = Map.literal[(alice, 20n);(bob, 10n)] in
-//     let vesting = Bootstrap.boot_vesting(admin, fa2.addr, token_id, beneficiaries, 10000n) in
+//     let vesting = Bootstrap.boot_vesting(admin, FA2(fa2.addr), token_id, beneficiaries, 10000n) in
 //     let () = FA2_helper.update_operators_success([Add_operator({owner=admin; operator=vesting.addr; token_id=token_id})], fa2.contr) in
     
 //     let () = Test.set_source admin in
