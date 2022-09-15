@@ -1,58 +1,47 @@
-#import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
-#import "../../../contracts/cameligo/oracle/callback/main.mligo" "ORACLE_CALLBACK"
-#import "../../../contracts/cameligo/oracle/errors.mligo" "ORACLE_ERRORS"
+#import "../../../contracts/cameligo/oracle/types.mligo" "Types"
+#import "../../../contracts/cameligo/oracle/callback/main.mligo" "Callback"
 
 (* Assert contract result is successful *)
 let tx_success (res: test_exec_result) : unit =
     match res with
         | Fail (Rejected (error,_)) -> let () = Test.log(error) in failwith "Transaction should not fail"
         | Fail _ -> failwith "Transaction should not fail"
-        | Success(_) -> Test.log("tx_success :", res)
+        | Success(_) -> ()
 
 (* Assert contract call results in failwith with given string *)
-let string_failure (res : test_exec_result) (expected : string) : unit =
-    let _expected = Test.eval expected in
-    let () = match res with
-        | Fail (Rejected (actual,_)) -> assert (actual = _expected)
+let string_failure (res : test_exec_result) (p_expected : string) : unit =
+    let expected = Test.eval p_expected in
+    match res with
+        | Fail (Rejected (actual, _)) -> assert (actual = expected)
         | Fail (Balance_too_low _) -> failwith "Contract failed: Balance too low"
         | Fail (Other s) -> failwith s
         | Success _ -> failwith "Transaction should fail"
-    in
-    Test.log("OK :", expected)
 
 (* Assert Manager parameter with expected result *)
-let assert_manager (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
-    let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
+let assert_manager (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : address) : unit =
+    let ctr_storage : Types.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : address = (ctr_storage.manager) in
-    if (ctr_value = expected)
-        then Test.log("OK", ctr_value)
-        else failwith("NOT OK", ctr_value)
+    assert (ctr_value = expected)
 
 (* Assert Signer parameter with expected result *)
-let assert_signer (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : address) : unit =
-    let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
+let assert_signer (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : address) : unit =
+    let ctr_storage : Types.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : address = (ctr_storage.signer) in
-    if (ctr_value = expected)
-        then Test.log("OK", ctr_value)
-        else failwith("NOT OK", ctr_value)
+    assert (ctr_value = expected)
 
 (* Assert isPaused parameter with expected result *)
-let assert_ispaused (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : bool) : unit =
-    let ctr_storage : TYPES.storage = Test.get_storage(ctr_taddr) in
+let assert_ispaused (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : bool) : unit =
+    let ctr_storage : Types.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : bool = (ctr_storage.isPaused) in
-    if (ctr_value = expected)
-        then Test.log("OK", ctr_value)
-        else failwith("NOT OK", ctr_value)
+    assert (ctr_value = expected)
 
 (* Assert isPaused parameter with expected result *)
-let assert_eventsMap (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) (expected : (nat, TYPES.event_type) map) : unit =
+let assert_eventsMap (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_type) map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
-    let ctr_value : (nat, TYPES.event_type) map = (ctr_storage.events) in
-    if (ctr_value = expected)
-        then Test.log("OK", ctr_value)
-        else failwith("NOT OK", ctr_value)
+    let ctr_value : (nat, Types.event_type) map = (ctr_storage.events) in
+    assert (ctr_value = expected)
 
-let assert_event (taddr : (ORACLE_CALLBACK.parameter, ORACLE_CALLBACK.storage) typed_address) (expected_event : TYPES.event_type) : unit =
+let assert_event (taddr : (Callback.parameter, Callback.storage) typed_address) (expected_event : Types.event_type) : unit =
     let storage = Test.get_storage(taddr) in
     let () = Test.log(storage) in
     let () = Test.log(expected_event) in
@@ -64,4 +53,5 @@ let assert_event (taddr : (ORACLE_CALLBACK.parameter, ORACLE_CALLBACK.storage) t
     let () = assert(storage.opponents=expected_event.opponents) in
     let () = assert(storage.is_finalized=expected_event.is_finalized) in
     let () = assert(storage.is_draw=expected_event.is_draw) in
-    assert(storage.is_team_one_win=expected_event.is_team_one_win)
+    let () = assert(storage.is_team_one_win=expected_event.is_team_one_win) in
+    ()

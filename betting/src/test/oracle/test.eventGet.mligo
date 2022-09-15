@@ -1,26 +1,18 @@
-#import "../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "../../contracts/cameligo/oracle/types.mligo" "TYPES"
-#import "helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "helpers/helper.mligo" "HELPER"
-#import "helpers/assert.mligo" "ASSERT"
+#import "helpers/bootstrap.mligo" "Bootstrap"
+#import "helpers/helper.mligo" "Helper"
+#import "helpers/assert.mligo" "Assert"
 #import "helpers/log.mligo" "Log"
 
+let () = Log.describe("[EventGet] test suite")
 
-//let () = Test.log("___ TEST getEvent STARTED ___")
-let () = Log.describe("[getEvent] test suite")
-
-let test_callback_contract =
-    let (oracle_contract, oracle_taddress, elon, _jeff, _, _, _) = BOOTSTRAP.bootstrap_oracle() in 
-    let originated_oracle_callback = BOOTSTRAP.bootstrap_oracle_callback() in
+let test_callback_contract_should_work =
+    let (oracle_contract, oracle_taddress, elon, _, _, _, _) = Bootstrap.bootstrap_oracle() in 
+    let () = Assert.assert_eventsMap oracle_taddress Helper.empty_map in
+    let originated_oracle_callback = Bootstrap.bootstrap_oracle_callback() in
     
-    let ret = HELPER.trscAddEvent (oracle_contract, elon, BOOTSTRAP.primaryEvent) in
-    let () = ASSERT.tx_success (ret) in
+    let () = Helper.trsc_add_event_success (oracle_contract, elon, Bootstrap.primary_event) in
+    let () = Assert.assert_eventsMap oracle_taddress Helper.one_event_map in
     
-    let () = ASSERT.assert_eventsMap oracle_taddress HELPER.oneEventMap in
-    
-    let ret = HELPER.trscGetEvent (oracle_contract, elon, originated_oracle_callback.addr, 0n) in
-    let () = ASSERT.tx_success (ret) in
-
-    ASSERT.assert_event originated_oracle_callback.taddr BOOTSTRAP.primaryEvent
-
-let () = Test.log("___ TEST getEvent ENDED ___")
+    let () = Helper.trsc_get_event_success (oracle_contract, elon, originated_oracle_callback.addr, 0n) in
+    let () = Assert.assert_event originated_oracle_callback.taddr Bootstrap.primary_event in
+    "OK"

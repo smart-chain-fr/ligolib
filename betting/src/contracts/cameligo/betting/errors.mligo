@@ -1,5 +1,5 @@
 // --------------------------------------
-//         CONFIG RELATED ERRORS
+//         CONFIG RELATED Errors
 // --------------------------------------
 
 let not_manager : string = "Not the Manager of the contract"
@@ -8,7 +8,7 @@ let same_previous_manager : string = "New Manager address can't be the same as t
 let same_previous_oracle_address : string = "New Oracle address can't be the same as the current one"
 
 // --------------------------------------
-//         EVENT RELATED ERRORS
+//         EVENT RELATED Errors
 // --------------------------------------
 
 let no_event_id : string = "No Event with this ID"
@@ -25,7 +25,7 @@ let event_already_claimed : string = "Already been claimed"
 
 
 // --------------------------------------
-//         BETTING RELATED ERRORS
+//         BETTING RELATED Errors
 // --------------------------------------
 
 let betting_paused : string = "Betting is currently paused"

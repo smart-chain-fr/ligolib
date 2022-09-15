@@ -86,67 +86,53 @@ test: test_oracle test_betting
 test_oracle: test_oracle_manager test_oracle_signer test_oracle_pause test_oracle_events
 
 test_oracle_manager: test/oracle/test.manager.mligo
-	@echo "Running Oracle (ChangeManager) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_oracle_signer: test/oracle/test.signer.mligo
-	@echo "Running Oracle (ChangeSigner) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_oracle_pause: test/oracle/test.pause.mligo
-	@echo "Running Oracle (SwitchPause) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_oracle_events: test_oracle_event_add test_oracle_event_update test_oracle_event_get
 
 test_oracle_event_add: test/oracle/test.eventAdd.mligo
-	@echo "Running Oracle AddEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_oracle_event_update: test/oracle/test.eventUpdate.mligo
-	@echo "Running Oracle UpdateEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_oracle_event_get: test/oracle/test.eventGet.mligo
-	@echo "Running Oracle GetEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting: test_betting_manager test_betting_oracle test_betting_pause test_betting_events test_betting_bet
 
 test_betting_manager: test/betting/test.manager.mligo
-	@echo "Running Betting (ChangeManager) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_oracle: test/betting/test.oracle.mligo
-	@echo "Running Betting (ChangeOracleAddress) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_pause: test/betting/test.pause.mligo
-	@echo "Running Betting (SwitchPause) tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_events: test_betting_event_add test_betting_event_update test_betting_event_get
 
 test_betting_event_add: test/betting/test.eventAdd.mligo
-	@echo "Running betting AddEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_event_update: test/betting/test.eventUpdate.mligo
-	@echo "Running betting UpdateEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_event_get: test/betting/test.eventGet.mligo
-	@echo "Running betting GetEvent tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_bet: test_betting_bet_add test_betting_bet_finalize
 
 test_betting_bet_add: test/betting/test.betAdd.mligo
-	@echo "Running betting AddBet tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_bet_finalize: test/betting/test.betFinalize.mligo
-	@echo "Running betting FinalizeBet tests..." 
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 # -------------------------
@@ -157,7 +143,6 @@ deploy: node_modules deploy_oracle deploy_betting
 	@echo "Deploying contracts..."
 
 node_modules:
-	@echo "Installing node modules..."
 	@cd deploy && npm install
 
 deploy_oracle:

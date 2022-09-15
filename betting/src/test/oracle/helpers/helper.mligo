@@ -1,53 +1,61 @@
-#import "../../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "../../../contracts/cameligo/oracle/types.mligo" "TYPES"
-#import "./bootstrap.mligo" "BOOTSTRAP"
+#import "../../../contracts/cameligo/oracle/types.mligo" "Types"
+#import "bootstrap.mligo" "Bootstrap"
+#import "assert.mligo" "Assert"
 
 //  VARIABLES
 
-let emptyMap : (nat, TYPES.event_type) map = (Map.empty : (nat, TYPES.event_type) map)
+let empty_map : (nat, Types.event_type) map = (Map.empty : (nat, Types.event_type) map)
 
-let oneEventMap : (nat, TYPES.event_type) map = Map.literal [
-    (0n, BOOTSTRAP.primaryEvent)
+let one_event_map : (nat, Types.event_type) map = Map.literal [
+    (0n, Bootstrap.primary_event)
     ]
-let doubleEventMap : (nat, TYPES.event_type) map = Map.literal [
-    (0n, BOOTSTRAP.primaryEvent);
-    (1n, BOOTSTRAP.primaryEvent)
+let double_event_map : (nat, Types.event_type) map = Map.literal [
+    (0n, Bootstrap.primary_event);
+    (1n, Bootstrap.primary_event)
     ]
-let threeEventMap : (nat, TYPES.event_type) map = Map.literal [
-    (0n, BOOTSTRAP.primaryEvent);
-    (1n, BOOTSTRAP.primaryEvent);
-    (2n, BOOTSTRAP.primaryEvent)
+let three_event_map : (nat, Types.event_type) map = Map.literal [
+    (0n, Bootstrap.primary_event);
+    (1n, Bootstrap.primary_event);
+    (2n, Bootstrap.primary_event)
     ]
 
 //  FUNCTIONS
 
-let printStorage (ctr_taddr : (TYPES.action, TYPES.storage) typed_address) : unit =
-    let ctr_storage = Test.get_storage(ctr_taddr) in
-    Test.log("Storage :", ctr_storage)
-
-let trscChangeManager(contr, from, new_ : TYPES.action contract * address * address) =
+let trsc_change_manager(contr, from, new : Types.action contract * address * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new_) 0mutez in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeManager new) 0mutez in
     result
 
-let trscChangeSigner(contr, from, new_ : TYPES.action contract * address * address) =
+let trsc_change_manager_success(contr, from, new : Types.action contract * address * address) =
+  Assert.tx_success (trsc_change_manager(contr, from, new))
+
+let trsc_change_signer(contr, from, new : Types.action contract * address * address) =
     let () = Test.set_source from in
-    let result : test_exec_result = Test.transfer_to_contract contr (ChangeSigner new_) 0mutez in
+    let result : test_exec_result = Test.transfer_to_contract contr (ChangeSigner new) 0mutez in
     result
 
-let trscSwitchPause(contr, from : TYPES.action contract * address) =
+let trsc_change_signer_success(contr, from, new : Types.action contract * address * address) =
+  Assert.tx_success (trsc_change_signer(contr, from, new))
+
+let trsc_switch_pause(contr, from : Types.action contract * address) =
     let () = Test.set_source from in
     let result : test_exec_result = Test.transfer_to_contract contr (SwitchPause) 0mutez in
     result
 
-let trscAddEvent(contr, from, event : TYPES.action contract * address * TYPES.event_type) =
+let trsc_switch_pause_success(contr, from : Types.action contract * address) =
+  Assert.tx_success (trsc_switch_pause(contr, from))
+
+let trsc_add_event(contr, from, event : Types.action contract * address * Types.event_type) =
     let () = Test.set_source from in
     let result : test_exec_result = Test.transfer_to_contract contr (AddEvent event) 0mutez in
     result
 
-let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * address * nat * TYPES.event_type) =
+let trsc_add_event_success(contr, from, event : Types.action contract * address * Types.event_type) =
+  Assert.tx_success (trsc_add_event(contr, from, event))
+
+let trsc_update_event(contr, from, event_num, event : Types.action contract * address * nat * Types.event_type) =
     let () = Test.set_source from in
-    let updateEventParam : TYPES.update_event_parameter =
+    let updateEventParam : Types.update_event_parameter =
     {
         updated_event_id = event_num;
         updated_event = event;
@@ -56,12 +64,18 @@ let trscUpdateEvent(contr, from, event_num, event : TYPES.action contract * addr
     let result : test_exec_result = Test.transfer_to_contract contr (UpdateEvent updateEventParam) 0mutez in
     result
 
-let trscGetEvent(contr, from, cbk_addr, event_num : TYPES.action contract * address * address * nat) =
+let trsc_update_event_success(contr, from, event_num, event : Types.action contract * address * nat * Types.event_type) =
+  Assert.tx_success (trsc_update_event(contr, from, event_num, event))
+
+let trsc_get_event(contr, from, cbk_addr, event_num : Types.action contract * address * address * nat) =
     let () = Test.set_source from in
-    let callbackParameter : TYPES.callback_asked_parameter =
+    let callbackParameter : Types.callback_asked_parameter =
     {
         requested_event_id = event_num;
         callback = cbk_addr
     } in
     let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0mutez in
     result_cbk
+
+let trsc_get_event_success(contr, from, cbk_addr, event_num : Types.action contract * address * address * nat) =
+  Assert.tx_success (trsc_get_event(contr, from, cbk_addr, event_num))

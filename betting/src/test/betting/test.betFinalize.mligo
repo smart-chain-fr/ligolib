@@ -1,10 +1,10 @@
-#import "../../contracts/cameligo/betting/main.mligo" "BETTING"
-#import "../../contracts/cameligo/betting/types.mligo" "TYPES"
-#import "../../contracts/cameligo/betting/errors.mligo" "ERRORS"
-#import "helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "helpers/helper.mligo" "HELPER"
-#import "helpers/assert.mligo" "ASSERT"
-#import "helpers/events.mligo" "EVENTS"
+#import "../../contracts/cameligo/betting/main.mligo" "Betting"
+#import "../../contracts/cameligo/betting/types.mligo" "Types"
+#import "../../contracts/cameligo/betting/errors.mligo" "Errors"
+#import "helpers/bootstrap.mligo" "Bootstrap"
+#import "helpers/helper.mligo" "Helper"
+#import "helpers/assert.mligo" "Assert"
+#import "helpers/events.mligo" "Events"
 #import "helpers/log.mligo" "Log"
 
 let () = Log.describe("[FinalizeBet] test suite")
@@ -14,19 +14,19 @@ let () = Log.describe("[FinalizeBet] test suite")
  *)
 let test_win_basic_team1_should_work = 
   //Given
-  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
-  let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 800000000000mutez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
+  let _ = Helper.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 800000000000mutez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team1_win) in
   let storage = Test.get_storage(betting_taddress) in
   let quota_left : nat = abs(100n - storage.bet_config.retained_profit_quota) in
   let expected_alice_balance = Test.get_balance(alice) + (800000000000mutez + 400000000000mutez) * quota_left / 100n in
   let expected_bob_balance   = Test.get_balance(bob)   + (800000000000mutez + 400000000000mutez) * quota_left / 100n in
   let expected_mike_balance  = Test.get_balance(mike) in
   //When
-  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let _ = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
   let _ = assert (expected_alice_balance = Test.get_balance(alice)) in
   let _ = assert (expected_bob_balance   = Test.get_balance(bob)) in
@@ -39,19 +39,19 @@ let test_win_basic_team1_should_work =
  *)
 let test_draw_should_work = 
   //Given
-  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
-  let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 800000000000mutez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_draw) in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
+  let _ = Helper.trscAddBet (betting_contract, bob,   0n, (true  : bool), 800000000000mutez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 800000000000mutez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_draw) in
   let storage = Test.get_storage(betting_taddress) in
   let quota_left : nat = abs(100n - storage.bet_config.retained_profit_quota) in
   let expected_alice_balance = Test.get_balance(alice) + 800000000000mutez * quota_left / 100n in
   let expected_bob_balance   = Test.get_balance(bob)   + 800000000000mutez * quota_left / 100n in
   let expected_mike_balance  = Test.get_balance(mike)  + 800000000000mutez * quota_left / 100n in
   //When
-  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let _ = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
   let _ = assert (expected_alice_balance = Test.get_balance(alice)) in
   let _ = assert (expected_bob_balance   = Test.get_balance(bob)) in
@@ -64,18 +64,18 @@ let test_draw_should_work =
  *)
 let test_win_weighted_team1_should_work = 
   //Given
-  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
-  let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (true  : bool), 400000000000mutez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 600000000000mutez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 800000000000mutez) in
+  let _ = Helper.trscAddBet (betting_contract, bob,   0n, (true  : bool), 400000000000mutez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 600000000000mutez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team1_win) in
   let storage = Test.get_storage(betting_taddress) in
   let quota_left : nat = abs(100n - storage.bet_config.retained_profit_quota) in
   let expected_alice_balance = Test.get_balance(alice) + (800000000000mutez + 400000000000mutez) * quota_left / 100n in
   let expected_bob_balance   = Test.get_balance(bob)   + (400000000000mutez + 200000000000mutez) * quota_left / 100n in
   //When
-  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let _ = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
   let alice_bal_error : tez = match (expected_alice_balance - Test.get_balance(alice)) with
     | Some b -> b 
@@ -95,18 +95,18 @@ let test_win_weighted_team1_should_work =
  *)
 let test_win_weighted_team2_should_work = 
   //Given
-  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
-  let _ = HELPER.trscAddBet (betting_contract, bob,   0n, (false : bool), 30000tez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team2_win) in
+  let (_betting_address, betting_contract, betting_taddress, elon, _, alice, bob, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
+  let _ = Helper.trscAddBet (betting_contract, bob,   0n, (false : bool), 30000tez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team2_win) in
   let storage = Test.get_storage(betting_taddress) in
   let quota_left : nat = abs(100n - storage.bet_config.retained_profit_quota) in
   let expected_mike_balance = Test.get_balance(mike) + (60000tez + 20000tez) * quota_left / 100n in
   let expected_bob_balance = Test.get_balance(bob) + (30000tez + 10000tez) * quota_left / 100n in
   //When
-  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let _ = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
   let mike_bal_error : tez = match (expected_mike_balance - Test.get_balance(mike)) with
     | Some b -> b 
@@ -126,15 +126,15 @@ let test_win_weighted_team2_should_work =
  *)
 let test_finalizing_bet_two_times_should_fail = 
   //Given
-  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team1_win) in
   //When
-  let result = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  let result = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team1_win) in
   //Then
-  let _ = ASSERT.string_failure result ERRORS.bet_finished in
+  let _ = Assert.string_failure result Errors.bet_finished in
   "OK"
 
 
@@ -143,16 +143,16 @@ let test_finalizing_bet_two_times_should_fail =
  *)
 let test_claim_bet_two_times_should_fail = 
   //Given
-  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
-  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 30000tez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 60000tez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team1_win) in
+  let _ = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //When
-  let result = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let result = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
-  let _ = ASSERT.string_failure result ERRORS.event_already_claimed in
+  let _ = Assert.string_failure result Errors.event_already_claimed in
   "OK"
 
 
@@ -162,14 +162,14 @@ let test_claim_bet_two_times_should_fail =
  *)
 let test_finalizing_bet_without_outcome_should_fail = 
   //Given
-  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 1000tez) in
+  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 1000tez) in
   //When
-  let result = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let result = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
-  let _ = ASSERT.string_failure result ERRORS.bet_not_finished in
+  let _ = Assert.string_failure result Errors.bet_not_finished in
   "OK"
 
 
@@ -178,15 +178,15 @@ let test_finalizing_bet_without_outcome_should_fail =
  *)
 let test_finalizing_bet_with_wrong_id_should_fail = 
   //Given
-  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
-  let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 1000tez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
+  let _ = Helper.trscAddBet (betting_contract, mike,  0n, (false : bool), 1000tez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team1_win) in
   //When
-  let result = HELPER.trscFinalizeBet (betting_contract, elon, 1n) in
+  let result = Helper.trscFinalizeBet (betting_contract, elon, 1n) in
   //Then
-  let _ = ASSERT.string_failure result ERRORS.no_event_id in
+  let _ = Assert.string_failure result Errors.no_event_id in
   "OK"
 
 
@@ -195,13 +195,13 @@ let test_finalizing_bet_with_wrong_id_should_fail =
  *)
 let test_winning_without_counterparty_refund_should_work = 
   //Given
-  let (_betting_address, betting_contract, _betting_taddress, elon, _, alice, _, _) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
-  let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_team1_win) in
+  let (_betting_address, betting_contract, _betting_taddress, elon, _, alice, _, _) = Bootstrap.bootstrap() in
+  let _ = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
+  let _ = Helper.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
+  let _ = Helper.trsc_update_event (betting_contract, elon, 0n, Events.finalized_event_team1_win) in
   let expected_alice_balance = Test.get_balance(alice) + 1000tez in
   //When
-  let _ = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
+  let _ = Helper.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
   let _ = assert (expected_alice_balance = Test.get_balance(alice)) in
   "OK"
@@ -213,10 +213,10 @@ let test_winning_without_counterparty_refund_should_work =
 let test_finalizing_event_not_finished_should_fail = 
   //Given
   let (_betting_address, betting_contract, _, elon, _, alice, _, mike) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
+  let _ = HELPER.trsc_add_event (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primary_event)) in
   let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
   let _ = HELPER.trscAddBet (betting_contract, mike,  0n, (false : bool), 1000tez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_too_long) in
+  let _ = HELPER.trsc_update_event (betting_contract, elon, 0n, EVENTS.finalized_event_too_long) in
   //When
   let result = HELPER.trscFinalizeBet (betting_contract, elon, 0n) in
   //Then
@@ -230,9 +230,9 @@ let test_finalizing_event_not_finished_should_fail =
 let test_finalizing_event_without_manager_rights_should_fail = 
   //Given
   let (_betting_address, betting_contract, _, elon, _, alice, _, _) = BOOTSTRAP.bootstrap() in
-  let _ = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent)) in
+  let _ = HELPER.trsc_add_event (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primary_event)) in
   let _ = HELPER.trscAddBet (betting_contract, alice, 0n, (true  : bool), 1000tez) in
-  let _ = HELPER.trscUpdateEvent (betting_contract, elon, 0n, EVENTS.finalized_event_too_long) in
+  let _ = HELPER.trsc_update_event (betting_contract, elon, 0n, EVENTS.finalized_event_too_long) in
   //When
   let result = HELPER.trscFinalizeBet (betting_contract, alice, 0n) in
   //Then

@@ -1,32 +1,32 @@
-#import "../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "helpers/helper.mligo" "HELPER"
-#import "helpers/assert.mligo" "ASSERT"
+#import "../../contracts/cameligo/oracle/errors.mligo" "Errors"
+#import "helpers/bootstrap.mligo" "Bootstrap"
+#import "helpers/helper.mligo" "Helper"
+#import "helpers/assert.mligo" "Assert"
+#import "helpers/log.mligo" "Log"
 
-let () = Test.log("___ TEST ChangeSigner STARTED ___")
+let () = Log.describe("[ChangeSigner] test suite")
 
-let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap_oracle()
+let test_change_signer_from_manager_should_work =
+    let (oracle_contract, oracle_taddress, elon, jeff, _, _, _) = Bootstrap.bootstrap_oracle() in
+    let () = Assert.assert_signer oracle_taddress jeff in
 
-let () = Test.log("-> Initial Storage :")
-let () = Test.log(oracle_contract, oracle_taddress, elon, jeff)
+    let () = Helper.trsc_change_signer_success(oracle_contract, elon, elon) in
+    let () = Assert.assert_signer oracle_taddress elon in
+    "OK"
 
-let () = Test.log("-> Initial Storage assert :")
-let () = ASSERT.assert_signer oracle_taddress jeff
+let test_change_signer_from_signer_should_work =
+    let (oracle_contract, oracle_taddress, elon, jeff, _, _, _) = Bootstrap.bootstrap_oracle() in
+    let () = Assert.assert_signer oracle_taddress jeff in
 
-let () = Test.log("-> Changing Signer of the contract from original Manager")
-let () = HELPER.trscChangeSigner(oracle_contract, elon, elon)
-let () = ASSERT.assert_signer oracle_taddress elon
+    let () = Helper.trsc_change_signer_success(oracle_contract, jeff, elon) in
+    let () = Assert.assert_signer oracle_taddress elon in
+    "OK"
 
-let () = Test.log("-> Changing Signer of the contract to current Signer")
-let () = HELPER.trscChangeSigner(oracle_contract, elon, elon)
-let () = ASSERT.assert_signer oracle_taddress elon
+let test_change_signer_from_unauthorized_address_should_not_work =
+    let (oracle_contract, oracle_taddress, _, jeff, alice, _, _) = Bootstrap.bootstrap_oracle() in
+    let () = Assert.assert_signer oracle_taddress jeff in
 
-let () = Test.log("-> Changing Signer of the contract to original Signer")
-let () = HELPER.trscChangeSigner(oracle_contract, elon, jeff)
-let () = ASSERT.assert_signer oracle_taddress jeff
-
-let () = Test.log("-> Changing Manager of the contract from unauthorized address")
-let () = HELPER.trscChangeSigner (oracle_contract, alice, alice)
-let () = ASSERT.assert_signer oracle_taddress jeff
-
-let () = Test.log("___ TEST ChangeSigner ENDED ___")
+    let ret = Helper.trsc_change_signer (oracle_contract, alice, alice) in
+    let () = Assert.string_failure ret Errors.not_manager_nor_signer in
+    let () = Assert.assert_signer oracle_taddress jeff in
+    "OK"

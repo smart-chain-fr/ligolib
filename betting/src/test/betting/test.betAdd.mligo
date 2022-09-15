@@ -1,26 +1,23 @@
-#import "../../contracts/cameligo/betting/main.mligo" "BETTING"
-#import "../../contracts/cameligo/betting/types.mligo" "TYPES"
-#import "helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "helpers/helper.mligo" "HELPER"
-#import "helpers/assert.mligo" "ASSERT"
-#import "helpers/events.mligo" "EVENTS"
+#import "../../contracts/cameligo/betting/main.mligo" "Betting"
+#import "../../contracts/cameligo/betting/types.mligo" "Types"
+#import "helpers/bootstrap.mligo" "Bootstrap"
+#import "helpers/helper.mligo" "Helper"
+#import "helpers/assert.mligo" "Assert"
+#import "helpers/events.mligo" "Events"
 #import "helpers/log.mligo" "Log"
 
-// let () = Test.log("___ TEST AddBet STARTED ___")
 let () = Log.describe("[AddBet] test suite")
 
 let () = Test.log("-> Timing Now :")
 let () = Test.log( Tezos.get_now() )
 
-let (_betting_address, betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = BOOTSTRAP.bootstrap()
+let (_betting_address, betting_contract, betting_taddress, elon, jeff, alice, bob, mike) = Bootstrap.bootstrap()
 
-let () = Test.log("-> Initial Storage :")
-let () = Test.log(betting_contract, betting_taddress, elon, jeff)
-let () = ASSERT.assert_eventsMap betting_taddress HELPER.emptyMap
-let () = HELPER.trscAddEvent (betting_contract, elon, EVENTS.eventype_to_addeventparam(EVENTS.primaryEvent))
-let () = ASSERT.assert_eventsMap betting_taddress HELPER.oneEventMap
+let () = Assert.assert_eventsMap betting_taddress Helper.empty_map
+let () = Helper.trsc_add_event (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event))
+let () = Assert.assert_eventsMap betting_taddress Helper.one_event_map
 
-let aliceBetOneMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
+let aliceBetOneMap : (nat, Types.event_bets) big_map = Big_map.literal [
     (0n, {
         bets_team_one = (Map.literal [ (alice, 2000000mutez) ]);
         bets_team_one_index = 1n ;
@@ -33,10 +30,10 @@ let aliceBetOneMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
     ]
 
 let () = Test.log("-> Adding a Bet to TeamOne for an existing event")
-let () = HELPER.trscAddBet (betting_contract, alice, 0n, (true : bool), 2000000mutez)
-let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetOneMap
+let () = Helper.trscAddBet (betting_contract, alice, 0n, (true : bool), 2000000mutez)
+let () = Assert.assert_eventsBetMap betting_taddress aliceBetOneMap
 
-let aliceBetBothMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
+let aliceBetBothMap : (nat, Types.event_bets) big_map = Big_map.literal [
     (0n, {
         bets_team_one = (Map.literal [ (alice, 2000000mutez) ]);
         bets_team_one_index = 1n ;
@@ -49,10 +46,10 @@ let aliceBetBothMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
     ]
 
 let () = Test.log("-> Adding a Bet to TeamTwo for an existing event")
-let () = HELPER.trscAddBet (betting_contract, alice, 0n, (false : bool), 4000000mutez)
-let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetBothMap
+let () = Helper.trscAddBet (betting_contract, alice, 0n, (false : bool), 4000000mutez)
+let () = Assert.assert_eventsBetMap betting_taddress aliceBetBothMap
 
-let aliceBetLastMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
+let aliceBetLastMap : (nat, Types.event_bets) big_map = Big_map.literal [
     (0n, {
         bets_team_one = (Map.literal [ (alice, (2000000mutez + 20000000mutez)); (bob, 1000000mutez); ]);
         bets_team_one_index = (1n + 1n) ;
@@ -65,11 +62,9 @@ let aliceBetLastMap : (nat, TYPES.event_bets) big_map = Big_map.literal [
     ]
 
 let () = Test.log("-> Adding a Bet to both teams for an existing event")
-let () = HELPER.trscAddBet (betting_contract, alice, 0n, (true : bool), 20000000mutez)
-let () = HELPER.trscAddBet (betting_contract, bob, 0n, (true : bool), 1000000mutez)
-let () = HELPER.trscAddBet (betting_contract, alice, 0n, (false : bool), 20000000mutez)
-let () = HELPER.trscAddBet (betting_contract, mike, 0n, (false : bool), 3000000mutez)
-let () = HELPER.trscAddBet (betting_contract, bob, 0n, (false : bool), 7000000mutez)
-let () = ASSERT.assert_eventsBetMap betting_taddress aliceBetLastMap
-
-let () = Test.log("___ TEST AddBet ENDED ___")
+let () = Helper.trscAddBet (betting_contract, alice, 0n, (true : bool), 20000000mutez)
+let () = Helper.trscAddBet (betting_contract, bob, 0n, (true : bool), 1000000mutez)
+let () = Helper.trscAddBet (betting_contract, alice, 0n, (false : bool), 20000000mutez)
+let () = Helper.trscAddBet (betting_contract, mike, 0n, (false : bool), 3000000mutez)
+let () = Helper.trscAddBet (betting_contract, bob, 0n, (false : bool), 7000000mutez)
+let () = Assert.assert_eventsBetMap betting_taddress aliceBetLastMap

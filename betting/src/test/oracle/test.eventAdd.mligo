@@ -1,30 +1,26 @@
-#import "../../contracts/cameligo/oracle/main.mligo" "ORACLE"
-#import "../../contracts/cameligo/oracle/types.mligo" "TYPES"
-#import "helpers/bootstrap.mligo" "BOOTSTRAP"
-#import "helpers/helper.mligo" "HELPER"
-#import "helpers/assert.mligo" "ASSERT"
+#import "../../contracts/cameligo/oracle/errors.mligo" "Errors"
+#import "helpers/bootstrap.mligo" "Bootstrap"
+#import "helpers/helper.mligo" "Helper"
+#import "helpers/assert.mligo" "Assert"
 #import "helpers/log.mligo" "Log"
 
-// let () = Test.log("___ TEST addEvent STARTED ___")
-let () = Log.describe("[addEvent] test suite")
+let () = Log.describe("[EventAdd] test suite")
 
-let (oracle_contract, oracle_taddress, elon, jeff, alice, _, _) = BOOTSTRAP.bootstrap_oracle()
+let test_add_event_from_manager_should_work =
+    let (oracle_contract, oracle_taddress, elon, _, _, _, _) = Bootstrap.bootstrap_oracle() in
+    let () = Assert.assert_eventsMap oracle_taddress Helper.empty_map in
+    let () = Helper.trsc_add_event_success (oracle_contract, elon, Bootstrap.primary_event) in
+    Assert.assert_eventsMap oracle_taddress Helper.one_event_map
 
-let () = Test.log("-> Initial Storage :")
-let () = Test.log(oracle_contract, oracle_taddress, elon, jeff)
+let test_add_event_from_signer_should_work =
+    let (oracle_contract, oracle_taddress, _, jeff, _, _, _) = Bootstrap.bootstrap_oracle() in
+    let () = Assert.assert_eventsMap oracle_taddress Helper.empty_map in
+    let () = Helper.trsc_add_event_success (oracle_contract, jeff, Bootstrap.primary_event) in
+    Assert.assert_eventsMap oracle_taddress Helper.one_event_map
 
-let () = ASSERT.assert_eventsMap oracle_taddress HELPER.emptyMap
-
-let () = Test.log("-> Adding an Event from unauthorized address")
-let () = HELPER.trscAddEvent (oracle_contract, alice, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap oracle_taddress HELPER.emptyMap
-
-let () = Test.log("-> Adding an Event from Manager")
-let () = HELPER.trscAddEvent (oracle_contract, elon, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap oracle_taddress HELPER.oneEventMap
-
-let () = Test.log("-> Adding an Event from Signer")
-let () = HELPER.trscAddEvent (oracle_contract, jeff, BOOTSTRAP.primaryEvent)
-let () = ASSERT.assert_eventsMap oracle_taddress HELPER.doubleEventMap
-
-let () = Test.log("___ TEST addEvent ENDED ___")
+let test_add_event_from_unauthorized_address_should_not_work =
+    let (oracle_contract, oracle_taddress, _, _, alice, _, _) = Bootstrap.bootstrap_oracle() in
+    let () = Assert.assert_eventsMap oracle_taddress Helper.empty_map in
+    let ret = Helper.trsc_add_event (oracle_contract, alice, Bootstrap.primary_event) in
+    let () = Assert.string_failure ret Errors.not_manager_nor_signer in
+    Assert.assert_eventsMap oracle_taddress Helper.empty_map
