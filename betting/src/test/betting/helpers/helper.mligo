@@ -21,7 +21,7 @@ let three_event_map : (nat, Types.event_type) big_map = Big_map.literal [
   (2n, Events.primary_event)
   ]
 
-let emptyBetMap : (nat, Types.event_bets) big_map = (Big_map.empty : (nat, Types.event_bets) big_map)
+let empty_bet_map : (nat, Types.event_bets) big_map = (Big_map.empty : (nat, Types.event_bets) big_map)
 
     
 //  FAILWITH Helper
@@ -45,13 +45,13 @@ let trsc_change_manager(contr, from, new_ : Types.action contract * address * ad
 let trsc_change_manager_success(contr, from, new_ : Types.action contract * address * address) =
   Assert.tx_success (trsc_change_manager(contr, from, new_))
 
-let trscChangeOracleAddress(contr, from, new_ : Types.action contract * address * address) =
+let trsc_change_oracle_address(contr, from, new_ : Types.action contract * address * address) =
   let () = Test.set_source from in
   let result : test_exec_result = Test.transfer_to_contract contr (ChangeOracleAddress new_) 0mutez in
   result
 
-let trscChangeOracleAddress_success(contr, from, new_ : Types.action contract * address * address) =
-  Assert.tx_success (trscChangeOracleAddress(contr, from, new_))
+let trsc_change_oracle_address_success(contr, from, new_ : Types.action contract * address * address) =
+  Assert.tx_success (trsc_change_oracle_address(contr, from, new_))
 
 let trsc_switch_pauseBetting(contr, from : Types.action contract * address) =
   let () = Test.set_source from in
@@ -91,7 +91,6 @@ let trsc_update_event(contr, from, event_num, event : Types.action contract * ad
 let trsc_update_event_success(contr, from, event_num, event : Types.action contract * address * nat * Types.event_type) =
   Assert.tx_success (trsc_update_event(contr, from, event_num, event))
 
-
 let trsc_get_event(contr, from, cbk_addr, event_num : Types.action contract * address * address * nat) =
     let () = Test.set_source from in
     let callbackParameter : Types.callback_asked_parameter =
@@ -102,8 +101,10 @@ let trsc_get_event(contr, from, cbk_addr, event_num : Types.action contract * ad
     let result_cbk = Test.transfer_to_contract contr (GetEvent callbackParameter) 0mutez in
     result_cbk
 
+let trsc_get_event_success(contr, from, cbk_addr, event_num : Types.action contract * address * address * nat) =
+  Assert.tx_success (trsc_get_event(contr, from, cbk_addr, event_num))
 
-let trscAddBet  (contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : Types.action contract * address * nat * bool * tez) =
+let trsc_add_bet(contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : Types.action contract * address * nat * bool * tez) =
   let () = Test.set_source from in
   let addBetParam : Types.add_bet_parameter = {
       requested_event_id = pRequestedEventID;
@@ -112,7 +113,13 @@ let trscAddBet  (contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : Types
   let result_tx = Test.transfer_to_contract contr (AddBet addBetParam) pBetAmount in
   result_tx
 
-let trscFinalizeBet(contr, from, pRequestedEventID : Types.action contract * address * nat) =
+let trsc_add_bet_success(contr, from, pRequestedEventID, pTeamOneBet, pBetAmount : Types.action contract * address * nat * bool * tez) =
+  Assert.tx_success (trsc_add_bet(contr, from, pRequestedEventID, pTeamOneBet, pBetAmount))
+
+let trsc_finalize_bet(contr, from, pRequestedEventID : Types.action contract * address * nat) =
   let () = Test.set_source from in
   let result_tx = Test.transfer_to_contract contr (FinalizeBet pRequestedEventID) 0mutez in
   result_tx
+
+let trsc_finalize_bet_success(contr, from, pRequestedEventID : Types.action contract * address * nat) =
+  Assert.tx_success (trsc_finalize_bet(contr, from, pRequestedEventID))

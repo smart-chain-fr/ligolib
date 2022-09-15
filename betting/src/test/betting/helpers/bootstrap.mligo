@@ -15,7 +15,7 @@ let bootstrap () =
   let bob:    address = Test.nth_bootstrap_account 4 in
   let james:  address = Test.nth_bootstrap_account 5 in
 
-  let initBetConfig : Types.bet_config_type = {
+  let init_bet_config : Types.bet_config_type = {
     is_betting_paused       = false;
     is_event_creation_paused = false;
     min_bet_amount          = 1tez;
@@ -26,7 +26,7 @@ let bootstrap () =
   let init_storage : Types.storage = {
     manager       = elon;
     oracle_address = jeff;
-    bet_config     = initBetConfig;
+    bet_config     = init_bet_config;
     events        = (Big_map.empty : (nat, Types.event_type) big_map);
     events_bets   = (Big_map.empty : (nat, Types.event_bets) big_map);
     events_index  = 0n;
@@ -34,9 +34,9 @@ let bootstrap () =
   } in
 
   (* Boostrapping BETTING contract *)
-  let bettingPath = "contracts/cameligo/betting/main.mligo" in
+  let betting_path = "contracts/cameligo/betting/main.mligo" in
   let iBis = Test.run (fun (x : Types.storage) -> x) init_storage in
-  let (betting_address, _, _) = Test.originate_from_file bettingPath "main" (["getManager"; "getOracleAddress"; "getBettingStatus"; "getEventCreationStatus"; "getEvent"] : string list) iBis 0mutez in
+  let (betting_address, _, _) = Test.originate_from_file betting_path "main" (["getManager"; "getOracleAddress"; "getBettingStatus"; "getEventCreationStatus"; "getEvent"] : string list) iBis 0mutez in
   let betting_taddress = (Test.cast_address betting_address : (Types.action,Types.storage) typed_address) in
   let betting_contract = Test.to_contract betting_taddress in
   

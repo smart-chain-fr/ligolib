@@ -46,13 +46,13 @@ let assert_is_event_creation_paused (ctr_taddr : (Types.action, Types.storage) t
     assert (ctr_value = expected)
 
 (* Assert Events Map parameter with expected result *)
-let assert_eventsMap (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_type) big_map) : unit =
+let assert_events_map (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_type) big_map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
     let ctr_value : (nat, Types.event_type) big_map = (ctr_storage.events) in
     assert (ctr_value = expected)
 
 (* Assert Events Bets Map parameter with expected result *)
-let assert_eventsBetMap (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_bets) big_map) : unit =
+let assert_events_bet_map (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_bets) big_map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
     let ctr_value : (nat, Types.event_bets) big_map = (ctr_storage.events_bets) in
     assert (ctr_value = expected)

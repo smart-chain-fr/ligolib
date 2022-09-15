@@ -36,22 +36,20 @@ let assert_ispaused (ctr_taddr : (Types.action, Types.storage) typed_address) (e
     assert (ctr_value = expected)
 
 (* Assert isPaused parameter with expected result *)
-let assert_eventsMap (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_type) map) : unit =
+let assert_events_map (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_type) map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
     let ctr_value : (nat, Types.event_type) map = (ctr_storage.events) in
     assert (ctr_value = expected)
 
 let assert_event (taddr : (Callback.parameter, Callback.storage) typed_address) (expected_event : Types.event_type) : unit =
     let storage = Test.get_storage(taddr) in
-    let () = Test.log(storage) in
-    let () = Test.log(expected_event) in
-    let () = assert(storage.name=expected_event.name) in
-    let () = assert(storage.videogame=expected_event.videogame) in
-    let () = assert(storage.begin_at=expected_event.begin_at) in
-    let () = assert(storage.end_at=expected_event.end_at) in
-    let () = assert(storage.modified_at=expected_event.modified_at) in
-    let () = assert(storage.opponents=expected_event.opponents) in
-    let () = assert(storage.is_finalized=expected_event.is_finalized) in
-    let () = assert(storage.is_draw=expected_event.is_draw) in
-    let () = assert(storage.is_team_one_win=expected_event.is_team_one_win) in
+    let () = assert(storage.name = expected_event.name) in
+    let () = assert(storage.videogame = expected_event.videogame) in
+    let () = assert(storage.begin_at = expected_event.begin_at) in
+    let () = assert(storage.end_at = expected_event.end_at) in
+    let () = assert(storage.modified_at = expected_event.modified_at) in
+    let () = assert(storage.opponents = expected_event.opponents) in
+    let () = assert(storage.is_finalized = expected_event.is_finalized) in
+    let () = assert(storage.is_draw = expected_event.is_draw) in
+    let () = assert(storage.is_team_one_win = expected_event.is_team_one_win) in
     ()

@@ -49,7 +49,7 @@ type bet_config_type = {
 
 ## Initial Storage example :
 ```ocaml
-let initBetConfig : bet_config_type = {
+let init_bet_config : bet_config_type = {
       is_betting_paused = false;
       is_event_creation_paused = false;
       min_bet_amount = 5tez;
@@ -59,7 +59,7 @@ let initBetConfig : bet_config_type = {
 let init_storage : storage = {
       manager = "tz1******************";
       oracle_address = "KT1******************";
-      bet_config = initBetConfig;
+      bet_config = init_bet_config;
       events = (Map.empty : (nat, event_type) map);
       events_bets = (Map.empty : (nat, event_bets) map);
       events_index = 0n;
