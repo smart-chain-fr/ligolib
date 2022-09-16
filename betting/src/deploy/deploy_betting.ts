@@ -31,22 +31,22 @@ const deploy = async () => {
     const ORACLE_ADDRESS = await getOracle();
 
     let init_bet_config_type = {
-        'is_betting_paused': false,
-        'is_event_creation_paused': false,
-        'min_bet_amount': 1000000,
-        'retained_profit_quota': 10,
+        is_betting_paused: false,
+        is_event_creation_paused: false,
+        min_bet_amount: 1000000,
+        retained_profit_quota: 10
     }
 
     let store = {
-        'manager': process.env.ADMIN_ADDRESS,
-        'oracle_address': ORACLE_ADDRESS,
-        'bet_config': init_bet_config_type,
-        'events': (new (MichelsonMap)),
-        'events_bets': (new (MichelsonMap)),
-        'events_index': 0,
-        'metadata': (MichelsonMap.fromLiteral({
-            '': char2Bytes("tezos-storage:contents"),
-            'contents': char2Bytes(JSON.stringify(metadataJson))
+        manager: process.env.ADMIN_ADDRESS,
+        oracle_address: ORACLE_ADDRESS,
+        bet_config: init_bet_config_type,
+        events: (new (MichelsonMap)),
+        events_bets: (new (MichelsonMap)),
+        events_index: 0,
+        metadata: (MichelsonMap.fromLiteral({
+            '': char2Bytes('tezos-storage:contents'),
+            contents: char2Bytes(JSON.stringify(metadataJson))
         }))
     };
 

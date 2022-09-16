@@ -20,26 +20,26 @@ Tezos.tz
     .catch((error) => console.log(JSON.stringify(error)));
 
 let store = {
-    'name': '',
-    'videogame': '',
-    'begin_at': 1660741034,
-    'end_at': 1660741034 + 3600,
-    'modified_at': 1660741034,
-    'opponents': { 'team_one': '', 'team_two': '' },
-    'is_finalized' : false,
-    'is_draw': false,
-    'is_team_one_win': false,
-    'start_bet_time': 1660741034 + 1200,
-    'closed_bet_time': 1660741034 + 2400,
-    'bets_team_one': (new MichelsonMap()),
-    'bets_team_one_index': 0,
-    'bets_team_one_total': 0,
-    'bets_team_two': (new MichelsonMap()),
-    'bets_team_two_index': 0,
-    'bets_team_two_total': 0,
-    'metadata': (MichelsonMap.fromLiteral({
-        '': char2Bytes("tezos-storage:contents"),
-        'contents': char2Bytes(JSON.stringify(metadataJson))
+    name: '',
+    videogame: '',
+    begin_at: 1660741034,
+    end_at: 1660741034 + 3600,
+    modified_at: 1660741034,
+    opponents: { team_one: '', team_two: '' },
+    is_finalized : false,
+    is_draw: false,
+    is_team_one_win: false,
+    start_bet_time: 1660741034 + 1200,
+    closed_bet_time: 1660741034 + 2400,
+    bets_team_one: (new MichelsonMap()),
+    bets_team_one_index: 0,
+    bets_team_one_total: 0,
+    bets_team_two: (new MichelsonMap()),
+    bets_team_two_index: 0,
+    bets_team_two_total: 0,
+    metadata: (MichelsonMap.fromLiteral({
+        '': char2Bytes('tezos-storage:contents'),
+        contents: char2Bytes(JSON.stringify(metadataJson))
     }))
 };
 

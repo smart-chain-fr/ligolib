@@ -21,14 +21,14 @@ Tezos.tz
     .catch((error) => console.log(JSON.stringify(error)));
 
 let store = {
-    'isPaused': false,
-    'manager': (process.env.ADMIN_ADDRESS || ''),
-    'signer': (process.env.ADMIN_ADDRESS || ''),
-    'events': (new MichelsonMap()),
-    'events_index': 0,
-    'metadata': (MichelsonMap.fromLiteral({
-        '': char2Bytes("tezos-storage:contents"),
-        'contents': char2Bytes(JSON.stringify(metadataJson))
+    isPaused: false,
+    manager: (process.env.ADMIN_ADDRESS || ),
+    signer: (process.env.ADMIN_ADDRESS || ),
+    events: (new MichelsonMap()),
+    events_index: 0,
+    metadata: (MichelsonMap.fromLiteral({
+        '': char2Bytes('tezos-storage:contents'),
+        contents: char2Bytes(JSON.stringify(metadataJson))
     }))
 };
 
@@ -47,7 +47,7 @@ async function orig() {
         });
         console.log(`Waiting for oracle origination ${oracle_originated.contractAddress} to be confirmed...`);
         await oracle_originated.confirmation(2);
-        saveContractAddress("oracle", oracle_originated.contractAddress);
+        saveContractAddress('oracle', oracle_originated.contractAddress);
         console.log('Confirmed oracle origination : ', oracle_originated.contractAddress);
         console.log('tezos-client remember contract betting_oracle ', oracle_originated.contractAddress, ' --force')
     } catch (error: any) {

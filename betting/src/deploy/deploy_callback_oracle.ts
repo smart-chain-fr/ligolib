@@ -20,18 +20,18 @@ Tezos.tz
     .catch((error) => console.log(JSON.stringify(error)));
 
 let store = {
-    'name': '',
-    'videogame': '',
-    'begin_at': 1660741034,
-    'end_at': 1660741034 + 3600,
-    'modified_at': 1660741034,
-    'opponents': { 'team_one': '', 'team_two': '' },
-    'is_finalized': false,
-    'is_draw': false,
-    'is_team_one_win': false,
-    'metadata': (MichelsonMap.fromLiteral({
-        '': char2Bytes("tezos-storage:contents"),
-        'contents': char2Bytes(JSON.stringify(metadataJson))
+    name: '',
+    videogame: '',
+    begin_at: 1660741034,
+    end_at: 1660741034 + 3600,
+    modified_at: 1660741034,
+    opponents: { team_one: '', team_two: '' },
+    is_finalized: false,
+    is_draw: false,
+    is_team_one_win: false,
+    metadata: (MichelsonMap.fromLiteral({
+        '': char2Bytes('tezos-storage:contents'),
+        contents: char2Bytes(JSON.stringify(metadataJson))
     }))
 };
 
