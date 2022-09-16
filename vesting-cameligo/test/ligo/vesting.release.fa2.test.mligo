@@ -49,9 +49,6 @@ let test_success_release_at_end_of_duration =
     let vesting = Bootstrap.boot_vesting(admin, FA2(fa2.addr), token_id, beneficiaries, 10000n, True, Some(Vesting_helper.day2_timestamp)) in
     let () = FA2_helper.update_operators_success([Add_operator({owner=admin; operator=vesting.addr; token_id=token_id})], fa2.contr) in
     let () = FA2_helper.transfer_success([{from_=admin; tx=[{to_=vesting.addr; token_id=token_id; amount=30n}]}], fa2.contr) in
-    //let () = Test.set_source admin in
-    //let () = Vesting_helper.start_success(unit, 0tez, vesting.contr) in
-    
 
     let () = Test.set_source alice in
     let () = Vesting_helper.release_success(unit, 0tez, vesting.contr) in

@@ -43,6 +43,6 @@ let approve_success (p, contr : FA1.approve * contr) =
 
 let transfer (p, contr : FA1.transfer * contr) =
     call(Transfer(p), contr)
-
+    
 let transfer_success (p, contr : FA1.transfer * contr) =
     Assert.tx_success(transfer(p, contr))
