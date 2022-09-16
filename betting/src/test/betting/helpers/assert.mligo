@@ -18,46 +18,46 @@ let string_failure (res : test_exec_result) (expected : string) : unit =
         | Success _ -> failwith "Transaction should fail"
 
 (* Assert Manager parameter with expected result *)
-let assert_balance (p_address : address) (expected : tez) : unit =
+let balance (p_address : address) (expected : tez) : unit =
     let balance_value : tez = Test.get_balance(p_address) in
     assert (balance_value = expected)
 
 (* Assert Manager parameter with expected result *)
-let assert_manager (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : address) : unit =
+let manager (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : address) : unit =
     let ctr_storage : Types.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : address = (ctr_storage.manager) in
     assert (ctr_value = expected)
 
 (* Assert Oracle Address parameter with expected result *)
-let assert_oracle (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : address) : unit =
+let oracle (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : address) : unit =
     let ctr_storage : Types.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : address = (ctr_storage.oracle_address) in
     assert (ctr_value = expected)
 (* Assert is_betting_paused parameter with expected result *)
-let assert_is_betting_paused (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : bool) : unit =
+let is_betting_paused (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : Types.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : bool = (ctr_storage.bet_config.is_betting_paused) in
     assert(ctr_value = expected)
 
 (* Assert isPauseis_event_creation_pausedd parameter with expected result *)
-let assert_is_event_creation_paused (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : bool) : unit =
+let is_event_creation_paused (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : bool) : unit =
     let ctr_storage : Types.storage = Test.get_storage(ctr_taddr) in
     let ctr_value : bool = (ctr_storage.bet_config.is_event_creation_paused) in
     assert (ctr_value = expected)
 
 (* Assert Events Map parameter with expected result *)
-let assert_events_map (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_type) big_map) : unit =
+let events_map (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_type) big_map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
     let ctr_value : (nat, Types.event_type) big_map = (ctr_storage.events) in
     assert (ctr_value = expected)
 
 (* Assert Events Bets Map parameter with expected result *)
-let assert_events_bet_map (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_bets) big_map) : unit =
+let events_bet_map (ctr_taddr : (Types.action, Types.storage) typed_address) (expected : (nat, Types.event_bets) big_map) : unit =
     let ctr_storage = Test.get_storage(ctr_taddr) in
     let ctr_value : (nat, Types.event_bets) big_map = (ctr_storage.events_bets) in
     assert (ctr_value = expected)
 
-let assert_event (taddr : (Betting_Callback.parameter, Betting_Callback.storage) typed_address) (expected_event : Types.event_type) : unit =
+let event (taddr : (Betting_Callback.parameter, Betting_Callback.storage) typed_address) (expected_event : Types.event_type) : unit =
     let storage = Test.get_storage(taddr) in
     let () = assert(storage.name=expected_event.name) in
     let () = assert(storage.videogame=expected_event.videogame) in
