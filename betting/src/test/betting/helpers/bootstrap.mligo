@@ -34,7 +34,7 @@ let bootstrap () =
   } in
 
   (* Boostrapping BETTING contract *)
-  let betting_path = "contracts/cameligo/betting/main.mligo" in
+  let betting_path = "src/contracts/cameligo/betting/main.mligo" in
   let iBis = Test.run (fun (x : Types.storage) -> x) init_storage in
   let (betting_address, _, _) = Test.originate_from_file betting_path "main" (["getManager"; "getOracleAddress"; "getBettingStatus"; "getEventCreationStatus"; "getEvent"] : string list) iBis 0mutez in
   let betting_taddress = (Test.cast_address betting_address : (Types.action,Types.storage) typed_address) in

@@ -29,6 +29,7 @@ const getOracle = async () => {
 
 const deploy = async () => {
     const ORACLE_ADDRESS = await getOracle();
+    console.log('Using the following Oracle address : ', ORACLE_ADDRESS);
 
     let init_bet_config_type = {
         is_betting_paused: false,
@@ -38,8 +39,8 @@ const deploy = async () => {
     }
 
     let store = {
-        manager: process.env.ADMIN_ADDRESS,
-        oracle_address: ORACLE_ADDRESS,
+        manager: (process.env.ADMIN_ADDRESS  || ''),
+        oracle_address: (ORACLE_ADDRESS  || ''),
         bet_config: init_bet_config_type,
         events: (new (MichelsonMap)),
         events_bets: (new (MichelsonMap)),

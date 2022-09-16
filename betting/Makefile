@@ -27,9 +27,9 @@ all-deploy: clean compile test deploy
 
 clean:
 	@echo "Removing Michelson files..."
-	@rm -f compiled/*.tz compiled/*.json
+	@rm -f src/compiled/*.tz src/compiled/*.json
 	@echo "Removing JS deploy files..."
-	@rm -f deploy/*.js
+	@rm -f src/deploy/*.js
 
 # -------------------------
 # 		LIGO SECTION
@@ -45,37 +45,37 @@ compile_callback_oracle: callback_oracle.tz callback_oracle.json
 
 compile_callback_betting: callback_betting.tz callback_betting.json
 
-oracle.tz: contracts/cameligo/oracle/main.mligo
+oracle.tz: src/contracts/cameligo/oracle/main.mligo
 	@echo "Compiling Oracle smart contract to Michelson..."
-	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
-oracle.json: contracts/cameligo/oracle/main.mligo
+oracle.json: src/contracts/cameligo/oracle/main.mligo
 	@echo "Compiling Oracle smart contract to Michelson in JSON format..."
-	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
-betting.tz: contracts/cameligo/betting/main.mligo
+betting.tz: src/contracts/cameligo/betting/main.mligo
 	@echo "Compiling Betting smart contract to Michelson..."
-	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
-betting.json: contracts/cameligo/betting/main.mligo
+betting.json: src/contracts/cameligo/betting/main.mligo
 	@echo "Compiling Betting smart contract to Michelson in JSON format..."
-	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
-callback_oracle.tz: contracts/cameligo/oracle/callback/main.mligo
+callback_oracle.tz: src/contracts/cameligo/oracle/callback/main.mligo
 	@echo "Compiling callback_Oracle smart contract to Michelson..."
-	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
-callback_oracle.json: contracts/cameligo/oracle/callback/main.mligo
+callback_oracle.json: src/contracts/cameligo/oracle/callback/main.mligo
 	@echo "Compiling callback_Oracle smart contract to Michelson in JSON format..."
-	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
-callback_betting.tz: contracts/cameligo/betting/callback/main.mligo
+callback_betting.tz: src/contracts/cameligo/betting/callback/main.mligo
 	@echo "Compiling callback_Betting smart contract to Michelson..."
-	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
-callback_betting.json: contracts/cameligo/betting/callback/main.mligo
+callback_betting.json: src/contracts/cameligo/betting/callback/main.mligo
 	@echo "Compiling callback_Betting smart contract to Michelson in JSON format..."
-	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file compiled/$@
+	@$(LIGO) compile contract $^ $(JSON_OPT) -e main $(PROTOCOL_OPT) --output-file src/compiled/$@
 
 # -------------------------
 # 		TEST SECTION
@@ -85,54 +85,54 @@ test: test_oracle test_betting
 
 test_oracle: test_oracle_manager test_oracle_signer test_oracle_pause test_oracle_events
 
-test_oracle_manager: test/oracle/test.manager.mligo
+test_oracle_manager: src/test/oracle/test.manager.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_oracle_signer: test/oracle/test.signer.mligo
+test_oracle_signer: src/test/oracle/test.signer.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_oracle_pause: test/oracle/test.pause.mligo
+test_oracle_pause: src/test/oracle/test.pause.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_oracle_events: test_oracle_event_add test_oracle_event_update test_oracle_event_get
 
-test_oracle_event_add: test/oracle/test.eventAdd.mligo
+test_oracle_event_add: src/test/oracle/test.eventAdd.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_oracle_event_update: test/oracle/test.eventUpdate.mligo
+test_oracle_event_update: src/test/oracle/test.eventUpdate.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_oracle_event_get: test/oracle/test.eventGet.mligo
+test_oracle_event_get: src/test/oracle/test.eventGet.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting: test_betting_manager test_betting_oracle test_betting_pause test_betting_events test_betting_bet
 
-test_betting_manager: test/betting/test.manager.mligo
+test_betting_manager: src/test/betting/test.manager.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_betting_oracle: test/betting/test.oracle.mligo
+test_betting_oracle: src/test/betting/test.oracle.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_betting_pause: test/betting/test.pause.mligo
+test_betting_pause: src/test/betting/test.pause.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_events: test_betting_event_add test_betting_event_update test_betting_event_get
 
-test_betting_event_add: test/betting/test.eventAdd.mligo
+test_betting_event_add: src/test/betting/test.eventAdd.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_betting_event_update: test/betting/test.eventUpdate.mligo
+test_betting_event_update: src/test/betting/test.eventUpdate.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_betting_event_get: test/betting/test.eventGet.mligo
+test_betting_event_get: src/test/betting/test.eventGet.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 test_betting_bet: test_betting_bet_add test_betting_bet_finalize
 
-test_betting_bet_add: test/betting/test.betAdd.mligo
+test_betting_bet_add: src/test/betting/test.betAdd.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
-test_betting_bet_finalize: test/betting/test.betFinalize.mligo
+test_betting_bet_finalize: src/test/betting/test.betFinalize.mligo
 	@$(LIGO) run test $^ $(PROTOCOL_OPT)
 
 # -------------------------
@@ -143,30 +143,30 @@ deploy: node_modules deploy_oracle deploy_betting
 	@echo "Deploying contracts..."
 
 node_modules:
-	@cd deploy && npm install
+	@cd src/deploy && npm install
 
 deploy_oracle:
-	@cd deploy && tsc deploy_oracle --resolveJsonModule -esModuleInterop
-	@node deploy/deploy_oracle.js
+	@cd src/deploy && tsc deploy_oracle --resolveJsonModule -esModuleInterop
+	@node src/deploy/deploy_oracle.js
 
 deploy_betting:
-	@cd deploy && tsc deploy_betting --resolveJsonModule -esModuleInterop
-	@node deploy/deploy_betting.js
+	@cd src/deploy && tsc deploy_betting --resolveJsonModule -esModuleInterop
+	@node src/deploy/deploy_betting.js
 
 deploy_callback_oracle:
-	@cd deploy && tsc deploy_callback_oracle --resolveJsonModule -esModuleInterop
-	@node deploy/deploy_callback_oracle.js
+	@cd src/deploy && tsc deploy_callback_oracle --resolveJsonModule -esModuleInterop
+	@node src/deploy/deploy_callback_oracle.js
 
 deploy_callback_betting:
-	@cd deploy && tsc deploy_callback_betting --resolveJsonModule -esModuleInterop
-	@node deploy/deploy_callback_betting.js
+	@cd src/deploy && tsc deploy_callback_betting --resolveJsonModule -esModuleInterop
+	@node src/deploy/deploy_callback_betting.js
 
 # -------------------------
 #         FLEXTESA
 # -------------------------
 
 flextesa-start:
-	@./deploy/run-flextesa.sh
+	@./src/deploy/run-flextesa.sh
 
 flextesa-stop:
 	@docker stop flextesa

@@ -22,8 +22,8 @@ Tezos.tz
 
 let store = {
     isPaused: false,
-    manager: (process.env.ADMIN_ADDRESS || ),
-    signer: (process.env.ADMIN_ADDRESS || ),
+    manager: (process.env.ADMIN_ADDRESS || ''),
+    signer: (process.env.ADMIN_ADDRESS || ''),
     events: (new MichelsonMap()),
     events_index: 0,
     metadata: (MichelsonMap.fromLiteral({
