@@ -4,6 +4,7 @@ import { TezosToolkit, MichelsonMap } from '@taquito/taquito';
 import * as dotenv from 'dotenv'
 import compiled from '../compiled/oracle.json';
 import metadataJson from "./metadata/metadata_oracle.json";
+import { outputFile } from "fs-extra";
 
 dotenv.config(({ path: __dirname + '/.env' }))
 
@@ -31,6 +32,12 @@ let store = {
     }))
 };
 
+export const saveContractAddress = (name: string, address: string) =>
+    outputFile(
+        `${process.cwd()}/deployments/${name}.ts`,
+        `export default "${address}";`
+    );
+
 async function orig() {
     try {
         // Originate a oracle contract
@@ -40,6 +47,7 @@ async function orig() {
         });
         console.log(`Waiting for oracle origination ${oracle_originated.contractAddress} to be confirmed...`);
         await oracle_originated.confirmation(2);
+        saveContractAddress("oracle", oracle_originated.contractAddress);
         console.log('Confirmed oracle origination : ', oracle_originated.contractAddress);
         console.log('tezos-client remember contract betting_oracle ', oracle_originated.contractAddress, ' --force')
     } catch (error: any) {

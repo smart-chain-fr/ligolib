@@ -10,10 +10,11 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@taquito/michelson-encoder": "^13.0.1",
         "@taquito/signer": "^13.0.1",
         "@taquito/taquito": "^13.0.1",
-        "@taquito/michelson-encoder": "^13.0.1",
-        "dotenv": "^16.0.1"
+        "dotenv": "^16.0.1",
+        "fs-extra": "^10.1.0"
     },
     "devDependencies": {
         "typescript": "^4.7.4"
