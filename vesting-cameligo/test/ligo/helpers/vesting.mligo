@@ -11,27 +11,49 @@ type originated = {
 }
 
 let zero_timestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
+let day2_timestamp : timestamp = ("1970-01-02T00:00:01Z" : timestamp)
+let day3_timestamp : timestamp = ("1970-01-03T00:00:01Z" : timestamp)
 
 (* Base Factory storage *)
-let base_storage (admin, token_address, token_id, beneficiaries, vesting_duration, revocable : address * Vesting.Storage.fa_type * nat * (address, nat)map * nat * bool) : Vesting.storage = {
-    token_address=token_address;
-    token_id=token_id;
-    beneficiaries=beneficiaries;
-    revocable=revocable;
-    release_duration=vesting_duration;
-    cliff_duration=1000n;
-    admin = admin;
-    released=(Map.empty : (address, nat) map);
-    revoked=False;
-    revoked_addresses=(Map.empty :(address, bool) map);
-    vested_amount=0n;
-    started=False;
-    total_released=0n;
-    end_of_cliff=(None : timestamp option);
-    vesting_end=(None : timestamp option);
-    start=(None : timestamp option);
-    metadata = (Big_map.empty : (string, bytes) big_map);
-}
+let base_storage (admin, token_address, token_id, beneficiaries, vesting_duration, revocable, started_at : address * Vesting.Storage.fa_type * nat * (address, nat)map * nat * bool * timestamp option) : Vesting.storage = 
+    let cliff_duration=1000n in
+    let end_of_cliff_timestamp = match started_at with
+    | None -> (None : timestamp option)
+    | Some start_time -> (Some(start_time + int(cliff_duration)) : timestamp option)
+    in
+    let vesting_end_timestamp = match started_at with
+    | None -> (None : timestamp option)
+    | Some start_time -> (Some(start_time + int(vesting_duration)) : timestamp option)
+    in
+    let started = match started_at with
+    | None -> False
+    | Some start_time -> True
+    in
+    let vested_amount = match started_at with
+    | None -> 0n
+    | Some start_time -> 
+        let sum(acc, elt: nat * (address * nat)) : nat = acc + elt.1 in
+        Map.fold sum beneficiaries 0n
+    in
+    {
+        token_address=token_address;
+        token_id=token_id;
+        beneficiaries=beneficiaries;
+        revocable=revocable;
+        release_duration=vesting_duration;
+        cliff_duration=cliff_duration;
+        admin = admin;
+        released=(Map.empty : (address, nat) map);
+        revoked=False;
+        revoked_addresses=(Map.empty :(address, bool) map);
+        vested_amount=vested_amount;
+        started=started;
+        total_released=0n;
+        end_of_cliff=end_of_cliff_timestamp;
+        vesting_end=vesting_end_timestamp;
+        start=started_at;
+        metadata = (Big_map.empty : (string, bytes) big_map);
+    }
 
 (* Originate a Vesting contract with given init_storage storage *)
 let originate (init_storage : Vesting.storage) =
@@ -74,15 +96,6 @@ let revoke_beneficiary_success (p, amount_, contr : Vesting.Parameter.revoke_ben
 
 let release_success (p, amount_, contr : unit * tez * contr) =
     Assert.tx_success (release(p, amount_, contr))
-
-
-// (* assert Factory contract at [taddr] have [owner] address with [size] collections *)
-// let assert_owned_collections_size (taddr, owner, size : taddr * Factory.Storage.collectionOwner * nat) =
-//     let s = Test.get_storage taddr in
-//     match Big_map.find_opt owner s.owned_collections with
-//         Some lst -> assert(List.size lst = size)
-//         (* assert(lst.size = size) *)
-//         | None -> failwith("Big_map key should not be missing")
 
 let assert_vesting_started(taddr, expected_started : taddr * bool) = 
     let s = Test.get_storage taddr in

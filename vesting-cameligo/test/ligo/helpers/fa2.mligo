@@ -38,3 +38,9 @@ let update_operators (p, contr : FA2.update_operators * contr) =
 
 let update_operators_success (p, contr : FA2.update_operators * contr) =
     Assert.tx_success(update_operators(p, contr))
+
+let transfer (p, contr : FA2.transfer * contr) =
+    call(Transfer(p), contr)
+
+let transfer_success (p, contr : FA2.transfer * contr) =
+    Assert.tx_success(transfer(p, contr))

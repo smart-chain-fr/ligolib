@@ -55,10 +55,14 @@ compile: ##@Contracts - Compile LIGO contracts
 
 test-ligo: ##@Contracts - Run LIGO tests (make test-ligo SUITE=factory)
 ifndef SUITE
-	@$(call test-ligo,vesting.start.test.mligo)
-	@$(call test-ligo,vesting.release.test.mligo)
-	@$(call test-ligo,vesting.revoke.test.mligo)
-	@$(call test-ligo,vesting.revokeaddress.test.mligo)
+	@$(call test-ligo,vesting.start.fa2.test.mligo)
+	@$(call test-ligo,vesting.release.fa2.test.mligo)
+	@$(call test-ligo,vesting.revoke.fa2.test.mligo)
+	@$(call test-ligo,vesting.revokeaddress.fa2.test.mligo)
+	@$(call test-ligo,vesting.start.fa1.test.mligo)
+	@$(call test-ligo,vesting.revoke.fa1.test.mligo)
+	@$(call test-ligo,vesting.release.fa1.test.mligo)
+	@$(call test-ligo,vesting.revokeaddress.fa1.test.mligo)
 else
 	@$(call test-ligo,$(SUITE).test.mligo)
 endif
