@@ -4,23 +4,23 @@
 #import "callback/main.mligo" "Callback"
 
 let change_manager (new_manager : address)( s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
-  let _ = Assert.assert_not_previous_manager new_manager s.manager in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.not_previous_manager new_manager s.manager in
   (([] : operation list), {s with manager = new_manager})
 
 let switch_pause (s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
   if (s.isPaused)
     then (([] : operation list), {s with isPaused = false})
     else (([] : operation list), {s with isPaused = true})
 
 let change_signer (new_signer : address)( s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
-  let _ = Assert.assert_not_previous_signer new_signer s.signer in
+  let _ = Assert.is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
+  let _ = Assert.not_previous_signer new_signer s.signer in
   (([] : operation list), {s with signer = new_signer})
 
 let add_event (new_event : Types.event_type)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
+  let _ = Assert.is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
   let new_events : (nat, Types.event_type) map = (Map.add (s.events_index) new_event s.events) in
   (([] : operation list), {s with events = new_events; events_index = (s.events_index + 1n)})
 
@@ -39,7 +39,7 @@ let get_event (requested_event_id : nat)(callbackAddr : address)(s : Types.stora
   ([op], s)
 
 let update_event (updated_event_id : nat)(updated_event : Types.event_type)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
+  let _ = Assert.is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
   let _ : Types.event_type =
     match Map.find_opt updated_event_id s.events with
       Some event -> event

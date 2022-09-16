@@ -11,29 +11,29 @@
 // --------------------------------------
 
 let change_manager (p_new_manager : address)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
-  let _ = Assert.assert_not_previous_manager p_new_manager s.manager in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.not_previous_manager p_new_manager s.manager in
   (([] : operation list), {s with manager = p_new_manager})
 
 let change_oracle_address (p_new_oracle_address : address)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
-  let _ = Assert.assert_not_previous_oracle p_new_oracle_address s.oracle_address in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.not_previous_oracle p_new_oracle_address s.oracle_address in
   (([] : operation list), {s with oracle_address = p_new_oracle_address})
 
 let switch_pause_event_creation (s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
   if (s.bet_config.is_event_creation_paused)
     then (([] : operation list), {s with bet_config.is_event_creation_paused = false})
     else (([] : operation list), {s with bet_config.is_event_creation_paused = true})
 
 let switch_pause_betting (s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
   if (s.bet_config.is_betting_paused)
     then (([] : operation list), {s with bet_config.is_betting_paused = false})
     else (([] : operation list), {s with bet_config.is_betting_paused = true})
 
 let update_config_type (p_new_bet_config : Types.bet_config_type)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
   (([] : operation list), {s with bet_config = p_new_bet_config})
 
 // --------------------------------------
@@ -41,12 +41,12 @@ let update_config_type (p_new_bet_config : Types.bet_config_type)(s : Types.stor
 // --------------------------------------
 
 let add_event (p_new_event : Types.add_event_parameter)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager_or_oracle (Tezos.get_sender()) s.manager s.oracle_address in
-  let _ = Assert.assert_event_creation_not_paused s.bet_config.is_event_creation_paused in
-  let _ = Assert.assert_event_start_to_end_date p_new_event.begin_at p_new_event.end_at in
-  let _ = Assert.assert_event_bet_start_to_end_date p_new_event.start_bet_time p_new_event.closed_bet_time in
-  let _ = Assert.assert_event_bet_start_after_end p_new_event.start_bet_time p_new_event.end_at in
-  let _ = Assert.assert_event_bet_ends_after_end p_new_event.closed_bet_time p_new_event.end_at in
+  let _ = Assert.is_manager_or_oracle (Tezos.get_sender()) s.manager s.oracle_address in
+  let _ = Assert.event_creation_not_paused s.bet_config.is_event_creation_paused in
+  let _ = Assert.event_start_to_end_date p_new_event.begin_at p_new_event.end_at in
+  let _ = Assert.event_bet_start_to_end_date p_new_event.start_bet_time p_new_event.closed_bet_time in
+  let _ = Assert.event_bet_start_after_end p_new_event.start_bet_time p_new_event.end_at in
+  let _ = Assert.event_bet_ends_after_end p_new_event.closed_bet_time p_new_event.end_at in
   let new_event : Types.event_type = { 
     name = p_new_event.name;
     videogame =  p_new_event.videogame;
@@ -110,16 +110,16 @@ let get_event (requested_event_id : nat)(callbackAddr : address)(s : Types.stora
 
 
 let update_event (updated_event_id : nat)(updated_event : Types.event_type)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager_or_oracle (Tezos.get_sender()) s.manager s.oracle_address in
-  let _ = Assert.assert_event_start_to_end_date updated_event.begin_at updated_event.end_at in
-  let _ = Assert.assert_event_bet_start_to_end_date updated_event.start_bet_time updated_event.closed_bet_time in
-  let _ = Assert.assert_event_bet_start_after_end updated_event.start_bet_time updated_event.end_at in
-  let _ = Assert.assert_event_bet_ends_after_end updated_event.closed_bet_time updated_event.end_at in
+  let _ = Assert.is_manager_or_oracle (Tezos.get_sender()) s.manager s.oracle_address in
+  let _ = Assert.event_start_to_end_date updated_event.begin_at updated_event.end_at in
+  let _ = Assert.event_bet_start_to_end_date updated_event.start_bet_time updated_event.closed_bet_time in
+  let _ = Assert.event_bet_start_after_end updated_event.start_bet_time updated_event.end_at in
+  let _ = Assert.event_bet_ends_after_end updated_event.closed_bet_time updated_event.end_at in
   let requested_event = match Big_map.find_opt updated_event_id s.events with
     | Some event -> event
     | None -> (failwith Errors.no_event_id)
   in
-  let _ = Assert.assert_betting_not_finalized (requested_event.is_finalized) in
+  let _ = Assert.betting_not_finalized (requested_event.is_finalized) in
   let new_events : (nat, Types.event_type) big_map = Big_map.update updated_event_id (Some(updated_event)) s.events in
   (([] : operation list), {s with events = new_events})
 
@@ -170,16 +170,16 @@ let add_bet_team_two (p_requested_event_id : Types.event_bets) : Types.event_bet
 
 
 let add_bet (p_requested_event_id : nat)(team_one_bet : bool)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_not_manager_nor_oracle (Tezos.get_sender()) s.manager s.oracle_address in
-  let _ = Assert.assert_no_tez (Tezos.get_amount()) in
-  let _ = Assert.assert_tez_lower_than_min (Tezos.get_amount()) s.bet_config.min_bet_amount in
+  let _ = Assert.not_manager_nor_oracle (Tezos.get_sender()) s.manager s.oracle_address in
+  let _ = Assert.no_tez (Tezos.get_amount()) in
+  let _ = Assert.tez_lower_than_min (Tezos.get_amount()) s.bet_config.min_bet_amount in
   let requested_event : Types.event_type = match (Big_map.find_opt p_requested_event_id s.events) with
     | Some event -> event
     | None -> failwith Errors.no_event_id
   in
-  let _ = Assert.assert_betting_not_finalized (requested_event.is_finalized) in
-  let _ = Assert.assert_betting_before_period_start (requested_event.start_bet_time) in
-  let _ = Assert.assert_betting_after_period_end (requested_event.closed_bet_time) in
+  let _ = Assert.betting_not_finalized (requested_event.is_finalized) in
+  let _ = Assert.betting_before_period_start (requested_event.start_bet_time) in
+  let _ = Assert.betting_after_period_end (requested_event.closed_bet_time) in
   let requested_event_bets : Types.event_bets = match (Big_map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith Errors.no_event_bets
@@ -233,18 +233,18 @@ let resolve_team_win (event_bets : Types.event_bets) (is_team_one_win : bool) (p
       compose_paiement event_bets.bets_team_two event_bets.bets_team_two_total event_bets.bets_team_one_total profit_quota
 
 let finalize_bet (p_requested_event_id : nat)(s : Types.storage) : (operation list * Types.storage) =
-  let _ = Assert.assert_is_manager (Tezos.get_sender()) s.manager in
+  let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
   let requested_event : Types.event_type = match (Big_map.find_opt p_requested_event_id s.events) with
     | Some event -> event
     | None -> failwith Errors.no_event_id
   in
   let _check_is_claimed : unit = assert_with_error (requested_event.is_claimed = False) Errors.event_already_claimed in
-  let _ = Assert.assert_betting_finalized (requested_event.is_finalized) in
+  let _ = Assert.betting_finalized (requested_event.is_finalized) in
   let event_bets : Types.event_bets = match (Big_map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith Errors.no_event_bets
   in
-  let _ = Assert.assert_finalizing_before_period_end (requested_event.end_at) in
+  let _ = Assert.finalizing_before_period_end (requested_event.end_at) in
   let outcome_draw : bool = match requested_event.is_draw with
     | Some x -> x
     | None -> failwith Errors.bet_no_team_outcome

@@ -17,7 +17,7 @@ let test_update_event_from_manager_should_work =
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
     // Updating the first Event from Manager
     let () = Helper.trsc_update_event_success (betting_contract, elon, 0n, Events.secondary_event) in
-    let () = Assert.assert_events_map betting_taddress updated_eventMap in
+    let () = Assert.events_map betting_taddress updated_eventMap in
     "OK"
 
 let test_update_event_from_oracle_should_work =
@@ -25,7 +25,7 @@ let test_update_event_from_oracle_should_work =
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
     // Updating the first Event from Manager
     let () = Helper.trsc_update_event_success (betting_contract, jeff, 0n, Events.secondary_event) in
-    let () = Assert.assert_events_map betting_taddress updated_eventMap in
+    let () = Assert.events_map betting_taddress updated_eventMap in
     "OK"
 
 let test_update_event_from_unauthorized_address_should_not_work =
@@ -34,7 +34,7 @@ let test_update_event_from_unauthorized_address_should_not_work =
     // Updating the first Event from unauthorized address
     let result = Helper.trsc_update_event (betting_contract, alice, 0n, Events.secondary_event) in
     let () = Assert.string_failure result Errors.not_manager_nor_oracle in
-    let () = Assert.assert_events_map betting_taddress Helper.one_event_map in
+    let () = Assert.events_map betting_taddress Helper.one_event_map in
     "OK"
 
 let test_update_third_event_from_manager_should_work =
@@ -42,11 +42,11 @@ let test_update_third_event_from_manager_should_work =
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
-    let () = Assert.assert_events_map betting_taddress Helper.three_event_map in
+    let () = Assert.events_map betting_taddress Helper.three_event_map in
 
     // Updating the third Event from Manager
     let () = Helper.trsc_update_event_success (betting_contract, elon, 1n, Events.primary_event) in
-    let () = Assert.assert_events_map betting_taddress Helper.three_event_map in
+    let () = Assert.events_map betting_taddress Helper.three_event_map in
     "OK"
 
 let test_update_third_event_from_oracle_should_work =
@@ -54,9 +54,9 @@ let test_update_third_event_from_oracle_should_work =
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
-    let () = Assert.assert_events_map betting_taddress Helper.three_event_map in
+    let () = Assert.events_map betting_taddress Helper.three_event_map in
 
     // Updating the third Event from Oracle
     let () = Helper.trsc_update_event_success (betting_contract, jeff, 1n, Events.primary_event) in
-    let () = Assert.assert_events_map betting_taddress Helper.three_event_map in
+    let () = Assert.events_map betting_taddress Helper.three_event_map in
     "OK"

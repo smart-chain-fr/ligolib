@@ -10,9 +10,9 @@ let () = Log.describe("[AddBet] test suite")
 
 let test_bet_team_one_should_work =
     let (_, betting_contract, betting_taddress, elon, _, alice, _, _) = Bootstrap.bootstrap() in
-    let () = Assert.assert_events_map betting_taddress Helper.empty_map in
+    let () = Assert.events_map betting_taddress Helper.empty_map in
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
-    let () = Assert.assert_events_map betting_taddress Helper.one_event_map in
+    let () = Assert.events_map betting_taddress Helper.one_event_map in
 
     let bet_one_map : (nat, Types.event_bets) big_map = Big_map.literal [
     (0n, {
@@ -27,14 +27,14 @@ let test_bet_team_one_should_work =
     ] in
 
     let () = Helper.trsc_add_bet_success (betting_contract, alice, 0n, (true : bool), 2000000mutez) in
-    let () = Assert.assert_events_bet_map betting_taddress bet_one_map in
+    let () = Assert.events_bet_map betting_taddress bet_one_map in
     "OK"
 
 let test_bet_team_both_should_work =
     let (_, betting_contract, betting_taddress, elon, _, alice, _, _) = Bootstrap.bootstrap() in
-    let () = Assert.assert_events_map betting_taddress Helper.empty_map in
+    let () = Assert.events_map betting_taddress Helper.empty_map in
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
-    let () = Assert.assert_events_map betting_taddress Helper.one_event_map in
+    let () = Assert.events_map betting_taddress Helper.one_event_map in
 
     let bet_both_map : (nat, Types.event_bets) big_map = Big_map.literal [
     (0n, {
@@ -50,14 +50,14 @@ let test_bet_team_both_should_work =
 
     let () = Helper.trsc_add_bet_success (betting_contract, alice, 0n, (true : bool), 2000000mutez) in
     let () = Helper.trsc_add_bet_success (betting_contract, alice, 0n, (false : bool), 4000000mutez) in
-    let () = Assert.assert_events_bet_map betting_taddress bet_both_map in
+    let () = Assert.events_bet_map betting_taddress bet_both_map in
     "OK"
 
 let test_bet_various_entries_should_work =
     let (_, betting_contract, betting_taddress, elon, _, alice, bob, mike) = Bootstrap.bootstrap() in
-    let () = Assert.assert_events_map betting_taddress Helper.empty_map in
+    let () = Assert.events_map betting_taddress Helper.empty_map in
     let () = Helper.trsc_add_event_success (betting_contract, elon, Events.eventype_to_addeventparam(Events.primary_event)) in
-    let () = Assert.assert_events_map betting_taddress Helper.one_event_map in
+    let () = Assert.events_map betting_taddress Helper.one_event_map in
 
     let bet_last_map : (nat, Types.event_bets) big_map = Big_map.literal [
     (0n, {
@@ -76,5 +76,5 @@ let test_bet_various_entries_should_work =
     let () = Helper.trsc_add_bet_success (betting_contract, alice, 0n, (false : bool), 10000000mutez) in
     let () = Helper.trsc_add_bet_success (betting_contract, mike, 0n, (false : bool), 3000000mutez) in
     let () = Helper.trsc_add_bet_success (betting_contract, bob, 0n, (false : bool), 7000000mutez) in
-    let () = Assert.assert_events_bet_map betting_taddress bet_last_map in
+    let () = Assert.events_bet_map betting_taddress bet_last_map in
     "OK"
