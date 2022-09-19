@@ -139,8 +139,11 @@ test_betting_bet_finalize: test/betting/test.betFinalize.mligo
 # 		DEPLOY SECTION
 # -------------------------
 
-deploy: node_modules deploy_oracle deploy_betting
+deploy: install node_modules deploy_oracle deploy_betting
 	@echo "Deploying contracts..."
+
+install: deploy/.env.dist
+	@if [ ! -f ./deploy/.env ]; then cp ./deploy/.env.dist ./deploy/.env ; fi
 
 node_modules:
 	@cd deploy && npm install
