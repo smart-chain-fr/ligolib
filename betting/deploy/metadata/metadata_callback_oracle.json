@@ -1,0 +1,15 @@
+{
+    "name": "Callback for Oracle Contract",
+    "description": "Callback for Oracle Contract",
+    "version": "beta",
+    "license": {
+        "name": "MIT"
+    },
+    "authors": [
+        "smart-chain <tezos@smart-chain.fr>"
+    ],
+    "homepage": "https://www.smart-chain.fr",
+    "interfaces": [
+        "TZIP-016"
+    ]
+}

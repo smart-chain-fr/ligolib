@@ -1,0 +1,16 @@
+{
+  "name": "api-backend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "past": "node get_past_matches.js",
+    "running": "node get_running_matches.js",
+    "upcoming": "node get_upcoming_matches.js"
+  },
+  "author": "Charaf ZELLOU",
+  "license": "ISC",
+  "dependencies": {
+    "api": "^4.5.2"
+  }
+}
