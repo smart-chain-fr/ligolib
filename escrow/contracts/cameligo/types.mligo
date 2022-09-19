@@ -2,7 +2,7 @@ type fa12_transfer = address * (address * nat)
 
 type currency = string
 
-type escrowId = string
+type escrow_id = string
 
 type escrow =  {
     currency : currency;
@@ -18,7 +18,7 @@ type escrow =  {
 type paymentStorage = {
     admin : address;
     currencies : (currency, address) map;
-    escrows : (escrowId, escrow) big_map; 
+    escrows : (escrow_id, escrow) map; 
     judges : (nat, address) map;
     votingContract : address
 }
@@ -28,22 +28,22 @@ type returnPayment = operation list * paymentStorage
 type payParameter = { 
     currency : currency;
     amount: nat;
-    escrowId: escrowId
+    escrow_id: escrow_id
 }
 
-type createPayParameter = { 
+type create_pay_parameter = { 
     currency : currency;
     amount: nat;
     buyer : address;
     seller : address;
-    escrowId: escrowId
+    escrow_id: escrow_id
 }
 
 type paymentEntrypoints = 
+    | SetAdmin of address
     | AddCurrency of (currency * address)
     | DeleteCurrency of currency
     | Pay of payParameter 
-    | CancelPayment of escrowId
-    | ReleasePayment of escrowId
-    | SetEscrowcontract of (escrowId * address)
-    | SetAdmin of address
+    | CancelPayment of escrow_id
+    | ReleasePayment of escrow_id
+    | SetEscrowContract of (escrow_id * address)
