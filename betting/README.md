@@ -88,10 +88,10 @@ docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang
 
 - For entrypoint SendValue
 ```bash
-docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0 run dry-run src/contracts/cameligo/betting/main.mligo 'SendValue(unit)' '37' -e indiceMain
+docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.49.0 run dry-run src/contracts/cameligo/betting/main.mligo 'SendValue(unit)' '37' -e main
 ```
 
-### - Originate the Indice contract (with tezos-client CLI)
+### - Originate the Betting contract (with tezos-client CLI)
 - Compile the storage into Michelson expression :
 - Using `tz1bdTsc3QdAj1935KiMxou6frwdm5RDdssT` as example for `storage.manager`
 - Using `KT1KMjSSDxTAUZAb7rgGYx3JF4Yz1cwQpwUi` as example for `storage.oracle_address`

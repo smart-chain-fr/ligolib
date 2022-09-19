@@ -6,5 +6,5 @@ package-lock.json
 __pycache__
 
 src/compiled/*
-src/deploy/*.js
-src/deployments/*
+deploy/*.js
+deployments/*
