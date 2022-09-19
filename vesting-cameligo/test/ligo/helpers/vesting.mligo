@@ -27,11 +27,11 @@ let base_storage (admin, token_address, token_id, beneficiaries, vesting_duratio
     in
     let started = match started_at with
     | None -> False
-    | Some start_time -> True
+    | Some _start_time -> True
     in
     let vested_amount = match started_at with
     | None -> 0n
-    | Some start_time -> 
+    | Some _start_time -> 
         let sum(acc, elt: nat * (address * nat)) : nat = acc + elt.1 in
         Map.fold sum beneficiaries 0n
     in

@@ -50,13 +50,11 @@ let test_success_release_at_end_of_duration =
     let beneficiaries = Map.literal[(alice, 20n);(bob, 10n)] in
     let vesting = Bootstrap.boot_vesting(admin, FA1(fa1.addr), token_id, beneficiaries, 10000n, True, Some(Vesting_helper.day2_timestamp)) in
     let () = Test.set_source admin in
-    let result = FA1_helper.transfer(((admin, (vesting.addr, 30n)) : FA1_helper.FA1.transfer), fa1.contr) in
-    let () = Test.log(result) in
+    let () = FA1_helper.transfer_success(((admin, (vesting.addr, 30n)) : FA1_helper.FA1.transfer), fa1.contr) in
     let () = FA1_helper.approve_success((vesting.addr, 30n), fa1.contr) in
    
     let () = Test.set_source alice in
-    let result = Vesting_helper.release(unit, 0tez, vesting.contr) in
-    let () = Test.log(result) in
+    let () = Vesting_helper.release_success(unit, 0tez, vesting.contr) in
     Vesting_helper.assert_released_amount(vesting.taddr, alice, 20n)
 
 

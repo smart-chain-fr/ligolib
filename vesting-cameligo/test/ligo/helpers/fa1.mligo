@@ -17,7 +17,6 @@ let dummy_token_metadata (token_id : nat): FA1.TokenMetadata.data = {
 
 (* Base FA1 storage *)
 let base_storage (token_id, admin : nat * address) : FA1.storage = 
-let allowance = (Map.empty : FA1.Allowance.t) in
 {
     ledger=(Big_map.literal[(admin, (1000n, (Map.empty : FA1.Allowance.t))) ] : FA1.Ledger.t);
     token_metadata=dummy_token_metadata(token_id);
