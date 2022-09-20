@@ -78,9 +78,12 @@ let test_success_revoke_by_admin_after_start =
     let beneficiaries = Map.literal[(alice, 20n);(bob, 10n)] in
     let vesting = Bootstrap.boot_vesting(admin, FA2(fa2.addr), token_id, beneficiaries, 10000n, True, (None : timestamp option)) in
     let () = FA2_helper.update_operators_success([Add_operator({owner=admin; operator=vesting.addr; token_id=token_id})], fa2.contr) in
-    
+    let () = FA2_helper.assert_user_balance(fa2.taddr, admin, 0n, 1000n) in
+
     let () = Test.set_source admin in
     let () = Vesting_helper.start_success(unit, 0tez, vesting.contr) in
+    let () = FA2_helper.assert_user_balance(fa2.taddr, admin, 0n, 970n) in
     let () = Vesting_helper.assert_vesting_revoked(vesting.taddr, false) in
     let () = Vesting_helper.revoke_success(unit, 0tez, vesting.contr) in
+    let () = FA2_helper.assert_user_balance(fa2.taddr, admin, 0n, 1000n) in
     Vesting_helper.assert_vesting_revoked(vesting.taddr, true)

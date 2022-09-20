@@ -45,3 +45,8 @@ let transfer (p, contr : FA1.transfer * contr) =
     
 let transfer_success (p, contr : FA1.transfer * contr) =
     Assert.tx_success(transfer(p, contr))
+
+let assert_user_balance(taddr, owner, expected_balance : taddr * address * nat) =
+    let s = Test.get_storage taddr in
+    let (user_balance, _) = FA1.Ledger.get_for_user(s.ledger, owner) in
+    assert(user_balance = expected_balance)

@@ -83,9 +83,12 @@ let test_success_revoke_by_admin_after_start =
     let vesting = Bootstrap.boot_vesting(admin, FA1(fa1.addr), token_id, beneficiaries, 10000n, True, (None : timestamp option)) in
     let () = Test.set_source admin in
     let () = FA1_helper.approve_success((vesting.addr, 30n), fa1.contr) in
+    let () = FA1_helper.assert_user_balance(fa1.taddr, admin, 1000n) in
 
     let () = Test.set_source admin in
     let () = Vesting_helper.start_success(unit, 0tez, vesting.contr) in
+    let () = FA1_helper.assert_user_balance(fa1.taddr, admin, 970n) in
     let () = Vesting_helper.assert_vesting_revoked(vesting.taddr, false) in
     let () = Vesting_helper.revoke_success(unit, 0tez, vesting.contr) in
+    let () = FA1_helper.assert_user_balance(fa1.taddr, admin, 1000n) in
     Vesting_helper.assert_vesting_revoked(vesting.taddr, true)

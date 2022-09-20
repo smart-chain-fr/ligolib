@@ -52,9 +52,11 @@ let test_success_release_at_end_of_duration =
     let () = Test.set_source admin in
     let () = FA1_helper.transfer_success(((admin, (vesting.addr, 30n)) : FA1_helper.FA1.transfer), fa1.contr) in
     let () = FA1_helper.approve_success((vesting.addr, 30n), fa1.contr) in
-   
+    let () = FA1_helper.assert_user_balance(fa1.taddr, alice, 0n) in
+
     let () = Test.set_source alice in
     let () = Vesting_helper.release_success(unit, 0tez, vesting.contr) in
+    let () = FA1_helper.assert_user_balance(fa1.taddr, alice, 20n) in
     Vesting_helper.assert_released_amount(vesting.taddr, alice, 20n)
 
 
