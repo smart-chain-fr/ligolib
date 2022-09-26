@@ -1,0 +1,297 @@
+[ { "prim": "parameter",
+    "args":
+      [ { "prim": "pair",
+          "args":
+            [ { "prim": "pair",
+                "args":
+                  [ { "prim": "pair",
+                      "args":
+                        [ { "prim": "pair",
+                            "args":
+                              [ { "prim": "pair",
+                                  "args":
+                                    [ { "prim": "address",
+                                        "annots": [ "%address" ] },
+                                      { "prim": "nat",
+                                        "annots": [ "%currency_amount" ] } ] },
+                                { "prim": "or",
+                                  "args":
+                                    [ { "prim": "or",
+                                        "args":
+                                          [ { "prim": "address",
+                                              "annots": [ "%fA12" ] },
+                                            { "prim": "address",
+                                              "annots": [ "%fA2" ] } ] },
+                                      { "prim": "unit",
+                                        "annots": [ "%xTZ" ] } ],
+                                  "annots": [ "%currency_type" ] } ],
+                            "annots": [ "%buyer" ] },
+                          { "prim": "pair",
+                            "args":
+                              [ { "prim": "pair",
+                                  "args":
+                                    [ { "prim": "address",
+                                        "annots": [ "%address" ] },
+                                      { "prim": "pair",
+                                        "args":
+                                          [ { "prim": "bool" },
+                                            { "prim": "nat" } ],
+                                        "annots": [ "%judge_ruling" ] } ] },
+                                { "prim": "bool",
+                                  "annots": [ "%judge_summon" ] } ],
+                            "annots": [ "%judge" ] } ] },
+                    { "prim": "bytes", "annots": [ "%rules" ] },
+                    { "prim": "pair",
+                      "args":
+                        [ { "prim": "pair",
+                            "args":
+                              [ { "prim": "address",
+                                  "annots": [ "%address" ] },
+                                { "prim": "nat",
+                                  "annots": [ "%currency_amount" ] } ] },
+                          { "prim": "or",
+                            "args":
+                              [ { "prim": "or",
+                                  "args":
+                                    [ { "prim": "address",
+                                        "annots": [ "%fA12" ] },
+                                      { "prim": "address",
+                                        "annots": [ "%fA2" ] } ] },
+                                { "prim": "unit", "annots": [ "%xTZ" ] } ],
+                            "annots": [ "%currency_type" ] } ],
+                      "annots": [ "%seller" ] } ] },
+              { "prim": "timestamp", "annots": [ "%valid_until" ] } ] } ] },
+  { "prim": "storage",
+    "args":
+      [ { "prim": "pair",
+          "args":
+            [ { "prim": "map",
+                "args": [ { "prim": "nat" }, { "prim": "address" } ],
+                "annots": [ "%escrows" ] },
+              { "prim": "nat", "annots": [ "%escrows_index" ] } ] } ] },
+  { "prim": "code",
+    "args":
+      [ [ { "prim": "UNPAIR" }, { "prim": "DUP" }, { "prim": "CDR" },
+          { "prim": "PUSH",
+            "args": [ { "prim": "bool" }, { "prim": "False" } ] },
+          { "prim": "DUP", "args": [ { "int": "3" } ] }, { "prim": "CAR" },
+          { "prim": "CDR" }, { "prim": "CDR" }, { "prim": "PAIR" },
+          { "prim": "PUSH",
+            "args": [ { "prim": "bytes" }, { "bytes": "" } ] },
+          { "prim": "DUP", "args": [ { "int": "4" } ] }, { "prim": "CAR" },
+          { "prim": "CAR" }, { "prim": "CDR" }, { "prim": "PAIR" },
+          { "prim": "PAIR" }, { "prim": "UNIT" },
+          { "prim": "RIGHT", "args": [ { "prim": "bool" } ] },
+          { "prim": "LEFT", "args": [ { "prim": "bool" } ] },
+          { "prim": "NOW" }, { "prim": "PAIR" },
+          { "prim": "PUSH",
+            "args": [ { "prim": "bool" }, { "prim": "True" } ] },
+          { "prim": "DIG", "args": [ { "int": "4" } ] }, { "prim": "CAR" },
+          { "prim": "CAR" }, { "prim": "CAR" }, { "prim": "PAIR" },
+          { "prim": "PAIR" }, { "prim": "PAIR" }, { "prim": "PAIR" },
+          { "prim": "PUSH", "args": [ { "prim": "mutez" }, { "int": "0" } ] },
+          { "prim": "NONE", "args": [ { "prim": "key_hash" } ] },
+          { "prim": "CREATE_CONTRACT",
+            "args":
+              [ [ { "prim": "parameter",
+                    "args":
+                      [ { "prim": "or",
+                          "args":
+                            [ { "prim": "pair",
+                                "args":
+                                  [ { "prim": "pair",
+                                      "args":
+                                        [ { "prim": "address",
+                                            "annots": [ "%address" ] },
+                                          { "prim": "nat",
+                                            "annots": [ "%currency_amount" ] } ] },
+                                    { "prim": "or",
+                                      "args":
+                                        [ { "prim": "or",
+                                            "args":
+                                              [ { "prim": "address",
+                                                  "annots": [ "%fA12" ] },
+                                                { "prim": "address",
+                                                  "annots": [ "%fA2" ] } ] },
+                                          { "prim": "unit",
+                                            "annots": [ "%xTZ" ] } ],
+                                      "annots": [ "%currency_type" ] } ],
+                                "annots": [ "%approve" ] },
+                              { "prim": "pair",
+                                "args":
+                                  [ { "prim": "pair",
+                                      "args":
+                                        [ { "prim": "address",
+                                            "annots": [ "%address" ] },
+                                          { "prim": "nat",
+                                            "annots": [ "%currency_amount" ] } ] },
+                                    { "prim": "or",
+                                      "args":
+                                        [ { "prim": "or",
+                                            "args":
+                                              [ { "prim": "address",
+                                                  "annots": [ "%fA12" ] },
+                                                { "prim": "address",
+                                                  "annots": [ "%fA2" ] } ] },
+                                          { "prim": "unit",
+                                            "annots": [ "%xTZ" ] } ],
+                                      "annots": [ "%currency_type" ] } ],
+                                "annots": [ "%setSeller" ] } ] } ] },
+                  { "prim": "storage",
+                    "args":
+                      [ { "prim": "pair",
+                          "args":
+                            [ { "prim": "pair",
+                                "args":
+                                  [ { "prim": "pair",
+                                      "args":
+                                        [ { "prim": "pair",
+                                            "args":
+                                              [ { "prim": "pair",
+                                                  "args":
+                                                    [ { "prim": "pair",
+                                                        "args":
+                                                          [ { "prim":
+                                                                "address",
+                                                              "annots":
+                                                                [ "%address" ] },
+                                                            { "prim": "nat",
+                                                              "annots":
+                                                                [ "%currency_amount" ] } ] },
+                                                      { "prim": "or",
+                                                        "args":
+                                                          [ { "prim": "or",
+                                                              "args":
+                                                                [ { "prim":
+                                                                    "address",
+                                                                    "annots":
+                                                                    [ "%fA12" ] },
+                                                                  { "prim":
+                                                                    "address",
+                                                                    "annots":
+                                                                    [ "%fA2" ] } ] },
+                                                            { "prim": "unit",
+                                                              "annots":
+                                                                [ "%xTZ" ] } ],
+                                                        "annots":
+                                                          [ "%currency_type" ] } ],
+                                                  "annots": [ "%buyer" ] },
+                                                { "prim": "bool",
+                                                  "annots":
+                                                    [ "%buyer_approved" ] } ] },
+                                          { "prim": "timestamp",
+                                            "annots": [ "%created_at" ] },
+                                          { "prim": "or",
+                                            "args":
+                                              [ { "prim": "or",
+                                                  "args":
+                                                    [ { "prim": "bool",
+                                                        "annots":
+                                                          [ "%cancelled" ] },
+                                                      { "prim": "unit",
+                                                        "annots":
+                                                          [ "%initiated" ] } ] },
+                                                { "prim": "bool",
+                                                  "annots": [ "%released" ] } ],
+                                            "annots": [ "%escrow_state" ] } ] },
+                                    { "prim": "pair",
+                                      "args":
+                                        [ { "prim": "pair",
+                                            "args":
+                                              [ { "prim": "pair",
+                                                  "args":
+                                                    [ { "prim": "address",
+                                                        "annots":
+                                                          [ "%address" ] },
+                                                      { "prim": "pair",
+                                                        "args":
+                                                          [ { "prim": "bool" },
+                                                            { "prim": "nat" } ],
+                                                        "annots":
+                                                          [ "%judge_ruling" ] } ] },
+                                                { "prim": "bool",
+                                                  "annots":
+                                                    [ "%judge_summon" ] } ],
+                                            "annots": [ "%judge" ] },
+                                          { "prim": "bytes",
+                                            "annots": [ "%rules" ] } ] },
+                                    { "prim": "pair",
+                                      "args":
+                                        [ { "prim": "pair",
+                                            "args":
+                                              [ { "prim": "address",
+                                                  "annots": [ "%address" ] },
+                                                { "prim": "nat",
+                                                  "annots":
+                                                    [ "%currency_amount" ] } ] },
+                                          { "prim": "or",
+                                            "args":
+                                              [ { "prim": "or",
+                                                  "args":
+                                                    [ { "prim": "address",
+                                                        "annots": [ "%fA12" ] },
+                                                      { "prim": "address",
+                                                        "annots": [ "%fA2" ] } ] },
+                                                { "prim": "unit",
+                                                  "annots": [ "%xTZ" ] } ],
+                                            "annots": [ "%currency_type" ] } ],
+                                      "annots": [ "%seller" ] },
+                                    { "prim": "bool",
+                                      "annots": [ "%seller_approved" ] } ] },
+                              { "prim": "timestamp",
+                                "annots": [ "%valid_until" ] } ] } ] },
+                  { "prim": "code",
+                    "args":
+                      [ [ { "prim": "UNPAIR" },
+                          { "prim": "IF_LEFT",
+                            "args":
+                              [ [ { "prim": "DROP" } ],
+                                [ { "prim": "DUP",
+                                    "args": [ { "int": "2" } ] },
+                                  { "prim": "CAR" }, { "prim": "CAR" },
+                                  { "prim": "CAR" }, { "prim": "CAR" },
+                                  { "prim": "CAR" }, { "prim": "CAR" },
+                                  { "prim": "SENDER" },
+                                  { "prim": "COMPARE" }, { "prim": "EQ" },
+                                  { "prim": "PUSH",
+                                    "args":
+                                      [ { "prim": "string" },
+                                        { "string": "Buyer Exclusive" } ] },
+                                  { "prim": "SWAP" },
+                                  { "prim": "IF",
+                                    "args":
+                                      [ [ { "prim": "DROP" } ],
+                                        [ { "prim": "FAILWITH" } ] ] },
+                                  { "prim": "DUP",
+                                    "args": [ { "int": "2" } ] },
+                                  { "prim": "CDR" },
+                                  { "prim": "DUP",
+                                    "args": [ { "int": "3" } ] },
+                                  { "prim": "CAR" }, { "prim": "CDR" },
+                                  { "prim": "CDR" }, { "prim": "CDR" },
+                                  { "prim": "DIG",
+                                    "args": [ { "int": "2" } ] },
+                                  { "prim": "PAIR" },
+                                  { "prim": "DUP",
+                                    "args": [ { "int": "3" } ] },
+                                  { "prim": "CAR" }, { "prim": "CDR" },
+                                  { "prim": "CAR" }, { "prim": "PAIR" },
+                                  { "prim": "DIG",
+                                    "args": [ { "int": "2" } ] },
+                                  { "prim": "CAR" }, { "prim": "CAR" },
+                                  { "prim": "PAIR" }, { "prim": "PAIR" } ] ] },
+                          { "prim": "NIL",
+                            "args": [ { "prim": "operation" } ] },
+                          { "prim": "PAIR" } ] ] } ] ] }, { "prim": "PAIR" },
+          { "prim": "PUSH", "args": [ { "prim": "nat" }, { "int": "1" } ] },
+          { "prim": "DUP", "args": [ { "int": "3" } ] }, { "prim": "CDR" },
+          { "prim": "ADD" }, { "prim": "DUP", "args": [ { "int": "3" } ] },
+          { "prim": "DROP" }, { "prim": "DUP", "args": [ { "int": "3" } ] },
+          { "prim": "CAR" }, { "prim": "DUP", "args": [ { "int": "3" } ] },
+          { "prim": "CDR" }, { "prim": "DIG", "args": [ { "int": "4" } ] },
+          { "prim": "CDR" }, { "prim": "SWAP" }, { "prim": "SOME" },
+          { "prim": "SWAP" }, { "prim": "UPDATE" }, { "prim": "PAIR" },
+          { "prim": "NIL", "args": [ { "prim": "operation" } ] },
+          { "prim": "DIG", "args": [ { "int": "2" } ] }, { "prim": "CAR" },
+          { "prim": "CONS" }, { "prim": "PAIR" } ] ] } ]
+
