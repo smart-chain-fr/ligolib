@@ -22,15 +22,11 @@ let change_oracle_address (p_new_oracle_address : address)(s : Types.storage) : 
 
 let switch_pause_event_creation (s : Types.storage) : (operation list * Types.storage) =
   let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
-  if (s.bet_config.is_event_creation_paused)
-    then (([] : operation list), {s with bet_config.is_event_creation_paused = false})
-    else (([] : operation list), {s with bet_config.is_event_creation_paused = true})
+  (([] : operation list), {s with bet_config.is_event_creation_paused = (not s.bet_config.is_event_creation_paused)})
 
 let switch_pause_betting (s : Types.storage) : (operation list * Types.storage) =
   let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
-  if (s.bet_config.is_betting_paused)
-    then (([] : operation list), {s with bet_config.is_betting_paused = false})
-    else (([] : operation list), {s with bet_config.is_betting_paused = true})
+  (([] : operation list), {s with bet_config.is_betting_paused = (not s.bet_config.is_betting_paused)})
 
 let update_config_type (p_new_bet_config : Types.bet_config_type)(s : Types.storage) : (operation list * Types.storage) =
   let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
@@ -197,7 +193,7 @@ let make_transfer_op (addr : address ) ( value_won : tez ) (profit_quota : nat):
   in
   Tezos.transaction unit value_to_send destination
 
-let compose_paiement ( winner_map : (address, tez) map ) ( total_value_bet : tez ) ( total_value_won : tez ) (profit_quota : nat) : operation list =
+let compose_payment ( winner_map : (address, tez) map ) ( total_value_bet : tez ) ( total_value_won : tez ) (profit_quota : nat) : operation list =
   let folded_op_list = fun (op_list, (address, bet_amount) : operation list * (address * tez) ) -> 
     let won_reward_percentage : nat = 10000000n * bet_amount / total_value_bet in
     let added_reward : tez =  total_value_won * won_reward_percentage / 10000000n in    
@@ -223,9 +219,9 @@ let resolve_team_win (event_bets : Types.event_bets) (is_team_one_win : bool) (p
   then refund_bet event_bets 0n
   else if (is_team_one_win)
     then
-      compose_paiement event_bets.bets_team_one event_bets.bets_team_one_total event_bets.bets_team_two_total profit_quota
+      compose_payment event_bets.bets_team_one event_bets.bets_team_one_total event_bets.bets_team_two_total profit_quota
     else 
-      compose_paiement event_bets.bets_team_two event_bets.bets_team_two_total event_bets.bets_team_one_total profit_quota
+      compose_payment event_bets.bets_team_two event_bets.bets_team_two_total event_bets.bets_team_one_total profit_quota
 
 let finalize_bet (p_requested_event_id : nat)(s : Types.storage) : (operation list * Types.storage) =
   let _ = Assert.is_manager (Tezos.get_sender()) s.manager in

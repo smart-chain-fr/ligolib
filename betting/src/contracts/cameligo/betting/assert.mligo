@@ -2,7 +2,7 @@
 #import "errors.mligo" "Errors"
 
 // --------------------------------------
-//       CONFIG RELATED AssertIONS
+//       CONFIG RELATED ASSERTIONS
 // --------------------------------------
 
 let is_manager (p_sender : address)(p_manager : address) : unit =
@@ -26,7 +26,7 @@ let not_previous_oracle (p_new_oracle : address)(p_prev_oracle : address) : unit
     then failwith Errors.same_previous_oracle_address
 
 // --------------------------------------
-//         EVENT RELATED AssertIONS
+//         EVENT RELATED ASSERTIONS
 // --------------------------------------
 
 let event_creation_not_paused (p_event_creation_paused : bool) : unit =
@@ -50,7 +50,7 @@ let event_bet_ends_after_end (p_event_bet_end : timestamp) (p_event_end : timest
     then failwith Errors.event_betting_end_after_end
 
 // --------------------------------------
-//         BETTING RELATED AssertIONS
+//         BETTING RELATED ASSERTIONS
 // --------------------------------------
 
 let betting_not_paused (p_betting_paused : bool) : unit =
