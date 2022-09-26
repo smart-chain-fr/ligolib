@@ -1,3 +1,5 @@
+type game_status = Ongoing | Team1Win| Team2Win | Draw
+
 type storage = 
   [@layout:comb] {
   name : string;
@@ -6,9 +8,7 @@ type storage =
   end_at : timestamp;
   modified_at : timestamp;
   opponents : { team_one : string; team_two : string};
-  is_finalized : bool;
-  is_draw : bool option;
-  is_team_one_win : bool option;
+  game_status : game_status;
   metadata : (string, bytes) map;
   }
 
@@ -20,9 +20,7 @@ type requested_event_param =
     end_at : timestamp;
     modified_at : timestamp;
     opponents : { team_one : string; team_two : string};
-    is_finalized : bool;
-    is_draw : bool option;
-    is_team_one_win : bool option;
+    game_status : game_status;
   }
 
 type parameter = SaveEvent of requested_event_param | Nothing of unit
@@ -35,9 +33,7 @@ let saveEvent(param, store : requested_event_param * storage) : operation list *
     end_at = param.end_at;
     modified_at = param.modified_at;
     opponents = param.opponents;
-    is_finalized = param.is_finalized;
-    is_draw = param.is_draw;
-    is_team_one_win = param.is_team_one_win;
+    game_status = param.game_status;
   })
 
 let main ((p, s):(parameter * storage)) : operation list * storage =

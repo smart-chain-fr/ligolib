@@ -11,6 +11,8 @@ type originated = {
 
 let plain_timestamp : timestamp = ("1970-01-01T00:00:01Z" : timestamp)
 
+type game_status = Ongoing | Team1Win| Team2Win | Draw
+
 (* Base Callback storage *)
 let base_storage : Callback.storage = {
     name = "";
@@ -19,9 +21,7 @@ let base_storage : Callback.storage = {
     end_at = plain_timestamp + 4000;
     modified_at = plain_timestamp;
     opponents = { team_one = ""; team_two = ""};
-    is_finalized = false;
-    is_draw = (None : bool option);
-    is_team_one_win = (None : bool option);
+    game_status = Ongoing;
     metadata = (Map.empty : (string, bytes) map);
 }
 

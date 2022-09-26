@@ -12,9 +12,7 @@ let primary_event : Types.event_type =
         end_at = plain_timestamp + 4096;
         modified_at = plain_timestamp;
         opponents = { team_one = "Team ONE"; team_two = "Team TWO"};
-        is_finalized = false;
-        is_draw = (None : bool option);
-        is_team_one_win = (None : bool option);
+        game_status = Ongoing;
     }
 
 let secondary_event : Types.event_type =
@@ -25,9 +23,7 @@ let secondary_event : Types.event_type =
         end_at = plain_timestamp + 4096;
         modified_at = plain_timestamp;
         opponents = { team_one = "Team THREE"; team_two = "Team FOUR"};
-        is_finalized = false;
-        is_draw = (None : bool option);
-        is_team_one_win = (None : bool option);
+        game_status = Ongoing;
     }
 
 let bootstrap_oracle () =

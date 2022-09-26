@@ -54,9 +54,7 @@ let add_event (p_new_event : Types.add_event_parameter)(s : Types.storage) : (op
     end_at = p_new_event.end_at;
     modified_at = p_new_event.modified_at;
     opponents = p_new_event.opponents;
-    is_finalized = p_new_event.is_finalized;
-    is_draw = p_new_event.is_draw;
-    is_team_one_win = p_new_event.is_team_one_win;
+    game_status = Ongoing;
     start_bet_time = p_new_event.start_bet_time;
     closed_bet_time = p_new_event.closed_bet_time;
     is_claimed = False } in
@@ -88,9 +86,7 @@ let get_event (requested_event_id : nat)(callbackAddr : address)(s : Types.stora
     end_at = cbk_event.end_at;
     modified_at = cbk_event.modified_at;
     opponents = { team_one = cbk_event.opponents.team_one; team_two = cbk_event.opponents.team_two};
-    is_finalized = cbk_event.is_finalized;
-    is_draw = cbk_event.is_draw;
-    is_team_one_win = cbk_event.is_team_one_win;
+    game_status = cbk_event.game_status;
     start_bet_time = cbk_event.start_bet_time;
     closed_bet_time = cbk_event.closed_bet_time;
     bets_team_one = cbk_eventbet.bets_team_one;
@@ -119,7 +115,7 @@ let update_event (updated_event_id : nat)(updated_event : Types.event_type)(s : 
     | Some event -> event
     | None -> (failwith Errors.no_event_id)
   in
-  let _ = Assert.betting_not_finalized (requested_event.is_finalized) in
+  let _ = Assert.betting_not_finalized (requested_event.game_status) in
   let new_events : (nat, Types.event_type) big_map = Big_map.update updated_event_id (Some(updated_event)) s.events in
   (([] : operation list), {s with events = new_events})
 
@@ -177,7 +173,7 @@ let add_bet (p_requested_event_id : nat)(team_one_bet : bool)(s : Types.storage)
     | Some event -> event
     | None -> failwith Errors.no_event_id
   in
-  let _ = Assert.betting_not_finalized (requested_event.is_finalized) in
+  let _ = Assert.betting_not_finalized (requested_event.game_status) in
   let _ = Assert.betting_before_period_start (requested_event.start_bet_time) in
   let _ = Assert.betting_after_period_end (requested_event.closed_bet_time) in
   let requested_event_bets : Types.event_bets = match (Big_map.find_opt p_requested_event_id s.events_bets) with
@@ -190,7 +186,6 @@ let add_bet (p_requested_event_id : nat)(team_one_bet : bool)(s : Types.storage)
   in
   let new_events_map : (nat, Types.event_bets) big_map = (Big_map.update p_requested_event_id (Some(updated_bet_event)) s.events_bets) in
   (([] : operation list), {s with events_bets = new_events_map;})
-
 
 let make_transfer_op (addr : address ) ( value_won : tez ) (profit_quota : nat): operation =
   let quota_to_send : nat = abs(100n - profit_quota) in
@@ -239,29 +234,21 @@ let finalize_bet (p_requested_event_id : nat)(s : Types.storage) : (operation li
     | None -> failwith Errors.no_event_id
   in
   let _check_is_claimed : unit = assert_with_error (requested_event.is_claimed = False) Errors.event_already_claimed in
-  let _ = Assert.betting_finalized (requested_event.is_finalized) in
+  let _ = Assert.betting_finalized (requested_event.game_status) in
   let event_bets : Types.event_bets = match (Big_map.find_opt p_requested_event_id s.events_bets) with
     | Some event -> event
     | None -> failwith Errors.no_event_bets
   in
   let _ = Assert.finalizing_before_period_end (requested_event.end_at) in
-  let outcome_draw : bool = match requested_event.is_draw with
-    | Some x -> x
-    | None -> failwith Errors.bet_no_team_outcome
-  in
   let profit_quota : nat = s.bet_config.retained_profit_quota in
   let modified_events = Big_map.update p_requested_event_id (Some({ requested_event with is_claimed = True })) s.events in
-  if outcome_draw
-  then
-    let op_list = refund_bet event_bets profit_quota in
-    ((op_list : operation list), { s with events = modified_events })
-  else
-    let is_team_one_win : bool = match requested_event.is_team_one_win with
-    | Some x -> x
-    | None -> failwith Errors.bet_no_team_outcome
-    in
-    let op_list = resolve_team_win event_bets is_team_one_win profit_quota in
-    ((op_list : operation list), { s with events = modified_events })
+  let op_list : operation list = match requested_event.game_status with 
+    | Ongoing  -> failwith Errors.bet_no_team_outcome
+    | Team1Win -> resolve_team_win event_bets true  profit_quota
+    | Team2Win -> resolve_team_win event_bets false profit_quota
+    | Draw     -> refund_bet event_bets profit_quota
+  in
+  ((op_list : operation list), { s with events = modified_events })
 
 // --------------------------------------
 //            MAIN FUNCTION

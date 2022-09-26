@@ -57,13 +57,13 @@ let betting_not_paused (p_betting_paused : bool) : unit =
   if (p_betting_paused)
     then failwith Errors.betting_paused
 
-let betting_not_finalized (p_betting_finalized : bool) : unit =
-  if (p_betting_finalized)
-    then failwith Errors.bet_finished
+let betting_not_finalized (p_s : Types.game_status) : unit = match p_s with 
+  | Ongoing  -> ()
+  | _        -> failwith Errors.bet_finished
 
-let betting_finalized (p_betting_finalized : bool) : unit =
-  if (not p_betting_finalized)
-    then failwith Errors.bet_not_finished
+let betting_finalized (p_s : Types.game_status) : unit = match p_s with 
+  | Ongoing  -> failwith Errors.bet_not_finished
+  | _        -> ()
 
 let no_tez (p_asserted_amount : tez) : unit =
   if (p_asserted_amount = 0mutez)

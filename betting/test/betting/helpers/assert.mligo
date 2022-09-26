@@ -65,7 +65,5 @@ let event (taddr : (Betting_Callback.parameter, Betting_Callback.storage) typed_
     let () = assert(storage.end_at=expected_event.end_at) in
     let () = assert(storage.modified_at=expected_event.modified_at) in
     let () = assert(storage.opponents=expected_event.opponents) in
-    let () = assert(storage.is_finalized=expected_event.is_finalized) in
-    let () = assert(storage.is_draw=expected_event.is_draw) in
-    let () = assert(storage.is_team_one_win=expected_event.is_team_one_win) in
+    let () = assert(storage.game_status=expected_event.game_status) in
     ()

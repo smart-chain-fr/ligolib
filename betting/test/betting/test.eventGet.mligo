@@ -3,7 +3,7 @@
 #import "helpers/helper.mligo" "Helper"
 #import "helpers/assert.mligo" "Assert"
 #import "helpers/events.mligo" "Events"
-#import "helpers/log.mligo" "Log"
+#import "../common/log.mligo" "Log"
 
 let () = Log.describe("[Betting - EventGet] test suite")
 
