@@ -33,7 +33,7 @@ let base_storage (bettingAddr : address) : Callback.storage = {
 }
 
 let originate_from_file (initial_storage : Callback.storage) : originated =
-    let betting_path           = "src/contracts/cameligo/betting/callback/main.mligo" in
+    let betting_path           = "../../../src/contracts/cameligo/betting/callback/main.mligo" in
     let iTres                  = Test.run (fun (x : Callback.storage) -> x) initial_storage in
     let (callback_addr, _, _)  = Test.originate_from_file betting_path "main" ([] : string list) iTres 0mutez in
     let callback_taddress      = (Test.cast_address callback_addr : (Callback.parameter, Callback.storage) typed_address) in
