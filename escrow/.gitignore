@@ -1,0 +1,11 @@
+.env
+node_modules
+package-lock.json
+
+deploy/*.js
+
+contracts/cameligo/compiled/*
+contracts/cameligo/instance/compiled/*
+
+contracts/jsligo/compiled/*
+contracts/jsligo/instance/compiled/*
