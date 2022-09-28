@@ -44,7 +44,7 @@ type bet_config_type = {
 3) Add an Event using the `storage.manager` address
 4) Add a Bet to the Event using an address that is not `storage.manager` nor `storage.oracle_address`
 5) _(optional)_ Add more bets to the first team or second team on the Event
-6) Update the Bet to specify the outcome in `is_draw`, and the winning Team in `is_team_one_win` if it is not a draw, using `storage.manager` or `storage.oracle_address`
+6) Update the Bet to specify the outcome in `game_status` if it is not a draw, using `storage.manager` or `storage.oracle_address`
 7) Finalize the Bet using `storage.manager`
 
 ## Initial Storage example :

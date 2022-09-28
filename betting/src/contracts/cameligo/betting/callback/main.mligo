@@ -8,9 +8,7 @@ type storage =
   end_at : timestamp;
   modified_at : timestamp;
   opponents : { team_one : string; team_two : string};
-  is_finalized : bool;
-  is_draw : bool option;
-  is_team_one_win : bool option;
+  game_status : BETTING_Types.game_status;
   start_bet_time : timestamp;
   closed_bet_time : timestamp;
   bets_team_one : (address, tez) map;
@@ -30,9 +28,7 @@ type requested_event_param = [@layout:comb] {
   end_at : timestamp;
   modified_at : timestamp;
   opponents : { team_one : string; team_two : string};
-  is_finalized : bool;
-  is_draw : bool option;
-  is_team_one_win : bool option;
+  game_status : BETTING_Types.game_status;
   start_bet_time : timestamp;
   closed_bet_time : timestamp;
   bets_team_one : (address, tez) map;
@@ -54,9 +50,7 @@ let saveEvent(param, store : requested_event_param * storage) : operation list *
     end_at=param.end_at;
     modified_at=param.modified_at;
     opponents=param.opponents;
-    is_finalized=param.is_finalized;
-    is_draw=param.is_draw;
-    is_team_one_win=param.is_team_one_win;
+    game_status=param.game_status;
     start_bet_time=param.start_bet_time;
     closed_bet_time=param.closed_bet_time;
     bets_team_one=param.bets_team_one;

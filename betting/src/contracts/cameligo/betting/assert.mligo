@@ -2,7 +2,7 @@
 #import "errors.mligo" "Errors"
 
 // --------------------------------------
-//       CONFIG RELATED AssertIONS
+//       CONFIG RELATED ASSERTIONS
 // --------------------------------------
 
 let is_manager (p_sender : address)(p_manager : address) : unit =
@@ -26,7 +26,7 @@ let not_previous_oracle (p_new_oracle : address)(p_prev_oracle : address) : unit
     then failwith Errors.same_previous_oracle_address
 
 // --------------------------------------
-//         EVENT RELATED AssertIONS
+//         EVENT RELATED ASSERTIONS
 // --------------------------------------
 
 let event_creation_not_paused (p_event_creation_paused : bool) : unit =
@@ -50,20 +50,20 @@ let event_bet_ends_after_end (p_event_bet_end : timestamp) (p_event_end : timest
     then failwith Errors.event_betting_end_after_end
 
 // --------------------------------------
-//         BETTING RELATED AssertIONS
+//         BETTING RELATED ASSERTIONS
 // --------------------------------------
 
 let betting_not_paused (p_betting_paused : bool) : unit =
   if (p_betting_paused)
     then failwith Errors.betting_paused
 
-let betting_not_finalized (p_betting_finalized : bool) : unit =
-  if (p_betting_finalized)
-    then failwith Errors.bet_finished
+let betting_not_finalized (p_s : Types.game_status) : unit = match p_s with 
+  | Ongoing  -> ()
+  | _        -> failwith Errors.bet_finished
 
-let betting_finalized (p_betting_finalized : bool) : unit =
-  if (not p_betting_finalized)
-    then failwith Errors.bet_not_finished
+let betting_finalized (p_s : Types.game_status) : unit = match p_s with 
+  | Ongoing  -> failwith Errors.bet_not_finished
+  | _        -> ()
 
 let no_tez (p_asserted_amount : tez) : unit =
   if (p_asserted_amount = 0mutez)
