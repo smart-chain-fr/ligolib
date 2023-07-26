@@ -10,9 +10,7 @@ let change_manager (new_manager : address)( s : Types.storage) : (operation list
 
 let switch_pause (s : Types.storage) : (operation list * Types.storage) =
   let _ = Assert.is_manager (Tezos.get_sender()) s.manager in
-  if (s.isPaused)
-    then (([] : operation list), {s with isPaused = false})
-    else (([] : operation list), {s with isPaused = true})
+  (([] : operation list), {s with isPaused = (not s.isPaused)})
 
 let change_signer (new_signer : address)( s : Types.storage) : (operation list * Types.storage) =
   let _ = Assert.is_manager__or_signer (Tezos.get_sender()) s.manager s.signer in
@@ -32,7 +30,7 @@ let get_event (requested_event_id : nat)(callbackAddr : address)(s : Types.stora
     in
   let destination : Callback.requested_event_param contract = 
   match (Tezos.get_entrypoint_opt "%saveEvent" callbackAddr : Callback.requested_event_param contract option) with
-  | None -> failwith("Unknown contract")
+    None -> failwith("Unknown contract")
   | Some ctr -> ctr
   in
   let op : operation = Tezos.transaction cbk_event 0mutez destination in
@@ -75,7 +73,7 @@ let getStatus (_, s : unit * Types.storage) : timestamp * bool =
 [@view]
 let getEvent (pRequestedEventID, s : nat * Types.storage) : timestamp * Types.event_type =
   let requestedEvent : Types.event_type = match (Map.find_opt pRequestedEventID s.events) with
-    | Some event -> event
+      Some event -> event
     | None -> failwith Errors.no_event_id
   in
   (Tezos.get_now(), requestedEvent)

@@ -9,6 +9,8 @@ type bet_config_type = {
   retained_profit_quota : nat;
 }
 
+type game_status = Ongoing | Team1Win| Team2Win | Draw
+
 type event_type = 
   [@layout:comb] {
   name : string;
@@ -17,9 +19,7 @@ type event_type =
   end_at : timestamp;
   modified_at : timestamp;
   opponents : { team_one : string; team_two : string};
-  is_finalized : bool;
-  is_draw : bool option;
-  is_team_one_win : bool option;
+  game_status : game_status;
   start_bet_time : timestamp;
   closed_bet_time : timestamp;
   is_claimed : bool;
@@ -75,9 +75,7 @@ type add_event_parameter =
   end_at : timestamp;
   modified_at : timestamp;
   opponents : { team_one : string; team_two : string};
-  is_finalized : bool;
-  is_draw : bool option;
-  is_team_one_win : bool option;
+  game_status : game_status;
   start_bet_time : timestamp;
   closed_bet_time : timestamp;
 }

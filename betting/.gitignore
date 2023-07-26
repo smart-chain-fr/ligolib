@@ -8,3 +8,4 @@ __pycache__
 src/compiled/*
 deploy/*.js
 deployments/*
+deploy/node_modules

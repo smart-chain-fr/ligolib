@@ -3,7 +3,7 @@
 #import "helpers/bootstrap.mligo" "Bootstrap"
 #import "helpers/helper.mligo" "Helper"
 #import "helpers/assert.mligo" "Assert"
-#import "helpers/log.mligo" "Log"
+#import "../common/log.mligo" "Log"
 
 let () = Log.describe("[Oracle - EventUpdate] test suite")
 
