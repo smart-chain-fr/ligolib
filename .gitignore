@@ -1,8 +1,9 @@
+__pycache__/
 .DS_Store
+.env
 .idea/
-.vscode/
 .ligo-work/
 .ligoproject
+.vscode/
 node_modules/
 venv/
-__pycache__/
