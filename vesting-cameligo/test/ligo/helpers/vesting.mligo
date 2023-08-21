@@ -57,7 +57,7 @@ let base_storage (admin, token_address, token_id, beneficiaries, vesting_duratio
 
 (* Originate a Vesting contract with given init_storage storage *)
 let originate (init_storage : Vesting.storage) =
-    let (taddr, _, _) = Test.originate Vesting.main init_storage 0mutez in
+    let (taddr, _, _) = Test.originate_uncurried Vesting.main init_storage 0mutez in
     let contr = Test.to_contract taddr in
     let addr = Tezos.address contr in
     {addr = addr; taddr = taddr; contr = contr}

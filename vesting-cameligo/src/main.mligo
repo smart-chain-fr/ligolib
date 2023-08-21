@@ -1,8 +1,11 @@
 #import "storage.mligo" "Storage"
 #import "parameter.mligo" "Parameter"
 #import "errors.mligo" "Errors"
-#import "tezos-ligo-fa2/lib/fa2/asset/multi_asset.mligo" "FA2"
-#import "tezos-ligo-fa2/lib/fa1.2/FA1.2.jsligo" "FA1"
+#import "ligo-extendable-fa2/lib/multi_asset/fa2.mligo" "FA2"
+// #import "tezos-ligo-fa2/lib/fa2/asset/multi_asset.mligo" "FA2"
+// #import "tezos-ligo-fa2/lib/fa1.2/FA1.2.jsligo" "FA1"
+#import "ligo_fa1.2/lib/asset/fa12.mligo" "FA1"
+
 
 type storage = Storage.t
 type parameter = Parameter.t
@@ -22,7 +25,7 @@ let make_fa2_transfer(from, to, token_address, token_id, amount : address * addr
     | None -> failwith "FA2 unknown transfer entrypoint"
     | Some ctr -> ctr
     in
-    let payload : FA2.transfer = [{from_=from; tx=[{to_=to; token_id=token_id; amount=amount}]}] in
+    let payload : FA2.transfer = [{from_=from; txs=[{to_=to; token_id=token_id; amount=amount}]}] in
     Tezos.transaction payload 0mutez destination
 
 let compute_releasable_amount(total_beneficiary, already_released, end_of_cliff, vesting_end, release_duration : nat * nat * timestamp * timestamp * nat) : nat =
@@ -112,7 +115,7 @@ let release(_param, s : unit * storage) : operation list * storage =
     let _check_is_started : unit = assert_with_error (s.started = True) Errors.vesting_not_started in
     let total_beneficiary_amount = match Map.find_opt sender s.beneficiaries with
     | None -> failwith Errors.sender_not_beneficiary
-    | Some val -> val
+    | Some value -> value
     in
     let beneficiary_revoked = match Map.find_opt sender s.revoked_addresses with
     | None -> False

@@ -38,7 +38,7 @@ all: install compile deploy ##@Project - Runs all the deployment chain from scra
 #            CONTRACTS                #
 #######################################
 ifndef LIGO
-LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.51.0
+LIGO=docker run --platform linux/amd64 --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.70.1
 endif
 
 compile = $(LIGO) compile contract $(project_root) ./src/$(1) -o ./compiled/$(2) $(3)
