@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A modular vesting contract on Tezos written in Ligolang",
   "scripts": {
+    "deploy": "ts-node ./deploy.ts",
     "lint": "eslint . --ext .ts"
   },
   "keywords": [],
