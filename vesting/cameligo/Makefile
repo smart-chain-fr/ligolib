@@ -86,7 +86,7 @@ install: ##@Scripts - Install NPM dependencies
 deploy: ##@Scripts - Deploy contracts
 	@if [ ! -f ./scripts/metadata.json ]; then cp scripts/metadata.json.dist \
         scripts/metadata.json ; fi
-	@npx ts-node ./scripts/deploy.ts --resolveJsonModule
+	@npx ts-node ./scripts/deploy.ts
 
 #######################################
 #            SANDBOX                  #
