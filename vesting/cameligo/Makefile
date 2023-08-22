@@ -69,7 +69,7 @@ endif
 
 test-integration: ##@Contracts - Run integration tests
 	$(MAKE) deploy
-	@npm run test
+	@npm --prefix run test
 
 clean: ##@Contracts - Contracts clean up
 	@echo "Are you sure you want to DELETE ALL COMPILED CONTRACT FILES from your Compiled folder ? [y/N]" && read ans && if [ $${ans:-'N'} = 'y' ]; then rm -rf compiled/* ; fi
@@ -79,14 +79,14 @@ clean: ##@Contracts - Contracts clean up
 #######################################
 install: ##@Scripts - Install NPM dependencies
 	@if [ ! -f ./.env ]; then cp .env.dist .env ; fi
+	@npm --prefix ./scripts install
 	@$(LIGO) install
-	
+
 
 deploy: ##@Scripts - Deploy contracts
 	@if [ ! -f ./scripts/metadata.json ]; then cp scripts/metadata.json.dist \
         scripts/metadata.json ; fi
-	@npx ts-node ./scripts/deploy.ts
-
+	@npx ts-node ./scripts/deploy.ts --resolveJsonModule
 
 #######################################
 #            SANDBOX                  #
