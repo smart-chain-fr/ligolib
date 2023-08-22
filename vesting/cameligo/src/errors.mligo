@@ -1,0 +1,13 @@
+let not_admin : string = "not admin"
+let vesting_already_started : string = "Vesting already started"
+let vesting_duration_zero : string = "Vesting duration is zero"
+let vesting_duration_smaller_than_cliff_duration : string = "Vesting duration is smaller than cliff duration"
+let vesting_not_started : string = "Vesting not started"
+let sender_not_beneficiary : string = "Sender is registered among beneficiaries"
+let beneficiary_revoked : string = "Beneficiary has been revoked"
+let nothing_to_release : string = "No token can be released at this time"
+
+let vesting_not_revocable : string = "Contract is not revocable"
+let vesting_already_revoked : string = "Vesting already revoked"
+let vesting_not_started : string = "Vesting not started" 
+let address_already_revoked : string = "Address already revoked"

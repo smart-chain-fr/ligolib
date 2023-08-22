@@ -1,0 +1,10 @@
+node_modules
+/compiled
+/deployments
+/.env
+
+.vscode
+.ligo-work
+.ligo
+_esy
+esy.lock

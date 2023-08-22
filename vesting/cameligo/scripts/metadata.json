@@ -1,0 +1,21 @@
+{
+    "name": "Vesting Example",
+    "description": "A Vesting Example Contract",
+    "version": "1.0.0",
+    "license": {
+        "name": "MIT"
+    },
+    "authors": [
+        "smart-chain <tezos@smart-chain.fr>"
+    ],
+    "homepage": "https://github.com/ligolang/vesting-cameligo",
+    "source": {
+        "tools": "cameligo",
+        "location": "https://github.com/ligolang/vesting-cameligo/src"
+    },
+    "interfaces": [
+        "TZIP-012",
+        "TZIP-016",
+        "TZIP-017"
+    ]
+}
